@@ -55,7 +55,7 @@ function ChecklistsPage() {
 
   const create = useMutation({
     mutationFn: async (payload: Record<string, unknown>) => {
-      const { error } = await supabase.from("checklist_itens").insert(payload);
+      const { error } = await supabase.from("checklist_itens").insert(payload as never);
       if (error) throw error;
     },
     onSuccess: () => {

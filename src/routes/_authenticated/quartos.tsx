@@ -39,7 +39,7 @@ function QuartosPage() {
 
   const create = useMutation({
     mutationFn: async (payload: Record<string, unknown>) => {
-      const { error } = await supabase.from("quartos").insert(payload);
+      const { error } = await supabase.from("quartos").insert(payload as never);
       if (error) throw error;
     },
     onSuccess: () => {

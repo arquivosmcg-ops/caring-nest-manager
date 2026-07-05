@@ -57,7 +57,7 @@ function ResidentesPage() {
 
   const create = useMutation({
     mutationFn: async (payload: Record<string, unknown>) => {
-      const { error } = await supabase.from("residentes").insert(payload);
+      const { error } = await supabase.from("residentes").insert(payload as never);
       if (error) throw error;
     },
     onSuccess: () => {

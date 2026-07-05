@@ -54,7 +54,7 @@ function IncidentesPage() {
   const create = useMutation({
     mutationFn: async (payload: Record<string, unknown>) => {
       const { data: user } = await supabase.auth.getUser();
-      const { error } = await supabase.from("incidentes").insert({ ...payload, registrado_por: user.user?.id });
+      const { error } = await supabase.from("incidentes").insert({ ...payload, registrado_por: user.user?.id } as never);
       if (error) throw error;
     },
     onSuccess: () => {

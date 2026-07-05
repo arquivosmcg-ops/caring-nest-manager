@@ -55,7 +55,7 @@ function SinaisPage() {
   const create = useMutation({
     mutationFn: async (payload: Record<string, unknown>) => {
       const { data: user } = await supabase.auth.getUser();
-      const { error } = await supabase.from("sinais_vitais").insert({ ...payload, registrado_por: user.user?.id });
+      const { error } = await supabase.from("sinais_vitais").insert({ ...payload, registrado_por: user.user?.id } as never);
       if (error) throw error;
     },
     onSuccess: () => {
