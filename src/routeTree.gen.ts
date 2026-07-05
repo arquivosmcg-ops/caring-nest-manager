@@ -9,38 +9,163 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedSinaisVitaisRouteImport } from './routes/_authenticated/sinais-vitais'
+import { Route as AuthenticatedResidentesRouteImport } from './routes/_authenticated/residentes'
+import { Route as AuthenticatedQuartosRouteImport } from './routes/_authenticated/quartos'
+import { Route as AuthenticatedMedicamentosRouteImport } from './routes/_authenticated/medicamentos'
+import { Route as AuthenticatedIncidentesRouteImport } from './routes/_authenticated/incidentes'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedChecklistsRouteImport } from './routes/_authenticated/checklists'
 
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedSinaisVitaisRoute =
+  AuthenticatedSinaisVitaisRouteImport.update({
+    id: '/sinais-vitais',
+    path: '/sinais-vitais',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedResidentesRoute = AuthenticatedResidentesRouteImport.update({
+  id: '/residentes',
+  path: '/residentes',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedQuartosRoute = AuthenticatedQuartosRouteImport.update({
+  id: '/quartos',
+  path: '/quartos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMedicamentosRoute =
+  AuthenticatedMedicamentosRouteImport.update({
+    id: '/medicamentos',
+    path: '/medicamentos',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedIncidentesRoute = AuthenticatedIncidentesRouteImport.update({
+  id: '/incidentes',
+  path: '/incidentes',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedChecklistsRoute = AuthenticatedChecklistsRouteImport.update({
+  id: '/checklists',
+  path: '/checklists',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/checklists': typeof AuthenticatedChecklistsRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/incidentes': typeof AuthenticatedIncidentesRoute
+  '/medicamentos': typeof AuthenticatedMedicamentosRoute
+  '/quartos': typeof AuthenticatedQuartosRoute
+  '/residentes': typeof AuthenticatedResidentesRoute
+  '/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/checklists': typeof AuthenticatedChecklistsRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/incidentes': typeof AuthenticatedIncidentesRoute
+  '/medicamentos': typeof AuthenticatedMedicamentosRoute
+  '/quartos': typeof AuthenticatedQuartosRoute
+  '/residentes': typeof AuthenticatedResidentesRoute
+  '/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/checklists': typeof AuthenticatedChecklistsRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/incidentes': typeof AuthenticatedIncidentesRoute
+  '/_authenticated/medicamentos': typeof AuthenticatedMedicamentosRoute
+  '/_authenticated/quartos': typeof AuthenticatedQuartosRoute
+  '/_authenticated/residentes': typeof AuthenticatedResidentesRoute
+  '/_authenticated/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/checklists'
+    | '/dashboard'
+    | '/incidentes'
+    | '/medicamentos'
+    | '/quartos'
+    | '/residentes'
+    | '/sinais-vitais'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/checklists'
+    | '/dashboard'
+    | '/incidentes'
+    | '/medicamentos'
+    | '/quartos'
+    | '/residentes'
+    | '/sinais-vitais'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/checklists'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/incidentes'
+    | '/_authenticated/medicamentos'
+    | '/_authenticated/quartos'
+    | '/_authenticated/residentes'
+    | '/_authenticated/sinais-vitais'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +173,86 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/sinais-vitais': {
+      id: '/_authenticated/sinais-vitais'
+      path: '/sinais-vitais'
+      fullPath: '/sinais-vitais'
+      preLoaderRoute: typeof AuthenticatedSinaisVitaisRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/residentes': {
+      id: '/_authenticated/residentes'
+      path: '/residentes'
+      fullPath: '/residentes'
+      preLoaderRoute: typeof AuthenticatedResidentesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/quartos': {
+      id: '/_authenticated/quartos'
+      path: '/quartos'
+      fullPath: '/quartos'
+      preLoaderRoute: typeof AuthenticatedQuartosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/medicamentos': {
+      id: '/_authenticated/medicamentos'
+      path: '/medicamentos'
+      fullPath: '/medicamentos'
+      preLoaderRoute: typeof AuthenticatedMedicamentosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/incidentes': {
+      id: '/_authenticated/incidentes'
+      path: '/incidentes'
+      fullPath: '/incidentes'
+      preLoaderRoute: typeof AuthenticatedIncidentesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/checklists': {
+      id: '/_authenticated/checklists'
+      path: '/checklists'
+      fullPath: '/checklists'
+      preLoaderRoute: typeof AuthenticatedChecklistsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedChecklistsRoute: typeof AuthenticatedChecklistsRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedIncidentesRoute: typeof AuthenticatedIncidentesRoute
+  AuthenticatedMedicamentosRoute: typeof AuthenticatedMedicamentosRoute
+  AuthenticatedQuartosRoute: typeof AuthenticatedQuartosRoute
+  AuthenticatedResidentesRoute: typeof AuthenticatedResidentesRoute
+  AuthenticatedSinaisVitaisRoute: typeof AuthenticatedSinaisVitaisRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedChecklistsRoute: AuthenticatedChecklistsRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedIncidentesRoute: AuthenticatedIncidentesRoute,
+  AuthenticatedMedicamentosRoute: AuthenticatedMedicamentosRoute,
+  AuthenticatedQuartosRoute: AuthenticatedQuartosRoute,
+  AuthenticatedResidentesRoute: AuthenticatedResidentesRoute,
+  AuthenticatedSinaisVitaisRoute: AuthenticatedSinaisVitaisRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
