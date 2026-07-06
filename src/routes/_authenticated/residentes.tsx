@@ -107,7 +107,7 @@ function ResidentesPage() {
             {residentes.data?.length ?? 0} residente(s) no sistema
           </p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) setSelectedQuarto(null); }}>
           <DialogTrigger asChild>
             <Button><Plus className="size-4 mr-1" /> Novo residente</Button>
           </DialogTrigger>
