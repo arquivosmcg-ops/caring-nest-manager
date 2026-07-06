@@ -31,6 +31,14 @@ type Residente = {
   quartos: { numero: string } | null;
 };
 
+type QuartoOption = {
+  id: string;
+  numero: string;
+  ala: string | null;
+  capacidade: number;
+  status: "ocupado" | "vago" | "manutencao";
+};
+
 function ResidentesPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
