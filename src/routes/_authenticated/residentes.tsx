@@ -31,9 +31,18 @@ type Residente = {
   quartos: { numero: string } | null;
 };
 
+type QuartoOption = {
+  id: string;
+  numero: string;
+  ala: string | null;
+  capacidade: number;
+  status: "ocupado" | "vago" | "manutencao";
+};
+
 function ResidentesPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [selectedQuarto, setSelectedQuarto] = useState<string | null>(null);
 
   const residentes = useQuery({
     queryKey: ["residentes"],
@@ -50,8 +59,12 @@ function ResidentesPage() {
   const quartos = useQuery({
     queryKey: ["quartos-livres"],
     queryFn: async () => {
-      const { data } = await supabase.from("quartos").select("id, numero").order("numero");
-      return data ?? [];
+      const { data, error } = await supabase
+        .from("quartos")
+        .select("id, numero, ala, capacidade, status")
+        .order("numero");
+      if (error) throw error;
+      return (data ?? []) as QuartoOption[];
     },
   });
 
@@ -94,7 +107,7 @@ function ResidentesPage() {
             {residentes.data?.length ?? 0} residente(s) no sistema
           </p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) setSelectedQuarto(null); }}>
           <DialogTrigger asChild>
             <Button><Plus className="size-4 mr-1" /> Novo residente</Button>
           </DialogTrigger>
@@ -109,14 +122,44 @@ function ResidentesPage() {
                 <Label>Data de nascimento</Label>
                 <Input name="data_nascimento" type="date" />
               </div>
-              <div>
+              <div className="col-span-2">
                 <Label>Quarto</Label>
-                <Select name="quarto_id">
-                  <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
-                  <SelectContent>
-                    {quartos.data?.map((q) => <SelectItem key={q.id} value={q.id}>{q.numero}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <input type="hidden" name="quarto_id" value={selectedQuarto ?? ""} />
+                <div className="mt-1.5 grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto p-1 border border-border rounded-md bg-surface">
+                  {quartos.data?.length === 0 && (
+                    <div className="col-span-full text-center text-xs text-muted-foreground py-4">
+                      Nenhum quarto cadastrado.
+                    </div>
+                  )}
+                  {quartos.data?.map((q) => (
+                    <button
+                      key={q.id}
+                      type="button"
+                      onClick={() => setSelectedQuarto(q.id)}
+                      className={cn(
+                        "text-left rounded-md border p-2.5 transition-colors focus:outline-none focus:ring-2 focus:ring-ring",
+                        selectedQuarto === q.id
+                          ? "border-primary bg-primary/5 ring-1 ring-primary"
+                          : "border-border hover:border-primary/50 hover:bg-black/[0.02]"
+                      )}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono font-extrabold text-sm">{q.numero}</span>
+                        <span className={cn(
+                          "text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm",
+                          q.status === "vago" && "bg-green-100 text-green-700",
+                          q.status === "ocupado" && "bg-slate-100 text-slate-700",
+                          q.status === "manutencao" && "bg-warning/20 text-orange-700"
+                        )}>
+                          {q.status}
+                        </span>
+                      </div>
+                      <div className="mt-1.5 text-[10px] text-muted-foreground leading-tight">
+                        {q.ala || "Sem ala"} · Cap. {q.capacidade}
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
               <div>
                 <Label>Status</Label>
