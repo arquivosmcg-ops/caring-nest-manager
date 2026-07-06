@@ -74,9 +74,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Villa Harmonia — Gestão de Casa de Repouso" },
+      { title: "Residencial São Camilo — Gestão de Casa de Repouso" },
       { name: "description", content: "Sistema integrado de gestão clínica e residencial para casas de repouso (ILPI): residentes, medicamentos, sinais vitais, incidentes e checklists diários." },
-      { property: "og:title", content: "Villa Harmonia — Gestão de Casa de Repouso" },
+      { property: "og:title", content: "Residencial São Camilo — Gestão de Casa de Repouso" },
       { property: "og:description", content: "Cuidado, clareza e segurança para sua ILPI. Prontuário eletrônico, medicação, incidentes e rotina em um só lugar." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
