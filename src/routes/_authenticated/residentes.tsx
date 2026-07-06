@@ -50,8 +50,12 @@ function ResidentesPage() {
   const quartos = useQuery({
     queryKey: ["quartos-livres"],
     queryFn: async () => {
-      const { data } = await supabase.from("quartos").select("id, numero").order("numero");
-      return data ?? [];
+      const { data, error } = await supabase
+        .from("quartos")
+        .select("id, numero, ala, capacidade, status")
+        .order("numero");
+      if (error) throw error;
+      return (data ?? []) as Quarto[];
     },
   });
 
