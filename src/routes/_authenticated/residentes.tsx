@@ -63,7 +63,7 @@ function ResidentesPage() {
         .select("id, numero, ala, capacidade, status")
         .order("numero");
       if (error) throw error;
-      return (data ?? []) as Quarto[];
+      return (data ?? []) as QuartoOption[];
     },
   });
 
