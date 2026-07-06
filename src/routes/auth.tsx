@@ -56,7 +56,7 @@ function AuthPage() {
     <div className="min-h-screen grid lg:grid-cols-2 bg-background">
       <div className="hidden lg:flex flex-col justify-between p-12 bg-foreground text-background">
           <div className="flex items-center gap-2">
-            <div className="size-9 bg-primary rounded-sm grid place-items-center overflow-hidden">
+            <div className="size-9 bg-white rounded-sm grid place-items-center overflow-hidden border border-border/20">
               <img src={logoAsset.url} alt="Logo" className="h-6 w-auto object-contain" />
             </div>
           <span className="font-extrabold tracking-tight text-lg">RESIDENCIAL SÃO CAMILO</span>
@@ -79,7 +79,7 @@ function AuthPage() {
       <div className="flex items-center justify-center p-6 lg:p-12">
         <div className="w-full max-w-md space-y-8">
           <div className="lg:hidden flex items-center gap-2">
-            <div className="size-9 bg-primary rounded-sm grid place-items-center overflow-hidden">
+            <div className="size-9 bg-white rounded-sm grid place-items-center overflow-hidden border border-border">
               <img src={logoAsset.url} alt="Logo" className="h-6 w-auto object-contain" />
             </div>
             <span className="font-extrabold tracking-tight text-lg">RESIDENCIAL SÃO CAMILO</span>
