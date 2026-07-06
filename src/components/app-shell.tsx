@@ -74,7 +74,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <aside className="w-64 border-r border-border bg-sidebar flex flex-col sticky top-0 h-screen">
         <div className="p-6 border-b border-border">
           <div className="flex items-center gap-2">
-            <div className="size-8 bg-primary rounded-sm grid place-items-center overflow-hidden">
+            <div className="size-8 bg-white rounded-sm grid place-items-center overflow-hidden border border-border">
               <img src={logoAsset.url} alt="Logo" className="h-5 w-auto object-contain" />
             </div>
             <span className="font-extrabold tracking-tight text-lg">RESIDENCIAL SÃO CAMILO</span>
