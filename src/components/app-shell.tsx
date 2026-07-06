@@ -77,7 +77,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="size-8 bg-primary rounded-sm grid place-items-center">
               <Heart className="size-4 text-primary-foreground" fill="currentColor" />
             </div>
-            <span className="font-extrabold tracking-tight text-lg">VILLA HARMONIA</span>
+            <span className="font-extrabold tracking-tight text-lg">RESIDENCIAL SÃO CAMILO</span>
           </div>
         </div>
 

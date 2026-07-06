@@ -59,7 +59,7 @@ function AuthPage() {
           <div className="size-9 bg-primary rounded-sm grid place-items-center">
             <Heart className="size-5 text-primary-foreground" fill="currentColor" />
           </div>
-          <span className="font-extrabold tracking-tight text-lg">VILLA HARMONIA</span>
+          <span className="font-extrabold tracking-tight text-lg">RESIDENCIAL SÃO CAMILO</span>
         </div>
         <div className="space-y-4">
           <h1 className="text-4xl font-extrabold tracking-tight leading-tight">
@@ -82,7 +82,7 @@ function AuthPage() {
             <div className="size-9 bg-primary rounded-sm grid place-items-center">
               <Heart className="size-5 text-primary-foreground" fill="currentColor" />
             </div>
-            <span className="font-extrabold tracking-tight text-lg">VILLA HARMONIA</span>
+            <span className="font-extrabold tracking-tight text-lg">RESIDENCIAL SÃO CAMILO</span>
           </div>
 
           <div>
