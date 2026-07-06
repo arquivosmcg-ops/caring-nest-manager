@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Heart } from "lucide-react";
+import logoAsset from "@/assets/logo_instituto_maior.png.asset.json";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -55,10 +55,10 @@ function AuthPage() {
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-background">
       <div className="hidden lg:flex flex-col justify-between p-12 bg-foreground text-background">
-        <div className="flex items-center gap-2">
-          <div className="size-9 bg-primary rounded-sm grid place-items-center">
-            <Heart className="size-5 text-primary-foreground" fill="currentColor" />
-          </div>
+          <div className="flex items-center gap-2">
+            <div className="size-9 bg-primary rounded-sm grid place-items-center overflow-hidden">
+              <img src={logoAsset.url} alt="Logo" className="h-6 w-auto object-contain" />
+            </div>
           <span className="font-extrabold tracking-tight text-lg">RESIDENCIAL SÃO CAMILO</span>
         </div>
         <div className="space-y-4">
@@ -79,8 +79,8 @@ function AuthPage() {
       <div className="flex items-center justify-center p-6 lg:p-12">
         <div className="w-full max-w-md space-y-8">
           <div className="lg:hidden flex items-center gap-2">
-            <div className="size-9 bg-primary rounded-sm grid place-items-center">
-              <Heart className="size-5 text-primary-foreground" fill="currentColor" />
+            <div className="size-9 bg-primary rounded-sm grid place-items-center overflow-hidden">
+              <img src={logoAsset.url} alt="Logo" className="h-6 w-auto object-contain" />
             </div>
             <span className="font-extrabold tracking-tight text-lg">RESIDENCIAL SÃO CAMILO</span>
           </div>
