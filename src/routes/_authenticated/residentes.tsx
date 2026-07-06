@@ -42,6 +42,7 @@ type QuartoOption = {
 function ResidentesPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [selectedQuarto, setSelectedQuarto] = useState<string | null>(null);
 
   const residentes = useQuery({
     queryKey: ["residentes"],
