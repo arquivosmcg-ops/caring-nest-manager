@@ -32,6 +32,20 @@ function ResidenteAvatar({ path, nome }: { path: string | null; nome: string }) 
   );
 }
 
+const LOWER_PARTICLES = new Set(["de", "da", "do", "dos", "das", "e", "di", "du"]);
+function normalizeNome(raw: string): string {
+  const cleaned = raw.replace(/\s+/g, " ").trim();
+  if (!cleaned) return cleaned;
+  return cleaned
+    .toLocaleLowerCase("pt-BR")
+    .split(" ")
+    .map((word, i) => {
+      if (i > 0 && LOWER_PARTICLES.has(word)) return word;
+      return word.charAt(0).toLocaleUpperCase("pt-BR") + word.slice(1);
+    })
+    .join(" ");
+}
+
 export const Route = createFileRoute("/_authenticated/residentes")({
   component: ResidentesPage,
 });
