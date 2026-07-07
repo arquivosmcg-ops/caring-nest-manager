@@ -203,10 +203,19 @@ function ResidentesPage() {
             {residentes.data?.length ?? 0} residente(s) no sistema
           </p>
         </div>
-        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) { setSelectedQuarto(null); resetFoto(); } else { resetFoto(); } }}>
-          <DialogTrigger asChild>
-            <Button><Plus className="size-4 mr-1" /> Novo residente</Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => fixNomes.mutate()}
+            disabled={fixNomes.isPending || !residentes.data?.length}
+            title="Padroniza capitalização e remove espaços extras nos nomes"
+          >
+            <Wand2 className="size-4 mr-1" /> Corrigir nomes
+          </Button>
+          <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) { setSelectedQuarto(null); resetFoto(); } else { resetFoto(); } }}>
+            <DialogTrigger asChild>
+              <Button><Plus className="size-4 mr-1" /> Novo residente</Button>
+            </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>Cadastrar residente</DialogTitle></DialogHeader>
             <form onSubmit={onSubmit} className="grid grid-cols-2 gap-4">
