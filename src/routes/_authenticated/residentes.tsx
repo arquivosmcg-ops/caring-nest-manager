@@ -7,10 +7,30 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus } from "lucide-react";
-import { useState } from "react";
+import { Plus, Upload, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+
+function ResidenteAvatar({ path, nome }: { path: string | null; nome: string }) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    if (!path) { setUrl(null); return; }
+    supabase.storage.from("residentes-fotos").createSignedUrl(path, 3600).then(({ data }) => {
+      if (!cancelled) setUrl(data?.signedUrl ?? null);
+    });
+    return () => { cancelled = true; };
+  }, [path]);
+  if (url) {
+    return <img src={url} alt={nome} className="size-9 rounded-full object-cover border border-border" />;
+  }
+  return (
+    <div className="size-9 rounded-full bg-muted grid place-items-center text-xs font-bold">
+      {nome.charAt(0)}
+    </div>
+  );
+}
 
 export const Route = createFileRoute("/_authenticated/residentes")({
   component: ResidentesPage,
@@ -28,6 +48,7 @@ type Residente = {
   historico_medico: string | null;
   ativo: boolean;
   quarto_id: string | null;
+  foto_url: string | null;
   quartos: { numero: string } | null;
 };
 
@@ -43,6 +64,29 @@ function ResidentesPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [selectedQuarto, setSelectedQuarto] = useState<string | null>(null);
+  const [fotoFile, setFotoFile] = useState<File | null>(null);
+  const [fotoPreview, setFotoPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const resetFoto = () => {
+    setFotoFile(null);
+    if (fotoPreview) URL.revokeObjectURL(fotoPreview);
+    setFotoPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const onFotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Arquivo muito grande (máx 5MB)");
+      return;
+    }
+    setFotoFile(file);
+    if (fotoPreview) URL.revokeObjectURL(fotoPreview);
+    setFotoPreview(URL.createObjectURL(file));
+  };
 
   const residentes = useQuery({
     queryKey: ["residentes"],
@@ -78,14 +122,27 @@ function ResidentesPage() {
       qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
       qc.invalidateQueries({ queryKey: ["dashboard-residentes"] });
       setOpen(false);
+      resetFoto();
       toast.success("Residente cadastrado");
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
+    let foto_url: string | null = null;
+    if (fotoFile) {
+      setUploading(true);
+      const ext = fotoFile.name.split(".").pop() || "jpg";
+      const path = `${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage
+        .from("residentes-fotos")
+        .upload(path, fotoFile, { contentType: fotoFile.type, upsert: false });
+      setUploading(false);
+      if (error) { toast.error(`Falha ao enviar foto: ${error.message}`); return; }
+      foto_url = path;
+    }
     create.mutate({
       nome_completo: fd.get("nome_completo"),
       data_nascimento: fd.get("data_nascimento") || null,
@@ -96,6 +153,7 @@ function ResidentesPage() {
       dieta: fd.get("dieta") || null,
       historico_medico: fd.get("historico_medico") || null,
       status: fd.get("status") || "estavel",
+      foto_url,
     });
   };
 
@@ -107,13 +165,41 @@ function ResidentesPage() {
             {residentes.data?.length ?? 0} residente(s) no sistema
           </p>
         </div>
-        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) setSelectedQuarto(null); }}>
+        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) { setSelectedQuarto(null); resetFoto(); } else { resetFoto(); } }}>
           <DialogTrigger asChild>
             <Button><Plus className="size-4 mr-1" /> Novo residente</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>Cadastrar residente</DialogTitle></DialogHeader>
             <form onSubmit={onSubmit} className="grid grid-cols-2 gap-4">
+              <div className="col-span-2 flex items-center gap-4">
+                <div className="relative">
+                  {fotoPreview ? (
+                    <img src={fotoPreview} alt="Prévia" className="size-20 rounded-full object-cover border-2 border-border" />
+                  ) : (
+                    <div className="size-20 rounded-full bg-muted grid place-items-center text-muted-foreground">
+                      <Upload className="size-6" />
+                    </div>
+                  )}
+                  {fotoPreview && (
+                    <button type="button" onClick={resetFoto}
+                      className="absolute -top-1 -right-1 size-5 rounded-full bg-destructive text-destructive-foreground grid place-items-center hover:brightness-110">
+                      <X className="size-3" />
+                    </button>
+                  )}
+                </div>
+                <div>
+                  <Label>Foto do residente</Label>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={onFotoChange}
+                    className="mt-1.5 block text-sm file:mr-3 file:rounded-md file:border file:border-border file:bg-surface file:px-3 file:py-1.5 file:text-xs file:font-medium hover:file:bg-accent"
+                  />
+                  <p className="mt-1 text-[10px] text-muted-foreground">JPG ou PNG, até 5MB.</p>
+                </div>
+              </div>
               <div className="col-span-2">
                 <Label>Nome completo *</Label>
                 <Input name="nome_completo" required />
@@ -194,7 +280,7 @@ function ResidentesPage() {
               </div>
               <div className="col-span-2 flex justify-end gap-2 pt-2">
                 <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-                <Button type="submit" disabled={create.isPending}>Cadastrar</Button>
+                <Button type="submit" disabled={create.isPending || uploading}>{uploading ? "Enviando foto..." : "Cadastrar"}</Button>
               </div>
             </form>
           </DialogContent>
@@ -222,9 +308,7 @@ function ResidentesPage() {
               <tr key={r.id} className="hover:bg-black/[0.01]">
                 <td className="px-4 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-full bg-muted grid place-items-center text-xs font-bold">
-                      {r.nome_completo.charAt(0)}
-                    </div>
+                    <ResidenteAvatar path={r.foto_url} nome={r.nome_completo} />
                     <span className="text-sm font-bold">{r.nome_completo}</span>
                   </div>
                 </td>
