@@ -48,6 +48,7 @@ type Residente = {
   historico_medico: string | null;
   ativo: boolean;
   quarto_id: string | null;
+  foto_url: string | null;
   quartos: { numero: string } | null;
 };
 
