@@ -7,10 +7,30 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus } from "lucide-react";
-import { useState } from "react";
+import { Plus, Upload, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+
+function ResidenteAvatar({ path, nome }: { path: string | null; nome: string }) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    if (!path) { setUrl(null); return; }
+    supabase.storage.from("residentes-fotos").createSignedUrl(path, 3600).then(({ data }) => {
+      if (!cancelled) setUrl(data?.signedUrl ?? null);
+    });
+    return () => { cancelled = true; };
+  }, [path]);
+  if (url) {
+    return <img src={url} alt={nome} className="size-9 rounded-full object-cover border border-border" />;
+  }
+  return (
+    <div className="size-9 rounded-full bg-muted grid place-items-center text-xs font-bold">
+      {nome.charAt(0)}
+    </div>
+  );
+}
 
 export const Route = createFileRoute("/_authenticated/residentes")({
   component: ResidentesPage,
