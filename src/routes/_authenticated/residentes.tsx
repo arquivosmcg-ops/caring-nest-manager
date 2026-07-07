@@ -165,13 +165,41 @@ function ResidentesPage() {
             {residentes.data?.length ?? 0} residente(s) no sistema
           </p>
         </div>
-        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) setSelectedQuarto(null); }}>
+        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) { setSelectedQuarto(null); resetFoto(); } else { resetFoto(); } }}>
           <DialogTrigger asChild>
             <Button><Plus className="size-4 mr-1" /> Novo residente</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>Cadastrar residente</DialogTitle></DialogHeader>
             <form onSubmit={onSubmit} className="grid grid-cols-2 gap-4">
+              <div className="col-span-2 flex items-center gap-4">
+                <div className="relative">
+                  {fotoPreview ? (
+                    <img src={fotoPreview} alt="Prévia" className="size-20 rounded-full object-cover border-2 border-border" />
+                  ) : (
+                    <div className="size-20 rounded-full bg-muted grid place-items-center text-muted-foreground">
+                      <Upload className="size-6" />
+                    </div>
+                  )}
+                  {fotoPreview && (
+                    <button type="button" onClick={resetFoto}
+                      className="absolute -top-1 -right-1 size-5 rounded-full bg-destructive text-destructive-foreground grid place-items-center hover:brightness-110">
+                      <X className="size-3" />
+                    </button>
+                  )}
+                </div>
+                <div>
+                  <Label>Foto do residente</Label>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={onFotoChange}
+                    className="mt-1.5 block text-sm file:mr-3 file:rounded-md file:border file:border-border file:bg-surface file:px-3 file:py-1.5 file:text-xs file:font-medium hover:file:bg-accent"
+                  />
+                  <p className="mt-1 text-[10px] text-muted-foreground">JPG ou PNG, até 5MB.</p>
+                </div>
+              </div>
               <div className="col-span-2">
                 <Label>Nome completo *</Label>
                 <Input name="nome_completo" required />
