@@ -142,6 +142,30 @@ function ResidentesPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const fixNomes = useMutation({
+    mutationFn: async () => {
+      const list = residentes.data ?? [];
+      const updates = list
+        .map((r) => ({ id: r.id, novo: normalizeNome(r.nome_completo) }))
+        .filter((u) => u.novo && u.novo !== list.find((r) => r.id === u.id)!.nome_completo);
+      for (const u of updates) {
+        const { error } = await supabase
+          .from("residentes")
+          .update({ nome_completo: u.novo })
+          .eq("id", u.id);
+        if (error) throw error;
+      }
+      return updates.length;
+    },
+    onSuccess: (count) => {
+      qc.invalidateQueries({ queryKey: ["residentes"] });
+      qc.invalidateQueries({ queryKey: ["dashboard-residentes"] });
+      if (count === 0) toast.info("Todos os nomes já estão padronizados");
+      else toast.success(`${count} nome(s) corrigido(s)`);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
