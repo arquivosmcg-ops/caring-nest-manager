@@ -64,6 +64,29 @@ function ResidentesPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [selectedQuarto, setSelectedQuarto] = useState<string | null>(null);
+  const [fotoFile, setFotoFile] = useState<File | null>(null);
+  const [fotoPreview, setFotoPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const resetFoto = () => {
+    setFotoFile(null);
+    if (fotoPreview) URL.revokeObjectURL(fotoPreview);
+    setFotoPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const onFotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Arquivo muito grande (máx 5MB)");
+      return;
+    }
+    setFotoFile(file);
+    if (fotoPreview) URL.revokeObjectURL(fotoPreview);
+    setFotoPreview(URL.createObjectURL(file));
+  };
 
   const residentes = useQuery({
     queryKey: ["residentes"],
