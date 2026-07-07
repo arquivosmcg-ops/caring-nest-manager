@@ -122,14 +122,27 @@ function ResidentesPage() {
       qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
       qc.invalidateQueries({ queryKey: ["dashboard-residentes"] });
       setOpen(false);
+      resetFoto();
       toast.success("Residente cadastrado");
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
+    let foto_url: string | null = null;
+    if (fotoFile) {
+      setUploading(true);
+      const ext = fotoFile.name.split(".").pop() || "jpg";
+      const path = `${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage
+        .from("residentes-fotos")
+        .upload(path, fotoFile, { contentType: fotoFile.type, upsert: false });
+      setUploading(false);
+      if (error) { toast.error(`Falha ao enviar foto: ${error.message}`); return; }
+      foto_url = path;
+    }
     create.mutate({
       nome_completo: fd.get("nome_completo"),
       data_nascimento: fd.get("data_nascimento") || null,
@@ -140,6 +153,7 @@ function ResidentesPage() {
       dieta: fd.get("dieta") || null,
       historico_medico: fd.get("historico_medico") || null,
       status: fd.get("status") || "estavel",
+      foto_url,
     });
   };
 
