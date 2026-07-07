@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Upload, X } from "lucide-react";
+import { Plus, Upload, X, Wand2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -30,6 +30,20 @@ function ResidenteAvatar({ path, nome }: { path: string | null; nome: string }) 
       {nome.charAt(0)}
     </div>
   );
+}
+
+const LOWER_PARTICLES = new Set(["de", "da", "do", "dos", "das", "e", "di", "du"]);
+function normalizeNome(raw: string): string {
+  const cleaned = raw.replace(/\s+/g, " ").trim();
+  if (!cleaned) return cleaned;
+  return cleaned
+    .toLocaleLowerCase("pt-BR")
+    .split(" ")
+    .map((word, i) => {
+      if (i > 0 && LOWER_PARTICLES.has(word)) return word;
+      return word.charAt(0).toLocaleUpperCase("pt-BR") + word.slice(1);
+    })
+    .join(" ");
 }
 
 export const Route = createFileRoute("/_authenticated/residentes")({
@@ -128,6 +142,30 @@ function ResidentesPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const fixNomes = useMutation({
+    mutationFn: async () => {
+      const list = residentes.data ?? [];
+      const updates = list
+        .map((r) => ({ id: r.id, novo: normalizeNome(r.nome_completo) }))
+        .filter((u) => u.novo && u.novo !== list.find((r) => r.id === u.id)!.nome_completo);
+      for (const u of updates) {
+        const { error } = await supabase
+          .from("residentes")
+          .update({ nome_completo: u.novo })
+          .eq("id", u.id);
+        if (error) throw error;
+      }
+      return updates.length;
+    },
+    onSuccess: (count) => {
+      qc.invalidateQueries({ queryKey: ["residentes"] });
+      qc.invalidateQueries({ queryKey: ["dashboard-residentes"] });
+      if (count === 0) toast.info("Todos os nomes já estão padronizados");
+      else toast.success(`${count} nome(s) corrigido(s)`);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
@@ -165,10 +203,19 @@ function ResidentesPage() {
             {residentes.data?.length ?? 0} residente(s) no sistema
           </p>
         </div>
-        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) { setSelectedQuarto(null); resetFoto(); } else { resetFoto(); } }}>
-          <DialogTrigger asChild>
-            <Button><Plus className="size-4 mr-1" /> Novo residente</Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => fixNomes.mutate()}
+            disabled={fixNomes.isPending || !residentes.data?.length}
+            title="Padroniza capitalização e remove espaços extras nos nomes"
+          >
+            <Wand2 className="size-4 mr-1" /> Corrigir nomes
+          </Button>
+          <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) { setSelectedQuarto(null); resetFoto(); } else { resetFoto(); } }}>
+            <DialogTrigger asChild>
+              <Button><Plus className="size-4 mr-1" /> Novo residente</Button>
+            </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>Cadastrar residente</DialogTitle></DialogHeader>
             <form onSubmit={onSubmit} className="grid grid-cols-2 gap-4">
@@ -284,7 +331,8 @@ function ResidentesPage() {
               </div>
             </form>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       <div className="bg-surface border border-border rounded-lg overflow-hidden">
