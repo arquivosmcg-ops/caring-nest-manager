@@ -280,7 +280,7 @@ function ResidentesPage() {
               </div>
               <div className="col-span-2 flex justify-end gap-2 pt-2">
                 <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-                <Button type="submit" disabled={create.isPending}>Cadastrar</Button>
+                <Button type="submit" disabled={create.isPending || uploading}>{uploading ? "Enviando foto..." : "Cadastrar"}</Button>
               </div>
             </form>
           </DialogContent>
