@@ -82,6 +82,8 @@ function ResidentesPage() {
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingNome, setEditingNome] = useState("");
 
   const resetFoto = () => {
     setFotoFile(null);
