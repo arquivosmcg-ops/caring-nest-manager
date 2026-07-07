@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Upload, X, Wand2 } from "lucide-react";
+import { Plus, Upload, X, Wand2, Pencil, Check } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -82,6 +82,8 @@ function ResidentesPage() {
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingNome, setEditingNome] = useState("");
 
   const resetFoto = () => {
     setFotoFile(null);
@@ -165,6 +167,29 @@ function ResidentesPage() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const updateNome = useMutation({
+    mutationFn: async ({ id, nome }: { id: string; nome: string }) => {
+      const { error } = await supabase.from("residentes").update({ nome_completo: nome }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["residentes"] });
+      qc.invalidateQueries({ queryKey: ["dashboard-residentes"] });
+      setEditingId(null);
+      toast.success("Nome atualizado");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const startEdit = (id: string, nome: string) => { setEditingId(id); setEditingNome(nome); };
+  const cancelEdit = () => { setEditingId(null); setEditingNome(""); };
+  const saveEdit = () => {
+    const trimmed = editingNome.trim();
+    if (!trimmed) { toast.error("O nome não pode ficar vazio"); return; }
+    if (!editingId) return;
+    updateNome.mutate({ id: editingId, nome: trimmed });
+  };
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -357,7 +382,39 @@ function ResidentesPage() {
                 <td className="px-4 py-4">
                   <div className="flex items-center gap-3">
                     <ResidenteAvatar path={r.foto_url} nome={r.nome_completo} />
-                    <span className="text-sm font-bold">{r.nome_completo}</span>
+                    {editingId === r.id ? (
+                      <div className="flex items-center gap-1.5 flex-1">
+                        <Input
+                          autoFocus
+                          value={editingNome}
+                          onChange={(e) => setEditingNome(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") { e.preventDefault(); saveEdit(); }
+                            if (e.key === "Escape") { e.preventDefault(); cancelEdit(); }
+                          }}
+                          className="h-8 text-sm font-bold"
+                        />
+                        <Button size="icon" variant="ghost" className="size-7" onClick={saveEdit} disabled={updateNome.isPending} title="Salvar">
+                          <Check className="size-3.5" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="size-7" onClick={cancelEdit} disabled={updateNome.isPending} title="Cancelar">
+                          <X className="size-3.5" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 group">
+                        <span className="text-sm font-bold">{r.nome_completo}</span>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="size-6 opacity-60 hover:opacity-100"
+                          onClick={() => startEdit(r.id, r.nome_completo)}
+                          title="Editar nome"
+                        >
+                          <Pencil className="size-3.5" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </td>
                 <td className="px-4 py-4 text-sm font-mono">{r.quartos?.numero ?? "—"}</td>
