@@ -331,7 +331,8 @@ function ResidentesPage() {
               </div>
             </form>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       <div className="bg-surface border border-border rounded-lg overflow-hidden">
