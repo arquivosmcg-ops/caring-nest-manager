@@ -382,7 +382,39 @@ function ResidentesPage() {
                 <td className="px-4 py-4">
                   <div className="flex items-center gap-3">
                     <ResidenteAvatar path={r.foto_url} nome={r.nome_completo} />
-                    <span className="text-sm font-bold">{r.nome_completo}</span>
+                    {editingId === r.id ? (
+                      <div className="flex items-center gap-1.5 flex-1">
+                        <Input
+                          autoFocus
+                          value={editingNome}
+                          onChange={(e) => setEditingNome(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") { e.preventDefault(); saveEdit(); }
+                            if (e.key === "Escape") { e.preventDefault(); cancelEdit(); }
+                          }}
+                          className="h-8 text-sm font-bold"
+                        />
+                        <Button size="icon" variant="ghost" className="size-7" onClick={saveEdit} disabled={updateNome.isPending} title="Salvar">
+                          <Check className="size-3.5" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="size-7" onClick={cancelEdit} disabled={updateNome.isPending} title="Cancelar">
+                          <X className="size-3.5" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 group">
+                        <span className="text-sm font-bold">{r.nome_completo}</span>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="size-6 opacity-60 hover:opacity-100"
+                          onClick={() => startEdit(r.id, r.nome_completo)}
+                          title="Editar nome"
+                        >
+                          <Pencil className="size-3.5" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </td>
                 <td className="px-4 py-4 text-sm font-mono">{r.quartos?.numero ?? "—"}</td>
