@@ -168,6 +168,29 @@ function ResidentesPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const updateNome = useMutation({
+    mutationFn: async ({ id, nome }: { id: string; nome: string }) => {
+      const { error } = await supabase.from("residentes").update({ nome_completo: nome }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["residentes"] });
+      qc.invalidateQueries({ queryKey: ["dashboard-residentes"] });
+      setEditingId(null);
+      toast.success("Nome atualizado");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const startEdit = (id: string, nome: string) => { setEditingId(id); setEditingNome(nome); };
+  const cancelEdit = () => { setEditingId(null); setEditingNome(""); };
+  const saveEdit = () => {
+    const trimmed = editingNome.trim();
+    if (!trimmed) { toast.error("O nome não pode ficar vazio"); return; }
+    if (!editingId) return;
+    updateNome.mutate({ id: editingId, nome: trimmed });
+  };
+
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
