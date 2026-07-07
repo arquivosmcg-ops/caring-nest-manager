@@ -308,9 +308,7 @@ function ResidentesPage() {
               <tr key={r.id} className="hover:bg-black/[0.01]">
                 <td className="px-4 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-full bg-muted grid place-items-center text-xs font-bold">
-                      {r.nome_completo.charAt(0)}
-                    </div>
+                    <ResidenteAvatar path={r.foto_url} nome={r.nome_completo} />
                     <span className="text-sm font-bold">{r.nome_completo}</span>
                   </div>
                 </td>
