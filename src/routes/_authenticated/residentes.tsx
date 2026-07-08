@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Upload, X, Wand2, Pencil, Check } from "lucide-react";
+import { Plus, Upload, X, Wand2, Pencil, Check, FilePen } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -74,16 +74,47 @@ type QuartoOption = {
   status: "ocupado" | "vago" | "manutencao";
 };
 
-function ResidentesPage() {
-  const qc = useQueryClient();
-  const [open, setOpen] = useState(false);
-  const [selectedQuarto, setSelectedQuarto] = useState<string | null>(null);
+type ResidenteFormValues = {
+  nome_completo: string;
+  data_nascimento: string | null;
+  quarto_id: string | null;
+  status: "estavel" | "observacao" | "critico";
+  contato_emergencia_nome: string | null;
+  contato_emergencia_telefone: string | null;
+  alergias: string | null;
+  dieta: string | null;
+  historico_medico: string | null;
+};
+
+function ResidenteForm({
+  residente,
+  quartos,
+  onSubmit,
+  onCancel,
+  isPending,
+  submitLabel,
+}: {
+  residente?: Residente | null;
+  quartos: QuartoOption[] | undefined;
+  onSubmit: (values: ResidenteFormValues, fotoFile: File | null) => void | Promise<void>;
+  onCancel: () => void;
+  isPending: boolean;
+  submitLabel: string;
+}) {
+  const [selectedQuarto, setSelectedQuarto] = useState<string | null>(residente?.quarto_id ?? null);
   const [fotoFile, setFotoFile] = useState<File | null>(null);
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [existingFotoUrl, setExistingFotoUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingNome, setEditingNome] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!residente?.foto_url) { setExistingFotoUrl(null); return; }
+    supabase.storage.from("residentes-fotos").createSignedUrl(residente.foto_url, 3600).then(({ data }) => {
+      if (!cancelled) setExistingFotoUrl(data?.signedUrl ?? null);
+    });
+    return () => { cancelled = true; };
+  }, [residente?.foto_url]);
 
   const resetFoto = () => {
     setFotoFile(null);
@@ -91,6 +122,11 @@ function ResidentesPage() {
     setFotoPreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
+
+  useEffect(() => {
+    setSelectedQuarto(residente?.quarto_id ?? null);
+    resetFoto();
+  }, [residente?.id]);
 
   const onFotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -103,6 +139,147 @@ function ResidentesPage() {
     if (fotoPreview) URL.revokeObjectURL(fotoPreview);
     setFotoPreview(URL.createObjectURL(file));
   };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    onSubmit({
+      nome_completo: fd.get("nome_completo") as string,
+      data_nascimento: (fd.get("data_nascimento") as string) || null,
+      quarto_id: selectedQuarto,
+      status: (fd.get("status") as "estavel" | "observacao" | "critico") || "estavel",
+      contato_emergencia_nome: (fd.get("contato_emergencia_nome") as string) || null,
+      contato_emergencia_telefone: (fd.get("contato_emergencia_telefone") as string) || null,
+      alergias: (fd.get("alergias") as string) || null,
+      dieta: (fd.get("dieta") as string) || null,
+      historico_medico: (fd.get("historico_medico") as string) || null,
+    }, fotoFile);
+  };
+
+  const displayPreview = fotoPreview || existingFotoUrl;
+
+  return (
+    <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+      <div className="col-span-2 flex items-center gap-4">
+        <div className="relative">
+          {displayPreview ? (
+            <img src={displayPreview} alt="Prévia" className="size-20 rounded-full object-cover border-2 border-border" />
+          ) : (
+            <div className="size-20 rounded-full bg-muted grid place-items-center text-muted-foreground">
+              <Upload className="size-6" />
+            </div>
+          )}
+          {fotoPreview && (
+            <button type="button" onClick={resetFoto}
+              className="absolute -top-1 -right-1 size-5 rounded-full bg-destructive text-destructive-foreground grid place-items-center hover:brightness-110">
+              <X className="size-3" />
+            </button>
+          )}
+        </div>
+        <div>
+          <Label>Foto do residente</Label>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={onFotoChange}
+            className="mt-1.5 block text-sm file:mr-3 file:rounded-md file:border file:border-border file:bg-surface file:px-3 file:py-1.5 file:text-xs file:font-medium hover:file:bg-accent"
+          />
+          <p className="mt-1 text-[10px] text-muted-foreground">JPG ou PNG, até 5MB.</p>
+        </div>
+      </div>
+      <div className="col-span-2">
+        <Label>Nome completo *</Label>
+        <Input name="nome_completo" required defaultValue={residente?.nome_completo ?? ""} />
+      </div>
+      <div>
+        <Label>Data de nascimento</Label>
+        <Input name="data_nascimento" type="date" defaultValue={residente?.data_nascimento ?? ""} />
+      </div>
+      <div className="col-span-2">
+        <Label>Quarto</Label>
+        <input type="hidden" name="quarto_id" value={selectedQuarto ?? ""} />
+        <div className="mt-1.5 grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto p-1 border border-border rounded-md bg-surface">
+          {quartos?.length === 0 && (
+            <div className="col-span-full text-center text-xs text-muted-foreground py-4">
+              Nenhum quarto cadastrado.
+            </div>
+          )}
+          {quartos?.map((q) => (
+            <button
+              key={q.id}
+              type="button"
+              onClick={() => setSelectedQuarto(q.id)}
+              className={cn(
+                "text-left rounded-md border p-2.5 transition-colors focus:outline-none focus:ring-2 focus:ring-ring",
+                selectedQuarto === q.id
+                  ? "border-primary bg-primary/5 ring-1 ring-primary"
+                  : "border-border hover:border-primary/50 hover:bg-black/[0.02]"
+              )}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-mono font-extrabold text-sm">{q.numero}</span>
+                <span className={cn(
+                  "text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm",
+                  q.status === "vago" && "bg-green-100 text-green-700",
+                  q.status === "ocupado" && "bg-slate-100 text-slate-700",
+                  q.status === "manutencao" && "bg-warning/20 text-orange-700"
+                )}>
+                  {q.status}
+                </span>
+              </div>
+              <div className="mt-1.5 text-[10px] text-muted-foreground leading-tight">
+                {q.ala || "Sem ala"} · Cap. {q.capacidade}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div>
+        <Label>Status</Label>
+        <Select name="status" defaultValue={residente?.status ?? "estavel"}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="estavel">Estável</SelectItem>
+            <SelectItem value="observacao">Observação</SelectItem>
+            <SelectItem value="critico">Crítico</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div>
+        <Label>Contato emergência — nome</Label>
+        <Input name="contato_emergencia_nome" defaultValue={residente?.contato_emergencia_nome ?? ""} />
+      </div>
+      <div>
+        <Label>Contato emergência — telefone</Label>
+        <Input name="contato_emergencia_telefone" defaultValue={residente?.contato_emergencia_telefone ?? ""} />
+      </div>
+      <div>
+        <Label>Alergias</Label>
+        <Input name="alergias" defaultValue={residente?.alergias ?? ""} />
+      </div>
+      <div>
+        <Label>Dieta</Label>
+        <Input name="dieta" defaultValue={residente?.dieta ?? ""} />
+      </div>
+      <div className="col-span-2">
+        <Label>Histórico médico resumido</Label>
+        <Textarea name="historico_medico" rows={3} defaultValue={residente?.historico_medico ?? ""} />
+      </div>
+      <div className="col-span-2 flex justify-end gap-2 pt-2">
+        <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>
+        <Button type="submit" disabled={isPending}>{submitLabel}</Button>
+      </div>
+    </form>
+  );
+}
+
+function ResidentesPage() {
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [editingResidente, setEditingResidente] = useState<Residente | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingNome, setEditingNome] = useState("");
 
   const residentes = useQuery({
     queryKey: ["residentes"],
@@ -138,7 +315,6 @@ function ResidentesPage() {
       qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
       qc.invalidateQueries({ queryKey: ["dashboard-residentes"] });
       setOpen(false);
-      resetFoto();
       toast.success("Residente cadastrado");
     },
     onError: (e: Error) => toast.error(e.message),
@@ -182,6 +358,31 @@ function ResidentesPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const updateResidente = useMutation({
+    mutationFn: async ({ id, values, fotoFile, existingFotoUrl }: { id: string; values: ResidenteFormValues; fotoFile: File | null; existingFotoUrl: string | null }) => {
+      let foto_url = existingFotoUrl;
+      if (fotoFile) {
+        const ext = fotoFile.name.split(".").pop() || "jpg";
+        const path = `${crypto.randomUUID()}.${ext}`;
+        const { error } = await supabase.storage
+          .from("residentes-fotos")
+          .upload(path, fotoFile, { contentType: fotoFile.type, upsert: false });
+        if (error) throw error;
+        foto_url = path;
+      }
+      const { error } = await supabase.from("residentes").update({ ...values, foto_url }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["residentes"] });
+      qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
+      qc.invalidateQueries({ queryKey: ["dashboard-residentes"] });
+      setEditingResidente(null);
+      toast.success("Residente atualizado");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const startEdit = (id: string, nome: string) => { setEditingId(id); setEditingNome(nome); };
   const cancelEdit = () => { setEditingId(null); setEditingNome(""); };
   const saveEdit = () => {
@@ -191,33 +392,23 @@ function ResidentesPage() {
     updateNome.mutate({ id: editingId, nome: trimmed });
   };
 
-  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
+  const handleCreate = async (values: ResidenteFormValues, fotoFile: File | null) => {
     let foto_url: string | null = null;
     if (fotoFile) {
-      setUploading(true);
       const ext = fotoFile.name.split(".").pop() || "jpg";
       const path = `${crypto.randomUUID()}.${ext}`;
       const { error } = await supabase.storage
         .from("residentes-fotos")
         .upload(path, fotoFile, { contentType: fotoFile.type, upsert: false });
-      setUploading(false);
       if (error) { toast.error(`Falha ao enviar foto: ${error.message}`); return; }
       foto_url = path;
     }
-    create.mutate({
-      nome_completo: fd.get("nome_completo"),
-      data_nascimento: fd.get("data_nascimento") || null,
-      quarto_id: fd.get("quarto_id") || null,
-      contato_emergencia_nome: fd.get("contato_emergencia_nome") || null,
-      contato_emergencia_telefone: fd.get("contato_emergencia_telefone") || null,
-      alergias: fd.get("alergias") || null,
-      dieta: fd.get("dieta") || null,
-      historico_medico: fd.get("historico_medico") || null,
-      status: fd.get("status") || "estavel",
-      foto_url,
-    });
+    create.mutate({ ...values, foto_url });
+  };
+
+  const handleEdit = (values: ResidenteFormValues, fotoFile: File | null) => {
+    if (!editingResidente) return;
+    updateResidente.mutate({ id: editingResidente.id, values, fotoFile, existingFotoUrl: editingResidente.foto_url });
   };
 
   return (
@@ -237,125 +428,37 @@ function ResidentesPage() {
           >
             <Wand2 className="size-4 mr-1" /> Corrigir nomes
           </Button>
-          <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) { setSelectedQuarto(null); resetFoto(); } else { resetFoto(); } }}>
+          <Dialog open={open} onOpenChange={(v) => { setOpen(v); }}>
             <DialogTrigger asChild>
               <Button><Plus className="size-4 mr-1" /> Novo residente</Button>
             </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader><DialogTitle>Cadastrar residente</DialogTitle></DialogHeader>
-            <form onSubmit={onSubmit} className="grid grid-cols-2 gap-4">
-              <div className="col-span-2 flex items-center gap-4">
-                <div className="relative">
-                  {fotoPreview ? (
-                    <img src={fotoPreview} alt="Prévia" className="size-20 rounded-full object-cover border-2 border-border" />
-                  ) : (
-                    <div className="size-20 rounded-full bg-muted grid place-items-center text-muted-foreground">
-                      <Upload className="size-6" />
-                    </div>
-                  )}
-                  {fotoPreview && (
-                    <button type="button" onClick={resetFoto}
-                      className="absolute -top-1 -right-1 size-5 rounded-full bg-destructive text-destructive-foreground grid place-items-center hover:brightness-110">
-                      <X className="size-3" />
-                    </button>
-                  )}
-                </div>
-                <div>
-                  <Label>Foto do residente</Label>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={onFotoChange}
-                    className="mt-1.5 block text-sm file:mr-3 file:rounded-md file:border file:border-border file:bg-surface file:px-3 file:py-1.5 file:text-xs file:font-medium hover:file:bg-accent"
-                  />
-                  <p className="mt-1 text-[10px] text-muted-foreground">JPG ou PNG, até 5MB.</p>
-                </div>
-              </div>
-              <div className="col-span-2">
-                <Label>Nome completo *</Label>
-                <Input name="nome_completo" required />
-              </div>
-              <div>
-                <Label>Data de nascimento</Label>
-                <Input name="data_nascimento" type="date" />
-              </div>
-              <div className="col-span-2">
-                <Label>Quarto</Label>
-                <input type="hidden" name="quarto_id" value={selectedQuarto ?? ""} />
-                <div className="mt-1.5 grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto p-1 border border-border rounded-md bg-surface">
-                  {quartos.data?.length === 0 && (
-                    <div className="col-span-full text-center text-xs text-muted-foreground py-4">
-                      Nenhum quarto cadastrado.
-                    </div>
-                  )}
-                  {quartos.data?.map((q) => (
-                    <button
-                      key={q.id}
-                      type="button"
-                      onClick={() => setSelectedQuarto(q.id)}
-                      className={cn(
-                        "text-left rounded-md border p-2.5 transition-colors focus:outline-none focus:ring-2 focus:ring-ring",
-                        selectedQuarto === q.id
-                          ? "border-primary bg-primary/5 ring-1 ring-primary"
-                          : "border-border hover:border-primary/50 hover:bg-black/[0.02]"
-                      )}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono font-extrabold text-sm">{q.numero}</span>
-                        <span className={cn(
-                          "text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm",
-                          q.status === "vago" && "bg-green-100 text-green-700",
-                          q.status === "ocupado" && "bg-slate-100 text-slate-700",
-                          q.status === "manutencao" && "bg-warning/20 text-orange-700"
-                        )}>
-                          {q.status}
-                        </span>
-                      </div>
-                      <div className="mt-1.5 text-[10px] text-muted-foreground leading-tight">
-                        {q.ala || "Sem ala"} · Cap. {q.capacidade}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <Label>Status</Label>
-                <Select name="status" defaultValue="estavel">
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="estavel">Estável</SelectItem>
-                    <SelectItem value="observacao">Observação</SelectItem>
-                    <SelectItem value="critico">Crítico</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Contato emergência — nome</Label>
-                <Input name="contato_emergencia_nome" />
-              </div>
-              <div>
-                <Label>Contato emergência — telefone</Label>
-                <Input name="contato_emergencia_telefone" />
-              </div>
-              <div>
-                <Label>Alergias</Label>
-                <Input name="alergias" />
-              </div>
-              <div>
-                <Label>Dieta</Label>
-                <Input name="dieta" />
-              </div>
-              <div className="col-span-2">
-                <Label>Histórico médico resumido</Label>
-                <Textarea name="historico_medico" rows={3} />
-              </div>
-              <div className="col-span-2 flex justify-end gap-2 pt-2">
-                <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-                <Button type="submit" disabled={create.isPending || uploading}>{uploading ? "Enviando foto..." : "Cadastrar"}</Button>
-              </div>
-            </form>
-          </DialogContent>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader><DialogTitle>Cadastrar residente</DialogTitle></DialogHeader>
+              <ResidenteForm
+                key="create"
+                quartos={quartos.data}
+                onSubmit={handleCreate}
+                onCancel={() => setOpen(false)}
+                isPending={create.isPending}
+                submitLabel="Cadastrar"
+              />
+            </DialogContent>
+          </Dialog>
+          <Dialog open={editingResidente !== null} onOpenChange={(v) => { if (!v) setEditingResidente(null); }}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader><DialogTitle>Editar residente</DialogTitle></DialogHeader>
+              {editingResidente && (
+                <ResidenteForm
+                  key={editingResidente.id}
+                  residente={editingResidente}
+                  quartos={quartos.data}
+                  onSubmit={handleEdit}
+                  onCancel={() => setEditingResidente(null)}
+                  isPending={updateResidente.isPending}
+                  submitLabel="Salvar"
+                />
+              )}
+            </DialogContent>
           </Dialog>
         </div>
       </div>
@@ -369,11 +472,12 @@ function ResidentesPage() {
               <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider">Status</th>
               <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider">Alergias</th>
               <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider">Contato</th>
+              <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {residentes.data?.length === 0 && (
-              <tr><td colSpan={5} className="px-4 py-10 text-center text-sm text-muted-foreground">
+              <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-muted-foreground">
                 Nenhum residente. Clique em <b>Novo residente</b> para começar.
               </td></tr>
             )}
@@ -434,6 +538,17 @@ function ResidentesPage() {
                       <p className="text-muted-foreground font-mono">{r.contato_emergencia_telefone}</p>
                     </div>
                   ) : "—"}
+                </td>
+                <td className="px-4 py-4">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="size-8"
+                    onClick={() => setEditingResidente(r)}
+                    title="Editar cadastro"
+                  >
+                    <FilePen className="size-4" />
+                  </Button>
                 </td>
               </tr>
             ))}
