@@ -63,6 +63,10 @@ type Residente = {
   ativo: boolean;
   quarto_id: string | null;
   foto_url: string | null;
+  rg: string | null;
+  cpf: string | null;
+  convenio: string | null;
+  observacoes: string | null;
   quartos: { numero: string } | null;
 };
 
