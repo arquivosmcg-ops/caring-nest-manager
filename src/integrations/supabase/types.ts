@@ -271,6 +271,8 @@ export type Database = {
           ativo: boolean
           contato_emergencia_nome: string | null
           contato_emergencia_telefone: string | null
+          convenio: string | null
+          cpf: string | null
           created_at: string
           data_nascimento: string | null
           dieta: string | null
@@ -278,7 +280,9 @@ export type Database = {
           historico_medico: string | null
           id: string
           nome_completo: string
+          observacoes: string | null
           quarto_id: string | null
+          rg: string | null
           status: Database["public"]["Enums"]["resident_status"]
         }
         Insert: {
@@ -286,6 +290,8 @@ export type Database = {
           ativo?: boolean
           contato_emergencia_nome?: string | null
           contato_emergencia_telefone?: string | null
+          convenio?: string | null
+          cpf?: string | null
           created_at?: string
           data_nascimento?: string | null
           dieta?: string | null
@@ -293,7 +299,9 @@ export type Database = {
           historico_medico?: string | null
           id?: string
           nome_completo: string
+          observacoes?: string | null
           quarto_id?: string | null
+          rg?: string | null
           status?: Database["public"]["Enums"]["resident_status"]
         }
         Update: {
@@ -301,6 +309,8 @@ export type Database = {
           ativo?: boolean
           contato_emergencia_nome?: string | null
           contato_emergencia_telefone?: string | null
+          convenio?: string | null
+          cpf?: string | null
           created_at?: string
           data_nascimento?: string | null
           dieta?: string | null
@@ -308,7 +318,9 @@ export type Database = {
           historico_medico?: string | null
           id?: string
           nome_completo?: string
+          observacoes?: string | null
           quarto_id?: string | null
+          rg?: string | null
           status?: Database["public"]["Enums"]["resident_status"]
         }
         Relationships: [
