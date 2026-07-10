@@ -63,6 +63,10 @@ type Residente = {
   ativo: boolean;
   quarto_id: string | null;
   foto_url: string | null;
+  rg: string | null;
+  cpf: string | null;
+  convenio: string | null;
+  observacoes: string | null;
   quartos: { numero: string } | null;
 };
 
@@ -84,6 +88,10 @@ type ResidenteFormValues = {
   alergias: string | null;
   dieta: string | null;
   historico_medico: string | null;
+  rg: string | null;
+  cpf: string | null;
+  convenio: string | null;
+  observacoes: string | null;
 };
 
 function ResidenteForm({
@@ -153,6 +161,10 @@ function ResidenteForm({
       alergias: (fd.get("alergias") as string) || null,
       dieta: (fd.get("dieta") as string) || null,
       historico_medico: (fd.get("historico_medico") as string) || null,
+      rg: (fd.get("rg") as string) || null,
+      cpf: (fd.get("cpf") as string) || null,
+      convenio: (fd.get("convenio") as string) || null,
+      observacoes: (fd.get("observacoes") as string) || null,
     }, fotoFile);
   };
 
@@ -262,9 +274,25 @@ function ResidenteForm({
         <Label>Dieta</Label>
         <Input name="dieta" defaultValue={residente?.dieta ?? ""} />
       </div>
+      <div>
+        <Label>RG</Label>
+        <Input name="rg" defaultValue={residente?.rg ?? ""} />
+      </div>
+      <div>
+        <Label>CPF</Label>
+        <Input name="cpf" defaultValue={residente?.cpf ?? ""} />
+      </div>
+      <div className="col-span-2">
+        <Label>Convênio</Label>
+        <Input name="convenio" defaultValue={residente?.convenio ?? ""} />
+      </div>
       <div className="col-span-2">
         <Label>Histórico médico resumido</Label>
         <Textarea name="historico_medico" rows={3} defaultValue={residente?.historico_medico ?? ""} />
+      </div>
+      <div className="col-span-2">
+        <Label>Observações</Label>
+        <Textarea name="observacoes" rows={3} defaultValue={residente?.observacoes ?? ""} />
       </div>
       <div className="col-span-2 flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>
