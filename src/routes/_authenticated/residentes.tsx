@@ -161,6 +161,10 @@ function ResidenteForm({
       alergias: (fd.get("alergias") as string) || null,
       dieta: (fd.get("dieta") as string) || null,
       historico_medico: (fd.get("historico_medico") as string) || null,
+      rg: (fd.get("rg") as string) || null,
+      cpf: (fd.get("cpf") as string) || null,
+      convenio: (fd.get("convenio") as string) || null,
+      observacoes: (fd.get("observacoes") as string) || null,
     }, fotoFile);
   };
 
