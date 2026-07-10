@@ -88,6 +88,10 @@ type ResidenteFormValues = {
   alergias: string | null;
   dieta: string | null;
   historico_medico: string | null;
+  rg: string | null;
+  cpf: string | null;
+  convenio: string | null;
+  observacoes: string | null;
 };
 
 function ResidenteForm({
