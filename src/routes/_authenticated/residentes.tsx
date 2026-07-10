@@ -274,9 +274,25 @@ function ResidenteForm({
         <Label>Dieta</Label>
         <Input name="dieta" defaultValue={residente?.dieta ?? ""} />
       </div>
+      <div>
+        <Label>RG</Label>
+        <Input name="rg" defaultValue={residente?.rg ?? ""} />
+      </div>
+      <div>
+        <Label>CPF</Label>
+        <Input name="cpf" defaultValue={residente?.cpf ?? ""} />
+      </div>
+      <div className="col-span-2">
+        <Label>Convênio</Label>
+        <Input name="convenio" defaultValue={residente?.convenio ?? ""} />
+      </div>
       <div className="col-span-2">
         <Label>Histórico médico resumido</Label>
         <Textarea name="historico_medico" rows={3} defaultValue={residente?.historico_medico ?? ""} />
+      </div>
+      <div className="col-span-2">
+        <Label>Observações</Label>
+        <Textarea name="observacoes" rows={3} defaultValue={residente?.observacoes ?? ""} />
       </div>
       <div className="col-span-2 flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>
