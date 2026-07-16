@@ -92,8 +92,6 @@ type ResidenteFormValues = {
   data_nascimento: string | null;
   quarto_id: string | null;
   status: "estavel" | "observacao" | "critico";
-  contato_emergencia_nome: string | null;
-  contato_emergencia_telefone: string | null;
   alergias: string | null;
   dieta: string | null;
   historico_medico: string | null;
@@ -111,6 +109,7 @@ type ResidenteFormValues = {
   endereco_cidade: string | null;
   endereco_estado: string | null;
 };
+
 
 
 function ResidenteForm({
