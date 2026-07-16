@@ -67,6 +67,15 @@ type Residente = {
   cpf: string | null;
   convenio: string | null;
   observacoes: string | null;
+  data_admissao: string | null;
+  contatos: string | null;
+  endereco_cep: string | null;
+  endereco_logradouro: string | null;
+  endereco_numero: string | null;
+  endereco_complemento: string | null;
+  endereco_bairro: string | null;
+  endereco_cidade: string | null;
+  endereco_estado: string | null;
   quartos: { numero: string } | null;
 };
 
@@ -92,7 +101,17 @@ type ResidenteFormValues = {
   cpf: string | null;
   convenio: string | null;
   observacoes: string | null;
+  data_admissao: string | null;
+  contatos: string | null;
+  endereco_cep: string | null;
+  endereco_logradouro: string | null;
+  endereco_numero: string | null;
+  endereco_complemento: string | null;
+  endereco_bairro: string | null;
+  endereco_cidade: string | null;
+  endereco_estado: string | null;
 };
+
 
 function ResidenteForm({
   residente,
