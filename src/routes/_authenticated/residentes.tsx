@@ -727,24 +727,33 @@ function ResidentesPage() {
                 </td>
                 <td className="px-4 py-4 text-xs text-muted-foreground">{r.alergias || "—"}</td>
                 <td className="px-4 py-4 text-xs">
-                  {r.contato_emergencia_nome ? (
-                    <div>
-                      <p className="font-medium">{r.contato_emergencia_nome}</p>
-                      <p className="text-muted-foreground font-mono">{r.contato_emergencia_telefone}</p>
-                    </div>
+                  {r.contatos ? (
+                    <p className="whitespace-pre-line line-clamp-3">{r.contatos}</p>
                   ) : "—"}
                 </td>
                 <td className="px-4 py-4">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="size-8"
-                    onClick={() => setEditingResidente(r)}
-                    title="Editar cadastro"
-                  >
-                    <FilePen className="size-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="size-8"
+                      onClick={() => setEditingResidente(r)}
+                      title="Editar cadastro"
+                    >
+                      <FilePen className="size-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="size-8"
+                      onClick={() => printFicha(r)}
+                      title="Imprimir ficha (A4)"
+                    >
+                      <Printer className="size-4" />
+                    </Button>
+                  </div>
                 </td>
+
               </tr>
             ))}
           </tbody>
