@@ -501,6 +501,111 @@ function ResidentesPage() {
     updateResidente.mutate({ id: editingResidente.id, values, fotoFile, existingFotoUrl: editingResidente.foto_url });
   };
 
+  const printFicha = async (r: Residente) => {
+    let fotoImg = "";
+    if (r.foto_url) {
+      const { data } = await supabase.storage.from("residentes-fotos").createSignedUrl(r.foto_url, 3600);
+      if (data?.signedUrl) fotoImg = `<img src="${data.signedUrl}" alt="foto" />`;
+    }
+    const enderecoLinha1 = [r.endereco_logradouro, r.endereco_numero].filter(Boolean).join(", ");
+    const enderecoLinha2 = [r.endereco_complemento, r.endereco_bairro].filter(Boolean).join(" — ");
+    const enderecoLinha3 = [
+      [r.endereco_cidade, r.endereco_estado].filter(Boolean).join("/"),
+      r.endereco_cep ? `CEP ${r.endereco_cep}` : null,
+    ].filter(Boolean).join(" — ");
+    const enderecoFull = [enderecoLinha1, enderecoLinha2, enderecoLinha3].filter(Boolean).join("<br/>") || "—";
+    const dataNasc = r.data_nascimento ? new Date(r.data_nascimento).toLocaleDateString("pt-BR") : "—";
+    const dataAdm = r.data_admissao ? new Date(r.data_admissao).toLocaleDateString("pt-BR") : "—";
+    const esc = (v: string | null | undefined) => (v ?? "—").toString().replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]!));
+    const nl2br = (v: string | null | undefined) => esc(v).replace(/\n/g, "<br/>");
+    const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"/>
+<title>Ficha — ${esc(r.nome_completo)}</title>
+<style>
+  @page { size: A4; margin: 18mm; }
+  * { box-sizing: border-box; }
+  body { font-family: Inter, Arial, sans-serif; color: #111; margin: 0; font-size: 11pt; line-height: 1.45; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #c8102e; padding-bottom: 12px; margin-bottom: 18px; }
+  .header h1 { margin: 0; font-size: 18pt; font-weight: 800; letter-spacing: -0.01em; }
+  .header .sub { font-size: 9pt; color: #666; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
+  .top { display: grid; grid-template-columns: 110px 1fr; gap: 18px; margin-bottom: 20px; }
+  .top img { width: 110px; height: 110px; object-fit: cover; border: 1px solid #ddd; border-radius: 6px; }
+  .top .placeholder { width: 110px; height: 110px; border: 1px dashed #bbb; border-radius: 6px; display:flex; align-items:center; justify-content:center; color:#999; font-size: 10pt; }
+  .name { font-size: 16pt; font-weight: 800; margin: 0 0 4px; }
+  .status { display: inline-block; font-size: 8pt; font-weight: 800; padding: 2px 8px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .st-estavel { background:#dcfce7; color:#166534; }
+  .st-observacao { background:#ffedd5; color:#9a3412; }
+  .st-critico { background:#fee2e2; color:#991b1b; }
+  section { margin-bottom: 16px; page-break-inside: avoid; }
+  h2 { font-size: 10pt; text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin: 0 0 8px; color: #c8102e; }
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 20px; }
+  .field { display: flex; gap: 6px; }
+  .field .k { font-weight: 700; color: #555; min-width: 110px; }
+  .block { white-space: pre-wrap; }
+  .footer { position: fixed; bottom: 8mm; left: 18mm; right: 18mm; font-size: 8pt; color: #888; text-align: center; border-top: 1px solid #eee; padding-top: 6px; }
+</style></head><body>
+  <div class="header">
+    <div>
+      <h1>Ficha do Residente</h1>
+      <div class="sub">Residencial São Camilo</div>
+    </div>
+    <div class="sub">Emitido em ${new Date().toLocaleDateString("pt-BR")}</div>
+  </div>
+
+  <div class="top">
+    ${fotoImg || '<div class="placeholder">Sem foto</div>'}
+    <div>
+      <p class="name">${esc(r.nome_completo)}</p>
+      <span class="status st-${r.status}">${r.status.toUpperCase()}</span>
+      <div class="grid" style="margin-top:10px">
+        <div class="field"><span class="k">Nascimento:</span><span>${dataNasc}</span></div>
+        <div class="field"><span class="k">Admissão:</span><span>${dataAdm}</span></div>
+        <div class="field"><span class="k">RG:</span><span>${esc(r.rg)}</span></div>
+        <div class="field"><span class="k">CPF:</span><span>${esc(r.cpf)}</span></div>
+        <div class="field"><span class="k">Quarto:</span><span>${esc(r.quartos?.numero ?? null)}</span></div>
+        <div class="field"><span class="k">Convênio:</span><span>${esc(r.convenio)}</span></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <h2>Endereço</h2>
+    <div>${enderecoFull}</div>
+  </section>
+
+  <section>
+    <h2>Contatos</h2>
+    <div class="block">${nl2br(r.contatos)}</div>
+  </section>
+
+  <section>
+    <h2>Saúde</h2>
+    <div class="grid">
+      <div class="field"><span class="k">Alergias:</span><span>${esc(r.alergias)}</span></div>
+      <div class="field"><span class="k">Dieta:</span><span>${esc(r.dieta)}</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Histórico médico</h2>
+    <div class="block">${nl2br(r.historico_medico)}</div>
+  </section>
+
+  <section>
+    <h2>Observações</h2>
+    <div class="block">${nl2br(r.observacoes)}</div>
+  </section>
+
+  <div class="footer">Documento confidencial — uso interno do Residencial São Camilo.</div>
+  <script>window.addEventListener('load', () => setTimeout(() => window.print(), 300));</script>
+</body></html>`;
+    const w = window.open("", "_blank", "width=900,height=1000");
+    if (!w) { toast.error("Bloqueador de pop-ups impediu a impressão"); return; }
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+  };
+
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
