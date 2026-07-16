@@ -271,11 +271,20 @@ export type Database = {
           ativo: boolean
           contato_emergencia_nome: string | null
           contato_emergencia_telefone: string | null
+          contatos: string | null
           convenio: string | null
           cpf: string | null
           created_at: string
+          data_admissao: string | null
           data_nascimento: string | null
           dieta: string | null
+          endereco_bairro: string | null
+          endereco_cep: string | null
+          endereco_cidade: string | null
+          endereco_complemento: string | null
+          endereco_estado: string | null
+          endereco_logradouro: string | null
+          endereco_numero: string | null
           foto_url: string | null
           historico_medico: string | null
           id: string
@@ -290,11 +299,20 @@ export type Database = {
           ativo?: boolean
           contato_emergencia_nome?: string | null
           contato_emergencia_telefone?: string | null
+          contatos?: string | null
           convenio?: string | null
           cpf?: string | null
           created_at?: string
+          data_admissao?: string | null
           data_nascimento?: string | null
           dieta?: string | null
+          endereco_bairro?: string | null
+          endereco_cep?: string | null
+          endereco_cidade?: string | null
+          endereco_complemento?: string | null
+          endereco_estado?: string | null
+          endereco_logradouro?: string | null
+          endereco_numero?: string | null
           foto_url?: string | null
           historico_medico?: string | null
           id?: string
@@ -309,11 +327,20 @@ export type Database = {
           ativo?: boolean
           contato_emergencia_nome?: string | null
           contato_emergencia_telefone?: string | null
+          contatos?: string | null
           convenio?: string | null
           cpf?: string | null
           created_at?: string
+          data_admissao?: string | null
           data_nascimento?: string | null
           dieta?: string | null
+          endereco_bairro?: string | null
+          endereco_cep?: string | null
+          endereco_cidade?: string | null
+          endereco_complemento?: string | null
+          endereco_estado?: string | null
+          endereco_logradouro?: string | null
+          endereco_numero?: string | null
           foto_url?: string | null
           historico_medico?: string | null
           id?: string
