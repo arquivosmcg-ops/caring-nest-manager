@@ -285,12 +285,12 @@ function ResidenteForm({
         </Select>
       </div>
       <div>
-        <Label>Contato emergência — nome</Label>
-        <Input name="contato_emergencia_nome" defaultValue={residente?.contato_emergencia_nome ?? ""} />
+        <Label>Data de admissão</Label>
+        <Input name="data_admissao" type="date" defaultValue={residente?.data_admissao ?? ""} />
       </div>
-      <div>
-        <Label>Contato emergência — telefone</Label>
-        <Input name="contato_emergencia_telefone" defaultValue={residente?.contato_emergencia_telefone ?? ""} />
+      <div className="col-span-2">
+        <Label>Contatos</Label>
+        <Textarea name="contatos" rows={2} placeholder="Telefones, e-mails, familiares..." defaultValue={residente?.contatos ?? ""} />
       </div>
       <div>
         <Label>Alergias</Label>
@@ -312,6 +312,41 @@ function ResidenteForm({
         <Label>Convênio</Label>
         <Input name="convenio" defaultValue={residente?.convenio ?? ""} />
       </div>
+
+      <fieldset className="col-span-2 border border-border rounded-md p-4 space-y-3">
+        <legend className="px-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Endereço</legend>
+        <div className="grid grid-cols-4 gap-3">
+          <div className="col-span-1">
+            <Label>CEP</Label>
+            <Input name="endereco_cep" defaultValue={residente?.endereco_cep ?? ""} />
+          </div>
+          <div className="col-span-3">
+            <Label>Logradouro</Label>
+            <Input name="endereco_logradouro" defaultValue={residente?.endereco_logradouro ?? ""} />
+          </div>
+          <div className="col-span-1">
+            <Label>Número</Label>
+            <Input name="endereco_numero" defaultValue={residente?.endereco_numero ?? ""} />
+          </div>
+          <div className="col-span-3">
+            <Label>Complemento</Label>
+            <Input name="endereco_complemento" defaultValue={residente?.endereco_complemento ?? ""} />
+          </div>
+          <div className="col-span-2">
+            <Label>Bairro</Label>
+            <Input name="endereco_bairro" defaultValue={residente?.endereco_bairro ?? ""} />
+          </div>
+          <div className="col-span-1">
+            <Label>Cidade</Label>
+            <Input name="endereco_cidade" defaultValue={residente?.endereco_cidade ?? ""} />
+          </div>
+          <div className="col-span-1">
+            <Label>Estado</Label>
+            <Input name="endereco_estado" maxLength={2} defaultValue={residente?.endereco_estado ?? ""} />
+          </div>
+        </div>
+      </fieldset>
+
       <div className="col-span-2">
         <Label>Histórico médico resumido</Label>
         <Textarea name="historico_medico" rows={3} defaultValue={residente?.historico_medico ?? ""} />
@@ -320,6 +355,7 @@ function ResidenteForm({
         <Label>Observações</Label>
         <Textarea name="observacoes" rows={3} defaultValue={residente?.observacoes ?? ""} />
       </div>
+
       <div className="col-span-2 flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>
         <Button type="submit" disabled={isPending}>{submitLabel}</Button>
