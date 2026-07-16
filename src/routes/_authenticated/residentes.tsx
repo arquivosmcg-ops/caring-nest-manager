@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Upload, X, Wand2, Pencil, Check, FilePen } from "lucide-react";
+import { Plus, Upload, X, Wand2, Pencil, Check, FilePen, Printer } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -67,6 +67,15 @@ type Residente = {
   cpf: string | null;
   convenio: string | null;
   observacoes: string | null;
+  data_admissao: string | null;
+  contatos: string | null;
+  endereco_cep: string | null;
+  endereco_logradouro: string | null;
+  endereco_numero: string | null;
+  endereco_complemento: string | null;
+  endereco_bairro: string | null;
+  endereco_cidade: string | null;
+  endereco_estado: string | null;
   quartos: { numero: string } | null;
 };
 
@@ -83,8 +92,6 @@ type ResidenteFormValues = {
   data_nascimento: string | null;
   quarto_id: string | null;
   status: "estavel" | "observacao" | "critico";
-  contato_emergencia_nome: string | null;
-  contato_emergencia_telefone: string | null;
   alergias: string | null;
   dieta: string | null;
   historico_medico: string | null;
@@ -92,7 +99,18 @@ type ResidenteFormValues = {
   cpf: string | null;
   convenio: string | null;
   observacoes: string | null;
+  data_admissao: string | null;
+  contatos: string | null;
+  endereco_cep: string | null;
+  endereco_logradouro: string | null;
+  endereco_numero: string | null;
+  endereco_complemento: string | null;
+  endereco_bairro: string | null;
+  endereco_cidade: string | null;
+  endereco_estado: string | null;
 };
+
+
 
 function ResidenteForm({
   residente,
@@ -156,8 +174,6 @@ function ResidenteForm({
       data_nascimento: (fd.get("data_nascimento") as string) || null,
       quarto_id: selectedQuarto,
       status: (fd.get("status") as "estavel" | "observacao" | "critico") || "estavel",
-      contato_emergencia_nome: (fd.get("contato_emergencia_nome") as string) || null,
-      contato_emergencia_telefone: (fd.get("contato_emergencia_telefone") as string) || null,
       alergias: (fd.get("alergias") as string) || null,
       dieta: (fd.get("dieta") as string) || null,
       historico_medico: (fd.get("historico_medico") as string) || null,
@@ -165,8 +181,18 @@ function ResidenteForm({
       cpf: (fd.get("cpf") as string) || null,
       convenio: (fd.get("convenio") as string) || null,
       observacoes: (fd.get("observacoes") as string) || null,
+      data_admissao: (fd.get("data_admissao") as string) || null,
+      contatos: (fd.get("contatos") as string) || null,
+      endereco_cep: (fd.get("endereco_cep") as string) || null,
+      endereco_logradouro: (fd.get("endereco_logradouro") as string) || null,
+      endereco_numero: (fd.get("endereco_numero") as string) || null,
+      endereco_complemento: (fd.get("endereco_complemento") as string) || null,
+      endereco_bairro: (fd.get("endereco_bairro") as string) || null,
+      endereco_cidade: (fd.get("endereco_cidade") as string) || null,
+      endereco_estado: (fd.get("endereco_estado") as string) || null,
     }, fotoFile);
   };
+
 
   const displayPreview = fotoPreview || existingFotoUrl;
 
@@ -259,12 +285,12 @@ function ResidenteForm({
         </Select>
       </div>
       <div>
-        <Label>Contato emergência — nome</Label>
-        <Input name="contato_emergencia_nome" defaultValue={residente?.contato_emergencia_nome ?? ""} />
+        <Label>Data de admissão</Label>
+        <Input name="data_admissao" type="date" defaultValue={residente?.data_admissao ?? ""} />
       </div>
-      <div>
-        <Label>Contato emergência — telefone</Label>
-        <Input name="contato_emergencia_telefone" defaultValue={residente?.contato_emergencia_telefone ?? ""} />
+      <div className="col-span-2">
+        <Label>Contatos</Label>
+        <Textarea name="contatos" rows={2} placeholder="Telefones, e-mails, familiares..." defaultValue={residente?.contatos ?? ""} />
       </div>
       <div>
         <Label>Alergias</Label>
@@ -286,6 +312,41 @@ function ResidenteForm({
         <Label>Convênio</Label>
         <Input name="convenio" defaultValue={residente?.convenio ?? ""} />
       </div>
+
+      <fieldset className="col-span-2 border border-border rounded-md p-4 space-y-3">
+        <legend className="px-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Endereço</legend>
+        <div className="grid grid-cols-4 gap-3">
+          <div className="col-span-1">
+            <Label>CEP</Label>
+            <Input name="endereco_cep" defaultValue={residente?.endereco_cep ?? ""} />
+          </div>
+          <div className="col-span-3">
+            <Label>Logradouro</Label>
+            <Input name="endereco_logradouro" defaultValue={residente?.endereco_logradouro ?? ""} />
+          </div>
+          <div className="col-span-1">
+            <Label>Número</Label>
+            <Input name="endereco_numero" defaultValue={residente?.endereco_numero ?? ""} />
+          </div>
+          <div className="col-span-3">
+            <Label>Complemento</Label>
+            <Input name="endereco_complemento" defaultValue={residente?.endereco_complemento ?? ""} />
+          </div>
+          <div className="col-span-2">
+            <Label>Bairro</Label>
+            <Input name="endereco_bairro" defaultValue={residente?.endereco_bairro ?? ""} />
+          </div>
+          <div className="col-span-1">
+            <Label>Cidade</Label>
+            <Input name="endereco_cidade" defaultValue={residente?.endereco_cidade ?? ""} />
+          </div>
+          <div className="col-span-1">
+            <Label>Estado</Label>
+            <Input name="endereco_estado" maxLength={2} defaultValue={residente?.endereco_estado ?? ""} />
+          </div>
+        </div>
+      </fieldset>
+
       <div className="col-span-2">
         <Label>Histórico médico resumido</Label>
         <Textarea name="historico_medico" rows={3} defaultValue={residente?.historico_medico ?? ""} />
@@ -294,6 +355,7 @@ function ResidenteForm({
         <Label>Observações</Label>
         <Textarea name="observacoes" rows={3} defaultValue={residente?.observacoes ?? ""} />
       </div>
+
       <div className="col-span-2 flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>
         <Button type="submit" disabled={isPending}>{submitLabel}</Button>
@@ -439,6 +501,111 @@ function ResidentesPage() {
     updateResidente.mutate({ id: editingResidente.id, values, fotoFile, existingFotoUrl: editingResidente.foto_url });
   };
 
+  const printFicha = async (r: Residente) => {
+    let fotoImg = "";
+    if (r.foto_url) {
+      const { data } = await supabase.storage.from("residentes-fotos").createSignedUrl(r.foto_url, 3600);
+      if (data?.signedUrl) fotoImg = `<img src="${data.signedUrl}" alt="foto" />`;
+    }
+    const enderecoLinha1 = [r.endereco_logradouro, r.endereco_numero].filter(Boolean).join(", ");
+    const enderecoLinha2 = [r.endereco_complemento, r.endereco_bairro].filter(Boolean).join(" — ");
+    const enderecoLinha3 = [
+      [r.endereco_cidade, r.endereco_estado].filter(Boolean).join("/"),
+      r.endereco_cep ? `CEP ${r.endereco_cep}` : null,
+    ].filter(Boolean).join(" — ");
+    const enderecoFull = [enderecoLinha1, enderecoLinha2, enderecoLinha3].filter(Boolean).join("<br/>") || "—";
+    const dataNasc = r.data_nascimento ? new Date(r.data_nascimento).toLocaleDateString("pt-BR") : "—";
+    const dataAdm = r.data_admissao ? new Date(r.data_admissao).toLocaleDateString("pt-BR") : "—";
+    const esc = (v: string | null | undefined) => (v ?? "—").toString().replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]!));
+    const nl2br = (v: string | null | undefined) => esc(v).replace(/\n/g, "<br/>");
+    const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"/>
+<title>Ficha — ${esc(r.nome_completo)}</title>
+<style>
+  @page { size: A4; margin: 18mm; }
+  * { box-sizing: border-box; }
+  body { font-family: Inter, Arial, sans-serif; color: #111; margin: 0; font-size: 11pt; line-height: 1.45; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #c8102e; padding-bottom: 12px; margin-bottom: 18px; }
+  .header h1 { margin: 0; font-size: 18pt; font-weight: 800; letter-spacing: -0.01em; }
+  .header .sub { font-size: 9pt; color: #666; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
+  .top { display: grid; grid-template-columns: 110px 1fr; gap: 18px; margin-bottom: 20px; }
+  .top img { width: 110px; height: 110px; object-fit: cover; border: 1px solid #ddd; border-radius: 6px; }
+  .top .placeholder { width: 110px; height: 110px; border: 1px dashed #bbb; border-radius: 6px; display:flex; align-items:center; justify-content:center; color:#999; font-size: 10pt; }
+  .name { font-size: 16pt; font-weight: 800; margin: 0 0 4px; }
+  .status { display: inline-block; font-size: 8pt; font-weight: 800; padding: 2px 8px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .st-estavel { background:#dcfce7; color:#166534; }
+  .st-observacao { background:#ffedd5; color:#9a3412; }
+  .st-critico { background:#fee2e2; color:#991b1b; }
+  section { margin-bottom: 16px; page-break-inside: avoid; }
+  h2 { font-size: 10pt; text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin: 0 0 8px; color: #c8102e; }
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 20px; }
+  .field { display: flex; gap: 6px; }
+  .field .k { font-weight: 700; color: #555; min-width: 110px; }
+  .block { white-space: pre-wrap; }
+  .footer { position: fixed; bottom: 8mm; left: 18mm; right: 18mm; font-size: 8pt; color: #888; text-align: center; border-top: 1px solid #eee; padding-top: 6px; }
+</style></head><body>
+  <div class="header">
+    <div>
+      <h1>Ficha do Residente</h1>
+      <div class="sub">Residencial São Camilo</div>
+    </div>
+    <div class="sub">Emitido em ${new Date().toLocaleDateString("pt-BR")}</div>
+  </div>
+
+  <div class="top">
+    ${fotoImg || '<div class="placeholder">Sem foto</div>'}
+    <div>
+      <p class="name">${esc(r.nome_completo)}</p>
+      <span class="status st-${r.status}">${r.status.toUpperCase()}</span>
+      <div class="grid" style="margin-top:10px">
+        <div class="field"><span class="k">Nascimento:</span><span>${dataNasc}</span></div>
+        <div class="field"><span class="k">Admissão:</span><span>${dataAdm}</span></div>
+        <div class="field"><span class="k">RG:</span><span>${esc(r.rg)}</span></div>
+        <div class="field"><span class="k">CPF:</span><span>${esc(r.cpf)}</span></div>
+        <div class="field"><span class="k">Quarto:</span><span>${esc(r.quartos?.numero ?? null)}</span></div>
+        <div class="field"><span class="k">Convênio:</span><span>${esc(r.convenio)}</span></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <h2>Endereço</h2>
+    <div>${enderecoFull}</div>
+  </section>
+
+  <section>
+    <h2>Contatos</h2>
+    <div class="block">${nl2br(r.contatos)}</div>
+  </section>
+
+  <section>
+    <h2>Saúde</h2>
+    <div class="grid">
+      <div class="field"><span class="k">Alergias:</span><span>${esc(r.alergias)}</span></div>
+      <div class="field"><span class="k">Dieta:</span><span>${esc(r.dieta)}</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Histórico médico</h2>
+    <div class="block">${nl2br(r.historico_medico)}</div>
+  </section>
+
+  <section>
+    <h2>Observações</h2>
+    <div class="block">${nl2br(r.observacoes)}</div>
+  </section>
+
+  <div class="footer">Documento confidencial — uso interno do Residencial São Camilo.</div>
+  <script>window.addEventListener('load', () => setTimeout(() => window.print(), 300));</script>
+</body></html>`;
+    const w = window.open("", "_blank", "width=900,height=1000");
+    if (!w) { toast.error("Bloqueador de pop-ups impediu a impressão"); return; }
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+  };
+
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -499,7 +666,7 @@ function ResidentesPage() {
               <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider">Quarto</th>
               <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider">Status</th>
               <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider">Alergias</th>
-              <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider">Contato</th>
+              <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider">Contatos</th>
               <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
@@ -560,24 +727,33 @@ function ResidentesPage() {
                 </td>
                 <td className="px-4 py-4 text-xs text-muted-foreground">{r.alergias || "—"}</td>
                 <td className="px-4 py-4 text-xs">
-                  {r.contato_emergencia_nome ? (
-                    <div>
-                      <p className="font-medium">{r.contato_emergencia_nome}</p>
-                      <p className="text-muted-foreground font-mono">{r.contato_emergencia_telefone}</p>
-                    </div>
+                  {r.contatos ? (
+                    <p className="whitespace-pre-line line-clamp-3">{r.contatos}</p>
                   ) : "—"}
                 </td>
                 <td className="px-4 py-4">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="size-8"
-                    onClick={() => setEditingResidente(r)}
-                    title="Editar cadastro"
-                  >
-                    <FilePen className="size-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="size-8"
+                      onClick={() => setEditingResidente(r)}
+                      title="Editar cadastro"
+                    >
+                      <FilePen className="size-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="size-8"
+                      onClick={() => printFicha(r)}
+                      title="Imprimir ficha (A4)"
+                    >
+                      <Printer className="size-4" />
+                    </Button>
+                  </div>
                 </td>
+
               </tr>
             ))}
           </tbody>
