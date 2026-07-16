@@ -666,7 +666,7 @@ function ResidentesPage() {
               <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider">Quarto</th>
               <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider">Status</th>
               <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider">Alergias</th>
-              <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider">Contato</th>
+              <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider">Contatos</th>
               <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
