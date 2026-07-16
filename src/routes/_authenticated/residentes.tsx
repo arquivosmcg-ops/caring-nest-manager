@@ -174,8 +174,6 @@ function ResidenteForm({
       data_nascimento: (fd.get("data_nascimento") as string) || null,
       quarto_id: selectedQuarto,
       status: (fd.get("status") as "estavel" | "observacao" | "critico") || "estavel",
-      contato_emergencia_nome: (fd.get("contato_emergencia_nome") as string) || null,
-      contato_emergencia_telefone: (fd.get("contato_emergencia_telefone") as string) || null,
       alergias: (fd.get("alergias") as string) || null,
       dieta: (fd.get("dieta") as string) || null,
       historico_medico: (fd.get("historico_medico") as string) || null,
@@ -183,8 +181,18 @@ function ResidenteForm({
       cpf: (fd.get("cpf") as string) || null,
       convenio: (fd.get("convenio") as string) || null,
       observacoes: (fd.get("observacoes") as string) || null,
+      data_admissao: (fd.get("data_admissao") as string) || null,
+      contatos: (fd.get("contatos") as string) || null,
+      endereco_cep: (fd.get("endereco_cep") as string) || null,
+      endereco_logradouro: (fd.get("endereco_logradouro") as string) || null,
+      endereco_numero: (fd.get("endereco_numero") as string) || null,
+      endereco_complemento: (fd.get("endereco_complemento") as string) || null,
+      endereco_bairro: (fd.get("endereco_bairro") as string) || null,
+      endereco_cidade: (fd.get("endereco_cidade") as string) || null,
+      endereco_estado: (fd.get("endereco_estado") as string) || null,
     }, fotoFile);
   };
+
 
   const displayPreview = fotoPreview || existingFotoUrl;
 
