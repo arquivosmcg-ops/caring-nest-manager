@@ -177,39 +177,108 @@ export type Database = {
         Row: {
           ativo: boolean
           created_at: string
+          dias_do_mes: Json
+          dias_semana: string[]
           dosagem: string
           horarios: string[]
           id: string
           nome: string
+          numero: number | null
           observacoes: string | null
+          prescricao_id: string | null
           residente_id: string
           via: string | null
         }
         Insert: {
           ativo?: boolean
           created_at?: string
+          dias_do_mes?: Json
+          dias_semana?: string[]
           dosagem: string
           horarios?: string[]
           id?: string
           nome: string
+          numero?: number | null
           observacoes?: string | null
+          prescricao_id?: string | null
           residente_id: string
           via?: string | null
         }
         Update: {
           ativo?: boolean
           created_at?: string
+          dias_do_mes?: Json
+          dias_semana?: string[]
           dosagem?: string
           horarios?: string[]
           id?: string
           nome?: string
+          numero?: number | null
           observacoes?: string | null
+          prescricao_id?: string | null
           residente_id?: string
           via?: string | null
         }
         Relationships: [
           {
+            foreignKeyName: "medicamentos_prescricao_id_fkey"
+            columns: ["prescricao_id"]
+            isOneToOne: false
+            referencedRelation: "prescricoes"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "medicamentos_residente_id_fkey"
+            columns: ["residente_id"]
+            isOneToOne: false
+            referencedRelation: "residentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prescricoes: {
+        Row: {
+          alergias: string | null
+          andar: string | null
+          ano: number
+          created_at: string
+          crm: string | null
+          hd: string | null
+          id: string
+          medico_nome: string | null
+          mes: number
+          residente_id: string
+          updated_at: string
+        }
+        Insert: {
+          alergias?: string | null
+          andar?: string | null
+          ano: number
+          created_at?: string
+          crm?: string | null
+          hd?: string | null
+          id?: string
+          medico_nome?: string | null
+          mes: number
+          residente_id: string
+          updated_at?: string
+        }
+        Update: {
+          alergias?: string | null
+          andar?: string | null
+          ano?: number
+          created_at?: string
+          crm?: string | null
+          hd?: string | null
+          id?: string
+          medico_nome?: string | null
+          mes?: number
+          residente_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prescricoes_residente_id_fkey"
             columns: ["residente_id"]
             isOneToOne: false
             referencedRelation: "residentes"

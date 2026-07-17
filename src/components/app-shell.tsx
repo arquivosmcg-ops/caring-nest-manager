@@ -20,7 +20,7 @@ const navItems = [
   { to: "/dashboard", label: "Painel Geral", icon: LayoutDashboard },
   { to: "/residentes", label: "Residentes", icon: Users },
   { to: "/quartos", label: "Quartos", icon: BedDouble },
-  { to: "/medicamentos", label: "Medicamentos", icon: Pill },
+  { to: "/medicamentos", label: "Prescrição Médica", icon: Pill },
   { to: "/sinais-vitais", label: "Sinais Vitais", icon: Activity },
   { to: "/incidentes", label: "Incidentes", icon: AlertTriangle },
   { to: "/checklists", label: "Checklists", icon: ClipboardCheck },
