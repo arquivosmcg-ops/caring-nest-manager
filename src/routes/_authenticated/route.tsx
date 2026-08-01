@@ -8,13 +8,17 @@ export const Route = createFileRoute("/_authenticated")({
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) throw redirect({ to: "/auth" });
 
-    const { data: prof } = await supabase
-      .from("profiles")
-      .select("status_aprovacao")
-      .eq("id", data.user.id)
-      .maybeSingle();
+    const [{ data: prof }, { data: adminRole }] = await Promise.all([
+      supabase.from("profiles").select("status_aprovacao").eq("id", data.user.id).maybeSingle(),
+      supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", data.user.id)
+        .eq("role", "admin")
+        .maybeSingle(),
+    ]);
 
-    if (prof && prof.status_aprovacao !== "aprovado") {
+    if (!adminRole && prof && prof.status_aprovacao !== "aprovado") {
       throw redirect({ to: "/aguardando-aprovacao" });
     }
 
