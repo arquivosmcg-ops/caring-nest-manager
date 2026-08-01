@@ -288,19 +288,37 @@ export type Database = {
       }
       profiles: {
         Row: {
+          aprovado: boolean
+          aprovado_em: string | null
+          aprovado_por: string | null
           created_at: string
           full_name: string
+          funcao: string | null
           id: string
+          registro_profissional: string | null
+          status_aprovacao: string
         }
         Insert: {
+          aprovado?: boolean
+          aprovado_em?: string | null
+          aprovado_por?: string | null
           created_at?: string
           full_name?: string
+          funcao?: string | null
           id: string
+          registro_profissional?: string | null
+          status_aprovacao?: string
         }
         Update: {
+          aprovado?: boolean
+          aprovado_em?: string | null
+          aprovado_por?: string | null
           created_at?: string
           full_name?: string
+          funcao?: string | null
           id?: string
+          registro_profissional?: string | null
+          status_aprovacao?: string
         }
         Relationships: []
       }
