@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSinaisVitaisRouteImport } from './routes/_authenticated/sinais-vitais'
 import { Route as AuthenticatedResidentesRouteImport } from './routes/_authenticated/residentes'
 import { Route as AuthenticatedQuartosRouteImport } from './routes/_authenticated/quartos'
+import { Route as AuthenticatedProntuarioRouteImport } from './routes/_authenticated/prontuario'
 import { Route as AuthenticatedMedicamentosRouteImport } from './routes/_authenticated/medicamentos'
 import { Route as AuthenticatedIncidentesRouteImport } from './routes/_authenticated/incidentes'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -57,6 +58,11 @@ const AuthenticatedQuartosRoute = AuthenticatedQuartosRouteImport.update({
   path: '/quartos',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProntuarioRoute = AuthenticatedProntuarioRouteImport.update({
+  id: '/prontuario',
+  path: '/prontuario',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedMedicamentosRoute =
   AuthenticatedMedicamentosRouteImport.update({
     id: '/medicamentos',
@@ -94,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/incidentes': typeof AuthenticatedIncidentesRoute
   '/medicamentos': typeof AuthenticatedMedicamentosRoute
+  '/prontuario': typeof AuthenticatedProntuarioRoute
   '/quartos': typeof AuthenticatedQuartosRoute
   '/residentes': typeof AuthenticatedResidentesRoute
   '/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
@@ -107,6 +114,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/incidentes': typeof AuthenticatedIncidentesRoute
   '/medicamentos': typeof AuthenticatedMedicamentosRoute
+  '/prontuario': typeof AuthenticatedProntuarioRoute
   '/quartos': typeof AuthenticatedQuartosRoute
   '/residentes': typeof AuthenticatedResidentesRoute
   '/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
@@ -122,6 +130,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/incidentes': typeof AuthenticatedIncidentesRoute
   '/_authenticated/medicamentos': typeof AuthenticatedMedicamentosRoute
+  '/_authenticated/prontuario': typeof AuthenticatedProntuarioRoute
   '/_authenticated/quartos': typeof AuthenticatedQuartosRoute
   '/_authenticated/residentes': typeof AuthenticatedResidentesRoute
   '/_authenticated/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/incidentes'
     | '/medicamentos'
+    | '/prontuario'
     | '/quartos'
     | '/residentes'
     | '/sinais-vitais'
@@ -150,6 +160,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/incidentes'
     | '/medicamentos'
+    | '/prontuario'
     | '/quartos'
     | '/residentes'
     | '/sinais-vitais'
@@ -164,6 +175,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/incidentes'
     | '/_authenticated/medicamentos'
+    | '/_authenticated/prontuario'
     | '/_authenticated/quartos'
     | '/_authenticated/residentes'
     | '/_authenticated/sinais-vitais'
@@ -227,6 +239,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedQuartosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/prontuario': {
+      id: '/_authenticated/prontuario'
+      path: '/prontuario'
+      fullPath: '/prontuario'
+      preLoaderRoute: typeof AuthenticatedProntuarioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/medicamentos': {
       id: '/_authenticated/medicamentos'
       path: '/medicamentos'
@@ -271,6 +290,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedIncidentesRoute: typeof AuthenticatedIncidentesRoute
   AuthenticatedMedicamentosRoute: typeof AuthenticatedMedicamentosRoute
+  AuthenticatedProntuarioRoute: typeof AuthenticatedProntuarioRoute
   AuthenticatedQuartosRoute: typeof AuthenticatedQuartosRoute
   AuthenticatedResidentesRoute: typeof AuthenticatedResidentesRoute
   AuthenticatedSinaisVitaisRoute: typeof AuthenticatedSinaisVitaisRoute
@@ -282,6 +302,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedIncidentesRoute: AuthenticatedIncidentesRoute,
   AuthenticatedMedicamentosRoute: AuthenticatedMedicamentosRoute,
+  AuthenticatedProntuarioRoute: AuthenticatedProntuarioRoute,
   AuthenticatedQuartosRoute: AuthenticatedQuartosRoute,
   AuthenticatedResidentesRoute: AuthenticatedResidentesRoute,
   AuthenticatedSinaisVitaisRoute: AuthenticatedSinaisVitaisRoute,
