@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_config: {
+        Row: {
+          id: boolean
+          senha_painel_hash: string
+          updated_at: string
+        }
+        Insert: {
+          id?: boolean
+          senha_painel_hash: string
+          updated_at?: string
+        }
+        Update: {
+          id?: boolean
+          senha_painel_hash?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       administracoes: {
         Row: {
           administrado_em: string
@@ -291,6 +309,7 @@ export type Database = {
           aprovado: boolean
           aprovado_em: string | null
           aprovado_por: string | null
+          celular: string | null
           created_at: string
           email: string | null
           full_name: string
@@ -303,6 +322,7 @@ export type Database = {
           aprovado?: boolean
           aprovado_em?: string | null
           aprovado_por?: string | null
+          celular?: string | null
           created_at?: string
           email?: string | null
           full_name?: string
@@ -315,6 +335,7 @@ export type Database = {
           aprovado?: boolean
           aprovado_em?: string | null
           aprovado_por?: string | null
+          celular?: string | null
           created_at?: string
           email?: string | null
           full_name?: string
@@ -526,7 +547,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      alterar_senha_painel: {
+        Args: { _atual: string; _nova: string }
+        Returns: boolean
+      }
+      verificar_senha_painel: { Args: { _senha: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "gerente" | "enfermeiro" | "cuidador" | "familia"
