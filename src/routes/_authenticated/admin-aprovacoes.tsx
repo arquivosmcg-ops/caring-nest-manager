@@ -23,6 +23,7 @@ export const Route = createFileRoute("/_authenticated/admin-aprovacoes")({
 type Perfil = {
   id: string;
   full_name: string;
+  email: string | null;
   funcao: string | null;
   registro_profissional: string | null;
   status_aprovacao: string;
@@ -55,7 +56,7 @@ function AdminAprovacoes() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, full_name, funcao, registro_profissional, status_aprovacao, created_at")
+        .select("id, full_name, email, funcao, registro_profissional, status_aprovacao, created_at")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Perfil[];
@@ -63,7 +64,7 @@ function AdminAprovacoes() {
   });
 
   const decidir = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: "aprovado" | "rejeitado" }) => {
+    mutationFn: async ({ id, status }: { id: string; status: "aprovado" | "recusado" }) => {
       const { data: userData } = await supabase.auth.getUser();
       const { error } = await supabase
         .from("profiles")
@@ -100,10 +101,10 @@ function AdminAprovacoes() {
   const demais = perfis?.filter((p) => p.status_aprovacao !== "pendente") ?? [];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <div className="flex items-center gap-2">
         <ShieldCheck className="size-5" />
-        <h2 className="text-xl font-extrabold tracking-tight">Aprovações de acesso</h2>
+        <h2 className="text-xl font-extrabold tracking-tight">Painel de aprovação</h2>
         <Badge variant="secondary">{pendentes.length} pendente(s)</Badge>
       </div>
 
@@ -112,55 +113,87 @@ function AdminAprovacoes() {
       ) : (
         <>
           <section className="space-y-3">
-            {pendentes.length === 0 && (
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+              Aguardando aprovação
+            </h3>
+            {pendentes.length === 0 ? (
               <p className="text-sm text-muted-foreground">Nenhum cadastro aguardando aprovação.</p>
-            )}
-            {pendentes.map((p) => (
-              <div key={p.id} className="flex items-center gap-4 border border-border rounded-lg p-4 bg-surface">
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold truncate">{p.full_name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {p.funcao ? funcaoLabel[p.funcao] ?? p.funcao : "Função não informada"}
-                    {p.registro_profissional ? ` · ${p.registro_profissional}` : ""}
-                  </p>
-                </div>
-                <Button size="sm" onClick={() => decidir.mutate({ id: p.id, status: "aprovado" })}>
-                  <Check className="size-4" /> Aprovar
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => decidir.mutate({ id: p.id, status: "rejeitado" })}
-                >
-                  <X className="size-4" /> Recusar
-                </Button>
+            ) : (
+              <div className="border border-border rounded-lg overflow-hidden bg-surface">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted text-xs uppercase tracking-wider text-muted-foreground">
+                    <tr>
+                      <th className="text-left font-bold p-3">Nome</th>
+                      <th className="text-left font-bold p-3">E-mail</th>
+                      <th className="text-left font-bold p-3">Função</th>
+                      <th className="text-left font-bold p-3">Carteira profissional</th>
+                      <th className="text-right font-bold p-3">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pendentes.map((p) => (
+                      <tr key={p.id} className="border-t border-border">
+                        <td className="p-3 font-bold">{p.full_name}</td>
+                        <td className="p-3 text-muted-foreground">{p.email ?? "—"}</td>
+                        <td className="p-3">{p.funcao ? funcaoLabel[p.funcao] ?? p.funcao : "—"}</td>
+                        <td className="p-3 font-mono text-xs">{p.registro_profissional ?? "—"}</td>
+                        <td className="p-3">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              size="sm"
+                              disabled={decidir.isPending}
+                              onClick={() => decidir.mutate({ id: p.id, status: "aprovado" })}
+                            >
+                              <Check className="size-4" /> Aprovar
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={decidir.isPending}
+                              onClick={() => decidir.mutate({ id: p.id, status: "recusado" })}
+                            >
+                              <X className="size-4" /> Recusar
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            ))}
+            )}
           </section>
 
-          <section className="space-y-2">
+          <section className="space-y-3">
             <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
               Demais contas
             </h3>
-            {demais.map((p) => (
-              <div key={p.id} className="flex items-center gap-4 border border-border rounded-lg p-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{p.full_name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {p.funcao ? funcaoLabel[p.funcao] ?? p.funcao : "—"}
-                    {p.registro_profissional ? ` · ${p.registro_profissional}` : ""}
-                  </p>
-                </div>
-                <Badge variant={p.status_aprovacao === "aprovado" ? "default" : "destructive"}>
-                  {p.status_aprovacao}
-                </Badge>
-                {p.status_aprovacao === "rejeitado" && (
-                  <Button size="sm" onClick={() => decidir.mutate({ id: p.id, status: "aprovado" })}>
-                    <Check className="size-4" /> Aprovar
-                  </Button>
-                )}
-              </div>
-            ))}
+            <div className="border border-border rounded-lg overflow-hidden">
+              <table className="w-full text-sm">
+                <tbody>
+                  {demais.map((p) => (
+                    <tr key={p.id} className="border-b border-border last:border-0">
+                      <td className="p-3 font-medium">{p.full_name}</td>
+                      <td className="p-3 text-muted-foreground">{p.email ?? "—"}</td>
+                      <td className="p-3">{p.funcao ? funcaoLabel[p.funcao] ?? p.funcao : "—"}</td>
+                      <td className="p-3 font-mono text-xs">{p.registro_profissional ?? "—"}</td>
+                      <td className="p-3">
+                        <Badge variant={p.status_aprovacao === "aprovado" ? "default" : "destructive"}>
+                          {p.status_aprovacao}
+                        </Badge>
+                      </td>
+                      <td className="p-3 text-right">
+                        {p.status_aprovacao !== "aprovado" && (
+                          <Button size="sm" onClick={() => decidir.mutate({ id: p.id, status: "aprovado" })}>
+                            <Check className="size-4" /> Aprovar
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </section>
         </>
       )}
