@@ -151,21 +151,60 @@ function AdminAprovacoes() {
                         <td className="p-3 font-mono text-xs">{p.registro_profissional ?? "—"}</td>
                         <td className="p-3">
                           <div className="flex justify-end gap-2">
-                            <Button
-                              size="sm"
-                              disabled={decidir.isPending}
-                              onClick={() => decidir.mutate({ id: p.id, status: "aprovado" })}
-                            >
-                              <Check className="size-4" /> Aprovar
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={decidir.isPending}
-                              onClick={() => decidir.mutate({ id: p.id, status: "recusado" })}
-                            >
-                              <X className="size-4" /> Recusar
-                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" disabled={decidir.isPending}>
+                                  <Check className="size-4" /> Aprovar
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Confirmar aprovação</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Tem a certeza que pretende <strong>aprovar</strong> o acesso
+                                    de <strong>{p.full_name}</strong>? Esta pessoa poderá entrar no
+                                    sistema imediatamente.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    disabled={decidir.isPending}
+                                    onClick={() => decidir.mutate({ id: p.id, status: "aprovado" })}
+                                  >
+                                    Sim, aprovar
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" variant="outline" disabled={decidir.isPending}>
+                                  <X className="size-4" /> Recusar
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Confirmar recusa</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Tem a certeza que pretende <strong>recusar</strong> o acesso
+                                    de <strong>{p.full_name}</strong>? Esta pessoa não conseguirá
+                                    entrar no sistema.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    className="bg-destructive text-white hover:bg-destructive/90"
+                                    disabled={decidir.isPending}
+                                    onClick={() => decidir.mutate({ id: p.id, status: "recusado" })}
+                                  >
+                                    Sim, recusar
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
                         </td>
                       </tr>
