@@ -3,6 +3,17 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { Check, X, ShieldCheck } from "lucide-react";
 
@@ -139,21 +150,60 @@ function AdminAprovacoes() {
                         <td className="p-3 font-mono text-xs">{p.registro_profissional ?? "—"}</td>
                         <td className="p-3">
                           <div className="flex justify-end gap-2">
-                            <Button
-                              size="sm"
-                              disabled={decidir.isPending}
-                              onClick={() => decidir.mutate({ id: p.id, status: "aprovado" })}
-                            >
-                              <Check className="size-4" /> Aprovar
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={decidir.isPending}
-                              onClick={() => decidir.mutate({ id: p.id, status: "recusado" })}
-                            >
-                              <X className="size-4" /> Recusar
-                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" disabled={decidir.isPending}>
+                                  <Check className="size-4" /> Aprovar
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Confirmar aprovação</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Tem a certeza que pretende <strong>aprovar</strong> o acesso
+                                    de <strong>{p.full_name}</strong>? Esta pessoa poderá entrar no
+                                    sistema imediatamente.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    disabled={decidir.isPending}
+                                    onClick={() => decidir.mutate({ id: p.id, status: "aprovado" })}
+                                  >
+                                    Sim, aprovar
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" variant="outline" disabled={decidir.isPending}>
+                                  <X className="size-4" /> Recusar
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Confirmar recusa</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Tem a certeza que pretende <strong>recusar</strong> o acesso
+                                    de <strong>{p.full_name}</strong>? Esta pessoa não conseguirá
+                                    entrar no sistema.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    className="bg-destructive text-white hover:bg-destructive/90"
+                                    disabled={decidir.isPending}
+                                    onClick={() => decidir.mutate({ id: p.id, status: "recusado" })}
+                                  >
+                                    Sim, recusar
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
                         </td>
                       </tr>
@@ -184,9 +234,31 @@ function AdminAprovacoes() {
                       </td>
                       <td className="p-3 text-right">
                         {p.status_aprovacao !== "aprovado" && (
-                          <Button size="sm" onClick={() => decidir.mutate({ id: p.id, status: "aprovado" })}>
-                            <Check className="size-4" /> Aprovar
-                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="sm">
+                                <Check className="size-4" /> Aprovar
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Confirmar aprovação</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem a certeza que pretende <strong>aprovar</strong> o acesso
+                                  de <strong>{p.full_name}</strong>?
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  disabled={decidir.isPending}
+                                  onClick={() => decidir.mutate({ id: p.id, status: "aprovado" })}
+                                >
+                                  Sim, aprovar
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         )}
                       </td>
                     </tr>
