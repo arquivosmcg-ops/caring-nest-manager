@@ -292,6 +292,7 @@ export type Database = {
           aprovado_em: string | null
           aprovado_por: string | null
           created_at: string
+          email: string | null
           full_name: string
           funcao: string | null
           id: string
@@ -303,6 +304,7 @@ export type Database = {
           aprovado_em?: string | null
           aprovado_por?: string | null
           created_at?: string
+          email?: string | null
           full_name?: string
           funcao?: string | null
           id: string
@@ -314,6 +316,7 @@ export type Database = {
           aprovado_em?: string | null
           aprovado_por?: string | null
           created_at?: string
+          email?: string | null
           full_name?: string
           funcao?: string | null
           id?: string
