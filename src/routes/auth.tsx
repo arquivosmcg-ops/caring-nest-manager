@@ -68,6 +68,7 @@ function AuthPage() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!funcao) return toast.error("Selecione a função: Médico ou Enfermeira");
+    if (somenteDigitos(celular).length < 10) return toast.error("Informe um número de celular válido com DDD");
     setLoading(true);
     const { error } = await supabase.auth.signUp({
       email,
@@ -78,6 +79,7 @@ function AuthPage() {
           full_name: fullName,
           funcao,
           registro_profissional: registro,
+          celular,
         },
       },
     });
