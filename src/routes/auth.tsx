@@ -188,6 +188,18 @@ function AuthPage() {
                     placeholder="Ex.: CRM-SP 123456"
                   />
                 </div>
+                <div>
+                  <Label htmlFor="celular">Número de celular *</Label>
+                  <Input
+                    id="celular"
+                    type="tel"
+                    inputMode="tel"
+                    required
+                    value={celular}
+                    onChange={(e) => setCelular(maskCelular(e.target.value))}
+                    placeholder="(11) 91234-5678"
+                  />
+                </div>
                 <Button type="submit" disabled={loading} className="w-full">
                   {loading ? "Criando..." : "Criar conta"}
                 </Button>
