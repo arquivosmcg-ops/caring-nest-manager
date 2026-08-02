@@ -235,9 +235,31 @@ function AdminAprovacoes() {
                       </td>
                       <td className="p-3 text-right">
                         {p.status_aprovacao !== "aprovado" && (
-                          <Button size="sm" onClick={() => decidir.mutate({ id: p.id, status: "aprovado" })}>
-                            <Check className="size-4" /> Aprovar
-                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="sm">
+                                <Check className="size-4" /> Aprovar
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Confirmar aprovação</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem a certeza que pretende <strong>aprovar</strong> o acesso
+                                  de <strong>{p.full_name}</strong>?
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  disabled={decidir.isPending}
+                                  onClick={() => decidir.mutate({ id: p.id, status: "aprovado" })}
+                                >
+                                  Sim, aprovar
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         )}
                       </td>
                     </tr>
