@@ -8,6 +8,7 @@ import {
   Activity,
   AlertTriangle,
   ClipboardCheck,
+  FileText,
   LogOut,
 } from "lucide-react";
 import logoAsset from "@/assets/logo_instituto_maior.png.asset.json";
@@ -19,6 +20,7 @@ import { useQueryClient } from "@tanstack/react-query";
 const navItems = [
   { to: "/dashboard", label: "Painel Geral", icon: LayoutDashboard },
   { to: "/residentes", label: "Residentes", icon: Users },
+  { to: "/prontuario", label: "Prontuário", icon: FileText },
   { to: "/quartos", label: "Quartos", icon: BedDouble },
   { to: "/medicamentos", label: "Prescrição Médica", icon: Pill },
   { to: "/sinais-vitais", label: "Sinais Vitais", icon: Activity },
