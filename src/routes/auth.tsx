@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import logoAsset from "@/assets/logo_instituto_maior.png.asset.json";
+import { maskCelular, somenteDigitos } from "@/lib/phone";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -31,6 +32,7 @@ function AuthPage() {
   const [fullName, setFullName] = useState("");
   const [registro, setRegistro] = useState("");
   const [funcao, setFuncao] = useState("");
+  const [celular, setCelular] = useState("");
   const [loading, setLoading] = useState(false);
 
   const rotaPorStatus = async (userId: string) => {
