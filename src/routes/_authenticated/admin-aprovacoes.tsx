@@ -110,18 +110,20 @@ function EsqueciSenha({ onDone }: { onDone: () => void }) {
         <Label htmlFor="senha-login">Senha da sua conta (login)</Label>
         <Input id="senha-login" type="password" required value={senhaLogin} onChange={(e) => setSenhaLogin(e.target.value)} />
       </div>
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="nova-reset">Nova palavra-passe do painel</Label>
-        <Input id="nova-reset" type="password" required minLength={6} value={nova} onChange={(e) => setNova(e.target.value)} />
+        <Input id="nova-reset" type="password" required minLength={8} value={nova} onChange={(e) => setNova(e.target.value)} />
+        <SenhaForca senha={nova} />
       </div>
       <div>
         <Label htmlFor="confirmar-reset">Confirmar nova palavra-passe</Label>
-        <Input id="confirmar-reset" type="password" required minLength={6} value={confirmar} onChange={(e) => setConfirmar(e.target.value)} />
+        <Input id="confirmar-reset" type="password" required minLength={8} value={confirmar} onChange={(e) => setConfirmar(e.target.value)} />
       </div>
       <div className="flex gap-2">
-        <Button type="button" disabled={loading} onClick={submit}>{loading ? "Redefinindo…" : "Redefinir"}</Button>
+        <Button type="button" disabled={loading || !senhaValida(nova)} onClick={submit}>{loading ? "Redefinindo…" : "Redefinir"}</Button>
         <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
       </div>
+
     </div>
   );
 }
