@@ -9,6 +9,7 @@ import {
   AlertTriangle,
   ClipboardCheck,
   FileText,
+  ShieldCheck,
   LogOut,
 } from "lucide-react";
 import logoAsset from "@/assets/logo_instituto_maior.png.asset.json";
@@ -26,7 +27,9 @@ const navItems = [
   { to: "/sinais-vitais", label: "Sinais Vitais", icon: Activity },
   { to: "/incidentes", label: "Incidentes", icon: AlertTriangle },
   { to: "/checklists", label: "Checklists", icon: ClipboardCheck },
+  { to: "/admin-aprovacoes", label: "Área Admin", icon: ShieldCheck },
 ] as const;
+
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
