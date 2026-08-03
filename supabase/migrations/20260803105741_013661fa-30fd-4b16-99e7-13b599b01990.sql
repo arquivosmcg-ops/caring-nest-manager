@@ -1,0 +1,1 @@
+ALTER FUNCTION private.validar_forca_senha(text) SET search_path = '';

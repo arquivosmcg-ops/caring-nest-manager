@@ -20,6 +20,9 @@ import {
 import { toast } from "sonner";
 import { Check, X, ShieldCheck, Lock, KeyRound } from "lucide-react";
 import { useState } from "react";
+import { SenhaForca } from "@/components/senha-forca";
+import { senhaValida } from "@/lib/senha";
+
 
 export const Route = createFileRoute("/_authenticated/admin-aprovacoes")({
   head: () => ({
@@ -66,8 +69,9 @@ function EsqueciSenha({ onDone }: { onDone: () => void }) {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (nova.length < 6) return toast.error("A nova palavra-passe deve ter pelo menos 6 caracteres");
+    if (!senhaValida(nova)) return toast.error("A nova palavra-passe não cumpre os requisitos de segurança");
     if (nova !== confirmar) return toast.error("A confirmação não coincide com a nova palavra-passe");
+
     setLoading(true);
     const { data: userData } = await supabase.auth.getUser();
     const email = userData.user?.email;
@@ -106,18 +110,20 @@ function EsqueciSenha({ onDone }: { onDone: () => void }) {
         <Label htmlFor="senha-login">Senha da sua conta (login)</Label>
         <Input id="senha-login" type="password" required value={senhaLogin} onChange={(e) => setSenhaLogin(e.target.value)} />
       </div>
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="nova-reset">Nova palavra-passe do painel</Label>
-        <Input id="nova-reset" type="password" required minLength={6} value={nova} onChange={(e) => setNova(e.target.value)} />
+        <Input id="nova-reset" type="password" required minLength={8} value={nova} onChange={(e) => setNova(e.target.value)} />
+        <SenhaForca senha={nova} />
       </div>
       <div>
         <Label htmlFor="confirmar-reset">Confirmar nova palavra-passe</Label>
-        <Input id="confirmar-reset" type="password" required minLength={6} value={confirmar} onChange={(e) => setConfirmar(e.target.value)} />
+        <Input id="confirmar-reset" type="password" required minLength={8} value={confirmar} onChange={(e) => setConfirmar(e.target.value)} />
       </div>
       <div className="flex gap-2">
-        <Button type="button" disabled={loading} onClick={submit}>{loading ? "Redefinindo…" : "Redefinir"}</Button>
+        <Button type="button" disabled={loading || !senhaValida(nova)} onClick={submit}>{loading ? "Redefinindo…" : "Redefinir"}</Button>
         <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
       </div>
+
     </div>
   );
 }
@@ -166,8 +172,9 @@ function ConfiguracoesSeguranca() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (nova.length < 6) return toast.error("A nova palavra-passe deve ter pelo menos 6 caracteres");
+    if (!senhaValida(nova)) return toast.error("A nova palavra-passe não cumpre os requisitos de segurança");
     if (nova !== confirmar) return toast.error("A confirmação não coincide com a nova palavra-passe");
+
     setLoading(true);
     const { data, error } = await supabase.rpc("alterar_senha_painel", { _atual: atual, _nova: nova });
     setLoading(false);
@@ -187,15 +194,17 @@ function ConfiguracoesSeguranca() {
         <Label htmlFor="atual">Palavra-passe atual</Label>
         <Input id="atual" type="password" required value={atual} onChange={(e) => setAtual(e.target.value)} />
       </div>
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="nova">Nova palavra-passe</Label>
-        <Input id="nova" type="password" required minLength={6} value={nova} onChange={(e) => setNova(e.target.value)} />
+        <Input id="nova" type="password" required minLength={8} value={nova} onChange={(e) => setNova(e.target.value)} />
+        <SenhaForca senha={nova} />
       </div>
       <div>
         <Label htmlFor="confirmar">Confirmar nova palavra-passe</Label>
-        <Input id="confirmar" type="password" required minLength={6} value={confirmar} onChange={(e) => setConfirmar(e.target.value)} />
+        <Input id="confirmar" type="password" required minLength={8} value={confirmar} onChange={(e) => setConfirmar(e.target.value)} />
       </div>
-      <Button type="submit" disabled={loading}>{loading ? "Salvando…" : "Alterar palavra-passe"}</Button>
+      <Button type="submit" disabled={loading || !senhaValida(nova)}>{loading ? "Salvando…" : "Alterar palavra-passe"}</Button>
+
       <p className="text-[10px] text-muted-foreground">
         A partir da próxima abertura, o painel só abre com a nova palavra-passe.
       </p>
