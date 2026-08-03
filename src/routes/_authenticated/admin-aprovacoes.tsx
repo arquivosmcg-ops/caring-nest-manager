@@ -57,6 +57,71 @@ function CelularLink({ celular }: { celular: string | null }) {
   );
 }
 
+function EsqueciSenha({ onDone }: { onDone: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [senhaLogin, setSenhaLogin] = useState("");
+  const [nova, setNova] = useState("");
+  const [confirmar, setConfirmar] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (nova.length < 6) return toast.error("A nova palavra-passe deve ter pelo menos 6 caracteres");
+    if (nova !== confirmar) return toast.error("A confirmação não coincide com a nova palavra-passe");
+    setLoading(true);
+    const { data: userData } = await supabase.auth.getUser();
+    const email = userData.user?.email;
+    if (!email) {
+      setLoading(false);
+      return toast.error("Sessão expirada. Entre novamente.");
+    }
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password: senhaLogin });
+    if (authError) {
+      setLoading(false);
+      return toast.error("Senha da sua conta incorreta");
+    }
+    const { data, error } = await supabase.rpc("redefinir_senha_painel", { _nova: nova });
+    setLoading(false);
+    if (error) return toast.error(error.message);
+    if (!data) return toast.error("Não foi possível redefinir a palavra-passe");
+    setSenhaLogin(""); setNova(""); setConfirmar(""); setOpen(false);
+    toast.success("Palavra-passe de administrador atualizada com sucesso!");
+    onDone();
+  };
+
+  if (!open) {
+    return (
+      <button type="button" onClick={() => setOpen(true)} className="text-xs underline underline-offset-2 text-muted-foreground">
+        Esqueci a palavra-passe
+      </button>
+    );
+  }
+
+  return (
+    <div className="space-y-3 border-t border-border pt-4">
+      <p className="text-xs text-muted-foreground">
+        Confirme a senha da sua conta de login para definir uma nova palavra-passe do painel.
+      </p>
+      <div>
+        <Label htmlFor="senha-login">Senha da sua conta (login)</Label>
+        <Input id="senha-login" type="password" required value={senhaLogin} onChange={(e) => setSenhaLogin(e.target.value)} />
+      </div>
+      <div>
+        <Label htmlFor="nova-reset">Nova palavra-passe do painel</Label>
+        <Input id="nova-reset" type="password" required minLength={6} value={nova} onChange={(e) => setNova(e.target.value)} />
+      </div>
+      <div>
+        <Label htmlFor="confirmar-reset">Confirmar nova palavra-passe</Label>
+        <Input id="confirmar-reset" type="password" required minLength={6} value={confirmar} onChange={(e) => setConfirmar(e.target.value)} />
+      </div>
+      <div className="flex gap-2">
+        <Button type="button" disabled={loading} onClick={submit}>{loading ? "Redefinindo…" : "Redefinir"}</Button>
+        <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+      </div>
+    </div>
+  );
+}
+
 function SenhaGate({ onUnlock }: { onUnlock: () => void }) {
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
@@ -87,9 +152,11 @@ function SenhaGate({ onUnlock }: { onUnlock: () => void }) {
       <Button type="submit" disabled={loading} className="w-full">
         {loading ? "Verificando…" : "Abrir painel"}
       </Button>
+      <EsqueciSenha onDone={onUnlock} />
     </form>
   );
 }
+
 
 function ConfiguracoesSeguranca() {
   const [atual, setAtual] = useState("");

@@ -551,6 +551,7 @@ export type Database = {
         Args: { _atual: string; _nova: string }
         Returns: boolean
       }
+      redefinir_senha_painel: { Args: { _nova: string }; Returns: boolean }
       verificar_senha_painel: { Args: { _senha: string }; Returns: boolean }
     }
     Enums: {
