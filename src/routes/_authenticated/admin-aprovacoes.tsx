@@ -187,15 +187,17 @@ function ConfiguracoesSeguranca() {
         <Label htmlFor="atual">Palavra-passe atual</Label>
         <Input id="atual" type="password" required value={atual} onChange={(e) => setAtual(e.target.value)} />
       </div>
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="nova">Nova palavra-passe</Label>
-        <Input id="nova" type="password" required minLength={6} value={nova} onChange={(e) => setNova(e.target.value)} />
+        <Input id="nova" type="password" required minLength={8} value={nova} onChange={(e) => setNova(e.target.value)} />
+        <SenhaForca senha={nova} />
       </div>
       <div>
         <Label htmlFor="confirmar">Confirmar nova palavra-passe</Label>
-        <Input id="confirmar" type="password" required minLength={6} value={confirmar} onChange={(e) => setConfirmar(e.target.value)} />
+        <Input id="confirmar" type="password" required minLength={8} value={confirmar} onChange={(e) => setConfirmar(e.target.value)} />
       </div>
-      <Button type="submit" disabled={loading}>{loading ? "Salvando…" : "Alterar palavra-passe"}</Button>
+      <Button type="submit" disabled={loading || !senhaValida(nova)}>{loading ? "Salvando…" : "Alterar palavra-passe"}</Button>
+
       <p className="text-[10px] text-muted-foreground">
         A partir da próxima abertura, o painel só abre com a nova palavra-passe.
       </p>
