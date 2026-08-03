@@ -69,8 +69,9 @@ function EsqueciSenha({ onDone }: { onDone: () => void }) {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (nova.length < 6) return toast.error("A nova palavra-passe deve ter pelo menos 6 caracteres");
+    if (!senhaValida(nova)) return toast.error("A nova palavra-passe não cumpre os requisitos de segurança");
     if (nova !== confirmar) return toast.error("A confirmação não coincide com a nova palavra-passe");
+
     setLoading(true);
     const { data: userData } = await supabase.auth.getUser();
     const email = userData.user?.email;
