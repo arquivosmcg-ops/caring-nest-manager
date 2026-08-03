@@ -20,6 +20,9 @@ import {
 import { toast } from "sonner";
 import { Check, X, ShieldCheck, Lock, KeyRound } from "lucide-react";
 import { useState } from "react";
+import { SenhaForca } from "@/components/senha-forca";
+import { senhaValida } from "@/lib/senha";
+
 
 export const Route = createFileRoute("/_authenticated/admin-aprovacoes")({
   head: () => ({
