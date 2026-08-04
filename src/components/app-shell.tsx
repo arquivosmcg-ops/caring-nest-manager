@@ -57,6 +57,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         enfermeiro: "Enfermeiro(a)",
         cuidador: "Cuidador(a)",
         familia: "Família",
+        multiprofissional: "Profissional Multiprofissional",
       };
       const primaryRole = roles?.[0]?.role ?? "cuidador";
       setProfile({
