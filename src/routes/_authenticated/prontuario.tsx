@@ -2,10 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Printer, FileText } from "lucide-react";
+import { Printer, FileText, BellRing } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import logoAsset from "@/assets/logo_instituto_maior.png.asset.json";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EvolucaoMultiprofissional } from "@/components/evolucao-multi";
+import { useAlertasAtivos } from "@/components/alertas-sino";
+import { numeroProntuario, idadeEmAnos } from "@/lib/multiprofissional";
+
 
 export const Route = createFileRoute("/_authenticated/prontuario")({
   head: () => ({
