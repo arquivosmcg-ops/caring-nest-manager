@@ -169,14 +169,24 @@ function AuthPage() {
                   <Label htmlFor="funcao">Função</Label>
                   <Select value={funcao} onValueChange={setFuncao}>
                     <SelectTrigger id="funcao">
-                      <SelectValue placeholder="Selecione: Médico ou Enfermeira" />
+                      <SelectValue placeholder="Selecione a sua função" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="medico">Médico</SelectItem>
                       <SelectItem value="enfermeira">Enfermeira</SelectItem>
+                      <SelectItem value="fisioterapia">Fisioterapeuta</SelectItem>
+                      <SelectItem value="psicologia">Psicólogo(a)</SelectItem>
+                      <SelectItem value="nutricao">Nutricionista</SelectItem>
+                      <SelectItem value="terapia_ocupacional">Terapeuta Ocupacional</SelectItem>
+                      <SelectItem value="fonoaudiologia">Fonoaudiólogo(a)</SelectItem>
+                      <SelectItem value="servico_social">Assistente Social</SelectItem>
+                      <SelectItem value="educacao_fisica">Educador(a) Físico</SelectItem>
+                      <SelectItem value="farmacia_clinica">Farmacêutico(a) Clínico</SelectItem>
+                      <SelectItem value="outro">Outro profissional autorizado</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
+
                 <div>
                   <Label htmlFor="registro">Nº carteira profissional (CRM/COREN)</Label>
                   <Input
