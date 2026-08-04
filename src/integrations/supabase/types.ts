@@ -74,6 +74,135 @@ export type Database = {
           },
         ]
       }
+      alertas_clinicos: {
+        Row: {
+          categoria: string
+          created_at: string
+          emitido_por: string
+          emitido_por_nome: string
+          evolucao_id: string | null
+          id: string
+          mensagem: string
+          residente_id: string
+          resolvido_em: string | null
+          resolvido_por: string | null
+          status: string
+          visualizado_em: string | null
+        }
+        Insert: {
+          categoria: string
+          created_at?: string
+          emitido_por: string
+          emitido_por_nome?: string
+          evolucao_id?: string | null
+          id?: string
+          mensagem: string
+          residente_id: string
+          resolvido_em?: string | null
+          resolvido_por?: string | null
+          status?: string
+          visualizado_em?: string | null
+        }
+        Update: {
+          categoria?: string
+          created_at?: string
+          emitido_por?: string
+          emitido_por_nome?: string
+          evolucao_id?: string | null
+          id?: string
+          mensagem?: string
+          residente_id?: string
+          resolvido_em?: string | null
+          resolvido_por?: string | null
+          status?: string
+          visualizado_em?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alertas_clinicos_evolucao_id_fkey"
+            columns: ["evolucao_id"]
+            isOneToOne: false
+            referencedRelation: "evolucoes_multi"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alertas_clinicos_residente_id_fkey"
+            columns: ["residente_id"]
+            isOneToOne: false
+            referencedRelation: "residentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      auditoria_prontuario: {
+        Row: {
+          acao: string
+          created_at: string
+          detalhes: Json
+          entidade: string
+          entidade_id: string | null
+          equipamento: string | null
+          id: string
+          ip: string | null
+          residente_id: string | null
+          user_id: string | null
+          user_nome: string | null
+        }
+        Insert: {
+          acao: string
+          created_at?: string
+          detalhes?: Json
+          entidade: string
+          entidade_id?: string | null
+          equipamento?: string | null
+          id?: string
+          ip?: string | null
+          residente_id?: string | null
+          user_id?: string | null
+          user_nome?: string | null
+        }
+        Update: {
+          acao?: string
+          created_at?: string
+          detalhes?: Json
+          entidade?: string
+          entidade_id?: string | null
+          equipamento?: string | null
+          id?: string
+          ip?: string | null
+          residente_id?: string | null
+          user_id?: string | null
+          user_nome?: string | null
+        }
+        Relationships: []
+      }
+      categorias_profissionais: {
+        Row: {
+          ativo: boolean
+          chave: string
+          created_at: string
+          icone: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          ativo?: boolean
+          chave: string
+          created_at?: string
+          icone?: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          ativo?: boolean
+          chave?: string
+          created_at?: string
+          icone?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
       checklist_itens: {
         Row: {
           concluido: boolean
@@ -111,6 +240,77 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "checklist_itens_residente_id_fkey"
+            columns: ["residente_id"]
+            isOneToOne: false
+            referencedRelation: "residentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      config_evolucao: {
+        Row: {
+          id: boolean
+          prazo_edicao_minutos: number
+          updated_at: string
+        }
+        Insert: {
+          id?: boolean
+          prazo_edicao_minutos?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: boolean
+          prazo_edicao_minutos?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      evolucoes_multi: {
+        Row: {
+          anexos: Json
+          assinatura: string | null
+          autor_id: string
+          autor_nome: string
+          categoria: string
+          conselho_numero: string | null
+          created_at: string
+          editado_em: string | null
+          id: string
+          residente_id: string
+          texto: string
+          updated_at: string
+        }
+        Insert: {
+          anexos?: Json
+          assinatura?: string | null
+          autor_id: string
+          autor_nome?: string
+          categoria: string
+          conselho_numero?: string | null
+          created_at?: string
+          editado_em?: string | null
+          id?: string
+          residente_id: string
+          texto: string
+          updated_at?: string
+        }
+        Update: {
+          anexos?: Json
+          assinatura?: string | null
+          autor_id?: string
+          autor_nome?: string
+          categoria?: string
+          conselho_numero?: string | null
+          created_at?: string
+          editado_em?: string | null
+          id?: string
+          residente_id?: string
+          texto?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evolucoes_multi_residente_id_fkey"
             columns: ["residente_id"]
             isOneToOne: false
             referencedRelation: "residentes"
@@ -555,7 +755,13 @@ export type Database = {
       verificar_senha_painel: { Args: { _senha: string }; Returns: boolean }
     }
     Enums: {
-      app_role: "admin" | "gerente" | "enfermeiro" | "cuidador" | "familia"
+      app_role:
+        | "admin"
+        | "gerente"
+        | "enfermeiro"
+        | "cuidador"
+        | "familia"
+        | "multiprofissional"
       incident_severity: "leve" | "moderado" | "grave"
       resident_status: "estavel" | "observacao" | "critico"
       room_status: "ocupado" | "vago" | "manutencao"
@@ -687,7 +893,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "gerente", "enfermeiro", "cuidador", "familia"],
+      app_role: [
+        "admin",
+        "gerente",
+        "enfermeiro",
+        "cuidador",
+        "familia",
+        "multiprofissional",
+      ],
       incident_severity: ["leve", "moderado", "grave"],
       resident_status: ["estavel", "observacao", "critico"],
       room_status: ["ocupado", "vago", "manutencao"],

@@ -17,24 +17,30 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { usePerfilAtual } from "@/hooks/use-perfil";
+import { AlertasSino } from "@/components/alertas-sino";
 
 const navItems = [
-  { to: "/dashboard", label: "Painel Geral", icon: LayoutDashboard },
-  { to: "/residentes", label: "Residentes", icon: Users },
-  { to: "/prontuario", label: "Prontuário", icon: FileText },
-  { to: "/quartos", label: "Quartos", icon: BedDouble },
-  { to: "/medicamentos", label: "Prescrição Médica", icon: Pill },
-  { to: "/sinais-vitais", label: "Sinais Vitais", icon: Activity },
-  { to: "/incidentes", label: "Incidentes", icon: AlertTriangle },
-  { to: "/checklists", label: "Checklists", icon: ClipboardCheck },
-  { to: "/admin-aprovacoes", label: "Área Admin", icon: ShieldCheck },
+  { to: "/dashboard", label: "Painel Geral", icon: LayoutDashboard, multi: false },
+  { to: "/residentes", label: "Residentes", icon: Users, multi: true },
+  { to: "/prontuario", label: "Prontuário", icon: FileText, multi: true },
+  { to: "/quartos", label: "Quartos", icon: BedDouble, multi: false },
+  { to: "/medicamentos", label: "Prescrição Médica", icon: Pill, multi: false },
+  { to: "/sinais-vitais", label: "Sinais Vitais", icon: Activity, multi: false },
+  { to: "/incidentes", label: "Incidentes", icon: AlertTriangle, multi: false },
+  { to: "/checklists", label: "Checklists", icon: ClipboardCheck, multi: false },
+  { to: "/admin-aprovacoes", label: "Área Admin", icon: ShieldCheck, multi: false },
 ] as const;
+
 
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const perfil = usePerfilAtual().data;
+  const somenteMulti = !!perfil && perfil.isMultiprofissional && !perfil.isEquipeClinica;
+  const itensVisiveis = navItems.filter((i) => (somenteMulti ? i.multi : true));
   const [profile, setProfile] = useState<{ full_name: string; role: string } | null>(null);
 
   useEffect(() => {
