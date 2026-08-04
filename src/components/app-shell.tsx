@@ -17,24 +17,30 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { usePerfilAtual } from "@/hooks/use-perfil";
+import { AlertasSino } from "@/components/alertas-sino";
 
 const navItems = [
-  { to: "/dashboard", label: "Painel Geral", icon: LayoutDashboard },
-  { to: "/residentes", label: "Residentes", icon: Users },
-  { to: "/prontuario", label: "Prontuário", icon: FileText },
-  { to: "/quartos", label: "Quartos", icon: BedDouble },
-  { to: "/medicamentos", label: "Prescrição Médica", icon: Pill },
-  { to: "/sinais-vitais", label: "Sinais Vitais", icon: Activity },
-  { to: "/incidentes", label: "Incidentes", icon: AlertTriangle },
-  { to: "/checklists", label: "Checklists", icon: ClipboardCheck },
-  { to: "/admin-aprovacoes", label: "Área Admin", icon: ShieldCheck },
+  { to: "/dashboard", label: "Painel Geral", icon: LayoutDashboard, multi: false },
+  { to: "/residentes", label: "Residentes", icon: Users, multi: true },
+  { to: "/prontuario", label: "Prontuário", icon: FileText, multi: true },
+  { to: "/quartos", label: "Quartos", icon: BedDouble, multi: false },
+  { to: "/medicamentos", label: "Prescrição Médica", icon: Pill, multi: false },
+  { to: "/sinais-vitais", label: "Sinais Vitais", icon: Activity, multi: false },
+  { to: "/incidentes", label: "Incidentes", icon: AlertTriangle, multi: false },
+  { to: "/checklists", label: "Checklists", icon: ClipboardCheck, multi: false },
+  { to: "/admin-aprovacoes", label: "Área Admin", icon: ShieldCheck, multi: false },
 ] as const;
+
 
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const perfil = usePerfilAtual().data;
+  const somenteMulti = !!perfil && perfil.isMultiprofissional && !perfil.isEquipeClinica;
+  const itensVisiveis = navItems.filter((i) => (somenteMulti ? i.multi : true));
   const [profile, setProfile] = useState<{ full_name: string; role: string } | null>(null);
 
   useEffect(() => {
@@ -51,6 +57,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         enfermeiro: "Enfermeiro(a)",
         cuidador: "Cuidador(a)",
         familia: "Família",
+        multiprofissional: "Profissional Multiprofissional",
       };
       const primaryRole = roles?.[0]?.role ?? "cuidador";
       setProfile({
@@ -87,7 +94,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
 
         <nav className="flex-1 overflow-y-auto p-4 space-y-1">
-          {navItems.map((item) => {
+          {itensVisiveis.map((item) => {
             const active = pathname === item.to || (item.to !== "/dashboard" && pathname.startsWith(item.to));
             return (
               <Link
@@ -136,14 +143,18 @@ export function AppShell({ children }: { children: ReactNode }) {
             </p>
           </div>
 
-          <button
-            onClick={() => toast.error("Alerta de emergência disparado à equipe", { duration: 4000 })}
-            className="bg-primary text-primary-foreground px-6 py-3 rounded-md font-bold text-sm tracking-wide shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all flex items-center gap-2"
-          >
-            <span className="size-2 bg-primary-foreground rounded-full animate-pulse" />
-            EMERGÊNCIA
-          </button>
+          <div className="flex items-center gap-2">
+            <AlertasSino />
+            <button
+              onClick={() => toast.error("Alerta de emergência disparado à equipe", { duration: 4000 })}
+              className="bg-primary text-primary-foreground px-6 py-3 rounded-md font-bold text-sm tracking-wide shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all flex items-center gap-2"
+            >
+              <span className="size-2 bg-primary-foreground rounded-full animate-pulse" />
+              EMERGÊNCIA
+            </button>
+          </div>
         </header>
+
 
         <div className="p-8 animate-in-up">{children}</div>
       </main>

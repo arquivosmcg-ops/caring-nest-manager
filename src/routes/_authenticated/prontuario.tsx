@@ -2,10 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Printer, FileText } from "lucide-react";
+import { Printer, FileText, BellRing } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import logoAsset from "@/assets/logo_instituto_maior.png.asset.json";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EvolucaoMultiprofissional } from "@/components/evolucao-multi";
+import { useAlertasAtivos } from "@/components/alertas-sino";
+import { numeroProntuario, idadeEmAnos } from "@/lib/multiprofissional";
+
 
 export const Route = createFileRoute("/_authenticated/prontuario")({
   head: () => ({
@@ -157,6 +162,8 @@ ${d.checklists.length === 0 ? "<div>Nenhum item.</div>" : `<table>
   };
 
   const r = prontuario.data?.residente as any;
+  const alertas = useAlertasAtivos().data ?? [];
+  const alertasDo = (id: string) => alertas.filter((a) => a.residente_id === id);
 
   return (
     <div className="grid lg:grid-cols-[260px_1fr] gap-6">
@@ -167,11 +174,14 @@ ${d.checklists.length === 0 ? "<div>Nenhum item.</div>" : `<table>
             key={res.id}
             onClick={() => setSelecionado(res.id)}
             className={cn(
-              "w-full text-left px-2 py-2 rounded-md text-sm transition-colors",
+              "w-full text-left px-2 py-2 rounded-md text-sm transition-colors flex items-center justify-between gap-2",
               selecionado === res.id ? "bg-foreground text-background font-bold" : "hover:bg-black/5"
             )}
           >
-            {res.nome_completo}
+            <span className="truncate">{res.nome_completo}</span>
+            {alertasDo(res.id).length > 0 && (
+              <BellRing className="size-3.5 shrink-0 text-primary animate-pulse" />
+            )}
           </button>
         ))}
         {residentes.data?.length === 0 && (
@@ -189,44 +199,73 @@ ${d.checklists.length === 0 ? "<div>Nenhum item.</div>" : `<table>
           <p className="text-sm text-muted-foreground">Carregando prontuário…</p>
         ) : (
           <>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-xl font-extrabold tracking-tight">{r?.nome_completo}</h2>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                  Quarto {r?.quartos?.numero ?? "—"} · Nascimento {fmtData(r?.data_nascimento)}
+                  Prontuário {numeroProntuario(r?.id)} · Quarto {r?.quartos?.numero ?? "—"} · Nascimento{" "}
+                  {fmtData(r?.data_nascimento)} · {idadeEmAnos(r?.data_nascimento)}
                 </p>
               </div>
               <Button onClick={imprimir}><Printer className="size-4 mr-1" /> Imprimir prontuário (A4)</Button>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-3">
-              {[
-                ["RG", r?.rg], ["CPF", r?.cpf], ["Convênio", r?.convenio],
-                ["Admissão", fmtData(r?.data_admissao)], ["Alergias", r?.alergias], ["Dieta", r?.dieta],
-              ].map(([k, v]) => (
-                <div key={k as string} className="bg-surface border border-border rounded-lg p-3">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{k}</p>
-                  <p className="text-sm font-bold">{(v as string) || "—"}</p>
-                </div>
-              ))}
-            </div>
+            {alertasDo(selecionado).length > 0 && (
+              <div className="border border-primary/40 bg-primary/5 rounded-lg p-3 space-y-1">
+                {alertasDo(selecionado).map((a) => (
+                  <p key={a.id} className="text-xs flex items-center gap-2">
+                    <BellRing className="size-3.5 text-primary shrink-0" />
+                    <span className="font-medium">{a.mensagem}</span>
+                    <span className="text-muted-foreground">
+                      — {a.emitido_por_nome} · {new Date(a.created_at).toLocaleString("pt-BR")}
+                    </span>
+                  </p>
+                ))}
+              </div>
+            )}
 
-            <div className="grid md:grid-cols-2 gap-3">
-              {[
-                ["Medicações", prontuario.data?.medicamentos.length ?? 0],
-                ["Sinais vitais", prontuario.data?.sinais.length ?? 0],
-                ["Incidentes", prontuario.data?.incidentes.length ?? 0],
-                ["Itens de rotina", prontuario.data?.checklists.length ?? 0],
-              ].map(([k, v]) => (
-                <div key={k as string} className="bg-surface border border-border rounded-lg p-4 flex items-baseline justify-between">
-                  <span className="text-sm font-medium">{k}</span>
-                  <span className="text-2xl font-extrabold">{v as number}</span>
+            <Tabs defaultValue="resumo">
+              <TabsList>
+                <TabsTrigger value="resumo">Resumo clínico</TabsTrigger>
+                <TabsTrigger value="evolucao">Evolução Multiprofissional</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="resumo" className="space-y-6 mt-4">
+                <div className="grid md:grid-cols-3 gap-3">
+                  {[
+                    ["RG", r?.rg], ["CPF", r?.cpf], ["Convênio", r?.convenio],
+                    ["Admissão", fmtData(r?.data_admissao)], ["Alergias", r?.alergias], ["Dieta", r?.dieta],
+                  ].map(([k, v]) => (
+                    <div key={k as string} className="bg-surface border border-border rounded-lg p-3">
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{k}</p>
+                      <p className="text-sm font-bold">{(v as string) || "—"}</p>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+
+                <div className="grid md:grid-cols-2 gap-3">
+                  {[
+                    ["Medicações", prontuario.data?.medicamentos.length ?? 0],
+                    ["Sinais vitais", prontuario.data?.sinais.length ?? 0],
+                    ["Incidentes", prontuario.data?.incidentes.length ?? 0],
+                    ["Itens de rotina", prontuario.data?.checklists.length ?? 0],
+                  ].map(([k, v]) => (
+                    <div key={k as string} className="bg-surface border border-border rounded-lg p-4 flex items-baseline justify-between">
+                      <span className="text-sm font-medium">{k}</span>
+                      <span className="text-2xl font-extrabold">{v as number}</span>
+                    </div>
+                  ))}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="evolucao" className="mt-4">
+                <EvolucaoMultiprofissional residente={r} />
+              </TabsContent>
+            </Tabs>
           </>
         )}
       </section>
     </div>
   );
+
 }
