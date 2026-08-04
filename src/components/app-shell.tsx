@@ -143,14 +143,18 @@ export function AppShell({ children }: { children: ReactNode }) {
             </p>
           </div>
 
-          <button
-            onClick={() => toast.error("Alerta de emergência disparado à equipe", { duration: 4000 })}
-            className="bg-primary text-primary-foreground px-6 py-3 rounded-md font-bold text-sm tracking-wide shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all flex items-center gap-2"
-          >
-            <span className="size-2 bg-primary-foreground rounded-full animate-pulse" />
-            EMERGÊNCIA
-          </button>
+          <div className="flex items-center gap-2">
+            <AlertasSino />
+            <button
+              onClick={() => toast.error("Alerta de emergência disparado à equipe", { duration: 4000 })}
+              className="bg-primary text-primary-foreground px-6 py-3 rounded-md font-bold text-sm tracking-wide shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all flex items-center gap-2"
+            >
+              <span className="size-2 bg-primary-foreground rounded-full animate-pulse" />
+              EMERGÊNCIA
+            </button>
+          </div>
         </header>
+
 
         <div className="p-8 animate-in-up">{children}</div>
       </main>
