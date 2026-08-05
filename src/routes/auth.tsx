@@ -232,14 +232,19 @@ function AuthPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="registro">Nº carteira profissional (CRM/COREN)</Label>
+                  <Label htmlFor="registro">
+                    Nº carteira profissional (CRM/COREN)
+                    {funcao === "outro" && (
+                      <span className="text-muted-foreground font-normal"> (opcional)</span>
+                    )}
+                  </Label>
                   <Input
                     id="registro"
-                    required
+                    required={funcao !== "outro"}
                     maxLength={40}
                     value={registro}
                     onChange={(e) => setRegistro(e.target.value)}
-                    placeholder="Ex.: CRM-SP 123456"
+                    placeholder={funcao === "outro" ? "Opcional" : "Ex.: CRM-SP 123456"}
                   />
                 </div>
                 <div>
