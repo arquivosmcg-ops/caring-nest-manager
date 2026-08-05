@@ -10,6 +10,7 @@ import {
   ClipboardCheck,
   FileText,
   ShieldCheck,
+  Stethoscope,
   LogOut,
 } from "lucide-react";
 import logoAsset from "@/assets/logo_instituto_maior.png.asset.json";
