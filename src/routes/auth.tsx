@@ -34,6 +34,20 @@ function AuthPage() {
   const [funcao, setFuncao] = useState("");
   const [celular, setCelular] = useState("");
   const [loading, setLoading] = useState(false);
+  const [recuperando, setRecuperando] = useState(false);
+
+  const handleRecuperar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+    if (error) return toast.error(error.message);
+    toast.success("Enviámos um link de recuperação para o seu e-mail.");
+    setRecuperando(false);
+  };
+
 
   const rotaPorStatus = async (userId: string) => {
     const { data: prof } = await supabase
@@ -136,20 +150,50 @@ function AuthPage() {
             </TabsList>
 
             <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-4 mt-4">
-                <div>
-                  <Label htmlFor="email">E-mail</Label>
-                  <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                </div>
-                <div>
-                  <Label htmlFor="password">Senha</Label>
-                  <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-                </div>
-                <Button type="submit" disabled={loading} className="w-full">
-                  {loading ? "Entrando..." : "Entrar"}
-                </Button>
-              </form>
+              {recuperando ? (
+                <form onSubmit={handleRecuperar} className="space-y-4 mt-4">
+                  <p className="text-sm text-muted-foreground">
+                    Informe o e-mail cadastrado. Enviaremos um link para criar uma nova senha.
+                  </p>
+                  <div>
+                    <Label htmlFor="email-rec">E-mail cadastrado</Label>
+                    <Input id="email-rec" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                  </div>
+                  <Button type="submit" disabled={loading} className="w-full">
+                    {loading ? "Enviando..." : "Enviar link de recuperação"}
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => setRecuperando(false)}
+                    className="w-full text-xs underline underline-offset-2 text-muted-foreground"
+                  >
+                    Voltar para o login
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={handleSignIn} className="space-y-4 mt-4">
+                  <div>
+                    <Label htmlFor="email">E-mail</Label>
+                    <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                  </div>
+                  <div>
+                    <Label htmlFor="password">Senha</Label>
+                    <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                  </div>
+                  <Button type="submit" disabled={loading} className="w-full">
+                    {loading ? "Entrando..." : "Entrar"}
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => setRecuperando(true)}
+                    className="w-full text-xs underline underline-offset-2 text-muted-foreground"
+                  >
+                    Esqueci minha senha
+                  </button>
+                </form>
+              )}
             </TabsContent>
+
 
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4 mt-4">
