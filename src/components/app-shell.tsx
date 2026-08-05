@@ -24,6 +24,7 @@ const navItems = [
   { to: "/dashboard", label: "Painel Geral", icon: LayoutDashboard, multi: false },
   { to: "/residentes", label: "Residentes", icon: Users, multi: true },
   { to: "/prontuario", label: "Prontuário", icon: FileText, multi: true },
+  { to: "/evolucao-multi", label: "Evolução Multiprofissional", icon: Stethoscope, multi: true },
   { to: "/quartos", label: "Quartos", icon: BedDouble, multi: false },
   { to: "/medicamentos", label: "Prescrição Médica", icon: Pill, multi: false },
   { to: "/sinais-vitais", label: "Sinais Vitais", icon: Activity, multi: false },
