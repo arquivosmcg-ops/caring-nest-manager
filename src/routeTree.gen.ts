@@ -20,6 +20,7 @@ import { Route as AuthenticatedQuartosRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedProntuarioRouteImport } from './routes/_authenticated/prontuario'
 import { Route as AuthenticatedMedicamentosRouteImport } from './routes/_authenticated/medicamentos'
 import { Route as AuthenticatedIncidentesRouteImport } from './routes/_authenticated/incidentes'
+import { Route as AuthenticatedEvolucaoMultiRouteImport } from './routes/_authenticated/evolucao-multi'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedChecklistsRouteImport } from './routes/_authenticated/checklists'
 import { Route as AuthenticatedAdminAprovacoesRouteImport } from './routes/_authenticated/admin-aprovacoes'
@@ -80,6 +81,12 @@ const AuthenticatedIncidentesRoute = AuthenticatedIncidentesRouteImport.update({
   path: '/incidentes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedEvolucaoMultiRoute =
+  AuthenticatedEvolucaoMultiRouteImport.update({
+    id: '/evolucao-multi',
+    path: '/evolucao-multi',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -105,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/admin-aprovacoes': typeof AuthenticatedAdminAprovacoesRoute
   '/checklists': typeof AuthenticatedChecklistsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/evolucao-multi': typeof AuthenticatedEvolucaoMultiRoute
   '/incidentes': typeof AuthenticatedIncidentesRoute
   '/medicamentos': typeof AuthenticatedMedicamentosRoute
   '/prontuario': typeof AuthenticatedProntuarioRoute
@@ -120,6 +128,7 @@ export interface FileRoutesByTo {
   '/admin-aprovacoes': typeof AuthenticatedAdminAprovacoesRoute
   '/checklists': typeof AuthenticatedChecklistsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/evolucao-multi': typeof AuthenticatedEvolucaoMultiRoute
   '/incidentes': typeof AuthenticatedIncidentesRoute
   '/medicamentos': typeof AuthenticatedMedicamentosRoute
   '/prontuario': typeof AuthenticatedProntuarioRoute
@@ -137,6 +146,7 @@ export interface FileRoutesById {
   '/_authenticated/admin-aprovacoes': typeof AuthenticatedAdminAprovacoesRoute
   '/_authenticated/checklists': typeof AuthenticatedChecklistsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/evolucao-multi': typeof AuthenticatedEvolucaoMultiRoute
   '/_authenticated/incidentes': typeof AuthenticatedIncidentesRoute
   '/_authenticated/medicamentos': typeof AuthenticatedMedicamentosRoute
   '/_authenticated/prontuario': typeof AuthenticatedProntuarioRoute
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
     | '/admin-aprovacoes'
     | '/checklists'
     | '/dashboard'
+    | '/evolucao-multi'
     | '/incidentes'
     | '/medicamentos'
     | '/prontuario'
@@ -169,6 +180,7 @@ export interface FileRouteTypes {
     | '/admin-aprovacoes'
     | '/checklists'
     | '/dashboard'
+    | '/evolucao-multi'
     | '/incidentes'
     | '/medicamentos'
     | '/prontuario'
@@ -185,6 +197,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin-aprovacoes'
     | '/_authenticated/checklists'
     | '/_authenticated/dashboard'
+    | '/_authenticated/evolucao-multi'
     | '/_authenticated/incidentes'
     | '/_authenticated/medicamentos'
     | '/_authenticated/prontuario'
@@ -280,6 +293,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIncidentesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/evolucao-multi': {
+      id: '/_authenticated/evolucao-multi'
+      path: '/evolucao-multi'
+      fullPath: '/evolucao-multi'
+      preLoaderRoute: typeof AuthenticatedEvolucaoMultiRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -308,6 +328,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminAprovacoesRoute: typeof AuthenticatedAdminAprovacoesRoute
   AuthenticatedChecklistsRoute: typeof AuthenticatedChecklistsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedEvolucaoMultiRoute: typeof AuthenticatedEvolucaoMultiRoute
   AuthenticatedIncidentesRoute: typeof AuthenticatedIncidentesRoute
   AuthenticatedMedicamentosRoute: typeof AuthenticatedMedicamentosRoute
   AuthenticatedProntuarioRoute: typeof AuthenticatedProntuarioRoute
@@ -320,6 +341,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminAprovacoesRoute: AuthenticatedAdminAprovacoesRoute,
   AuthenticatedChecklistsRoute: AuthenticatedChecklistsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedEvolucaoMultiRoute: AuthenticatedEvolucaoMultiRoute,
   AuthenticatedIncidentesRoute: AuthenticatedIncidentesRoute,
   AuthenticatedMedicamentosRoute: AuthenticatedMedicamentosRoute,
   AuthenticatedProntuarioRoute: AuthenticatedProntuarioRoute,
@@ -341,13 +363,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
