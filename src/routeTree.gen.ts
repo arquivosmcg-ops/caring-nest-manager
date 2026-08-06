@@ -23,6 +23,7 @@ import { Route as AuthenticatedIncidentesRouteImport } from './routes/_authentic
 import { Route as AuthenticatedEvolucaoMultiRouteImport } from './routes/_authenticated/evolucao-multi'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedChecklistsRouteImport } from './routes/_authenticated/checklists'
+import { Route as AuthenticatedAdminUsuariosRouteImport } from './routes/_authenticated/admin-usuarios'
 import { Route as AuthenticatedAdminAprovacoesRouteImport } from './routes/_authenticated/admin-aprovacoes'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -97,6 +98,12 @@ const AuthenticatedChecklistsRoute = AuthenticatedChecklistsRouteImport.update({
   path: '/checklists',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminUsuariosRoute =
+  AuthenticatedAdminUsuariosRouteImport.update({
+    id: '/admin-usuarios',
+    path: '/admin-usuarios',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminAprovacoesRoute =
   AuthenticatedAdminAprovacoesRouteImport.update({
     id: '/admin-aprovacoes',
@@ -110,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin-aprovacoes': typeof AuthenticatedAdminAprovacoesRoute
+  '/admin-usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/checklists': typeof AuthenticatedChecklistsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/evolucao-multi': typeof AuthenticatedEvolucaoMultiRoute
@@ -126,6 +134,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin-aprovacoes': typeof AuthenticatedAdminAprovacoesRoute
+  '/admin-usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/checklists': typeof AuthenticatedChecklistsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/evolucao-multi': typeof AuthenticatedEvolucaoMultiRoute
@@ -144,6 +153,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin-aprovacoes': typeof AuthenticatedAdminAprovacoesRoute
+  '/_authenticated/admin-usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/_authenticated/checklists': typeof AuthenticatedChecklistsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/evolucao-multi': typeof AuthenticatedEvolucaoMultiRoute
@@ -162,6 +172,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/admin-aprovacoes'
+    | '/admin-usuarios'
     | '/checklists'
     | '/dashboard'
     | '/evolucao-multi'
@@ -178,6 +189,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/admin-aprovacoes'
+    | '/admin-usuarios'
     | '/checklists'
     | '/dashboard'
     | '/evolucao-multi'
@@ -195,6 +207,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/_authenticated/admin-aprovacoes'
+    | '/_authenticated/admin-usuarios'
     | '/_authenticated/checklists'
     | '/_authenticated/dashboard'
     | '/_authenticated/evolucao-multi'
@@ -314,6 +327,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChecklistsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin-usuarios': {
+      id: '/_authenticated/admin-usuarios'
+      path: '/admin-usuarios'
+      fullPath: '/admin-usuarios'
+      preLoaderRoute: typeof AuthenticatedAdminUsuariosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin-aprovacoes': {
       id: '/_authenticated/admin-aprovacoes'
       path: '/admin-aprovacoes'
@@ -326,6 +346,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminAprovacoesRoute: typeof AuthenticatedAdminAprovacoesRoute
+  AuthenticatedAdminUsuariosRoute: typeof AuthenticatedAdminUsuariosRoute
   AuthenticatedChecklistsRoute: typeof AuthenticatedChecklistsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEvolucaoMultiRoute: typeof AuthenticatedEvolucaoMultiRoute
@@ -339,6 +360,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminAprovacoesRoute: AuthenticatedAdminAprovacoesRoute,
+  AuthenticatedAdminUsuariosRoute: AuthenticatedAdminUsuariosRoute,
   AuthenticatedChecklistsRoute: AuthenticatedChecklistsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEvolucaoMultiRoute: AuthenticatedEvolucaoMultiRoute,
@@ -363,13 +385,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

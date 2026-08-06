@@ -11,6 +11,7 @@ import {
   FileText,
   ShieldCheck,
   Stethoscope,
+  UserCog,
   LogOut,
 } from "lucide-react";
 import logoAsset from "@/assets/logo_instituto_maior.png.asset.json";
@@ -44,7 +45,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const perfil = usePerfilAtual().data;
   const somenteMulti = !!perfil && perfil.isMultiprofissional && !perfil.isEquipeClinica;
-  const itensVisiveis = navItems.filter((i) => (somenteMulti ? i.multi : true));
+  const itensVisiveis = navItems.filter(
+    (i) =>
+      (somenteMulti ? i.multi : true) &&
+      (!("adminOnly" in i && i.adminOnly) || !!perfil?.isAdmin),
+  );
   const [profile, setProfile] = useState<{ full_name: string; role: string } | null>(null);
 
   useEffect(() => {

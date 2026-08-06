@@ -164,8 +164,8 @@ function AdminUsuarios() {
       const { error } = await supabase.rpc("definir_admin", {
         _user_id: userId,
         _tornar: tornar,
-        _ip: await obterIp(),
-        _equipamento: typeof navigator !== "undefined" ? navigator.userAgent : null,
+        _ip: (await obterIp()) ?? undefined,
+        _equipamento: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
       });
       if (error) throw error;
     },
