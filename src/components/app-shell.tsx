@@ -32,7 +32,9 @@ const navItems = [
   { to: "/incidentes", label: "Incidentes", icon: AlertTriangle, multi: false },
   { to: "/checklists", label: "Checklists", icon: ClipboardCheck, multi: false },
   { to: "/admin-aprovacoes", label: "Área Admin", icon: ShieldCheck, multi: false },
+  { to: "/admin-usuarios", label: "Gerenciar Administradores", icon: UserCog, multi: false, adminOnly: true },
 ] as const;
+
 
 
 
