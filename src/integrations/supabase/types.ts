@@ -751,6 +751,30 @@ export type Database = {
         Args: { _atual: string; _nova: string }
         Returns: boolean
       }
+      definir_admin: {
+        Args: {
+          _equipamento?: string
+          _ip?: string
+          _tornar: boolean
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      listar_profissionais: {
+        Args: never
+        Returns: {
+          aprovado: boolean
+          celular: string
+          created_at: string
+          email: string
+          full_name: string
+          funcao: string
+          id: string
+          registro_profissional: string
+          roles: string[]
+          status_aprovacao: string
+        }[]
+      }
       redefinir_senha_painel: { Args: { _nova: string }; Returns: boolean }
       verificar_senha_painel: { Args: { _senha: string }; Returns: boolean }
     }
