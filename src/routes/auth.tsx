@@ -104,30 +104,31 @@ function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-background">
-      <div className="hidden lg:flex flex-col justify-between p-12 bg-foreground text-background">
-        <div className="flex items-center gap-2">
-          <div className="size-9 bg-white rounded-sm grid place-items-center overflow-hidden border border-border/20">
+    <div className="min-h-screen grid lg:grid-cols-2 bg-surface">
+      <div className="hidden lg:flex flex-col justify-between p-12 bg-secondary text-foreground border-r border-border">
+        <div className="flex items-center gap-3">
+          <div className="size-9 bg-white rounded-sm grid place-items-center overflow-hidden border border-border">
             <img src={logoAsset.url} alt="Logo Residencial São Camilo" className="h-6 w-auto object-contain" />
           </div>
-          <span className="font-extrabold tracking-tight text-lg">RESIDENCIAL SÃO CAMILO</span>
+          <span className="font-extrabold tracking-tight text-lg uppercase">Residencial São Camilo</span>
         </div>
         <div className="space-y-4">
           <h1 className="text-4xl font-extrabold tracking-tight leading-tight">
             Cuidado clínico, com clareza.
           </h1>
-          <p className="text-background/70 max-w-md">
+          <p className="text-muted-foreground max-w-md">
             Sistema integrado para gestão de residentes, medicamentos, sinais vitais,
             incidentes e rotina diária da sua ILPI. Feito para equipes que não podem
             perder tempo procurando botões.
           </p>
         </div>
-        <p className="text-xs text-background/50 font-mono uppercase tracking-widest">
+        <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest">
           LGPD · Prontuário Eletrônico · Multi-perfil
         </p>
       </div>
 
-      <div className="flex items-center justify-center p-6 lg:p-12">
+      <div className="flex items-center justify-center p-6 lg:p-12 bg-surface">
+
         <div className="w-full max-w-md space-y-8">
           <div className="lg:hidden flex items-center gap-2">
             <div className="size-9 bg-white rounded-sm grid place-items-center overflow-hidden border border-border">
