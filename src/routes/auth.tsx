@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/password-input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -179,7 +180,7 @@ function AuthPage() {
                   </div>
                   <div>
                     <Label htmlFor="password">Senha</Label>
-                    <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                    <PasswordInput id="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
                   </div>
                   <Button type="submit" disabled={loading} className="w-full">
                     {loading ? "Entrando..." : "Entrar"}
@@ -208,7 +209,7 @@ function AuthPage() {
                 </div>
                 <div>
                   <Label htmlFor="password2">Senha</Label>
-                  <Input id="password2" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
+                  <PasswordInput id="password2" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
                 </div>
                 <div>
                   <Label htmlFor="funcao">Função</Label>
