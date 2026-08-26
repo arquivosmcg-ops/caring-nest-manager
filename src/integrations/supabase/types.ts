@@ -134,6 +134,54 @@ export type Database = {
           },
         ]
       }
+      assinaturas: {
+        Row: {
+          categoria_profissional: string
+          certificado_info: Json | null
+          conselho_uf: string | null
+          created_at: string
+          documento_id: string
+          documento_ref: Json
+          documento_tipo: string
+          hash_documento: string
+          id: string
+          metodo: string
+          nome_profissional: string
+          numero_conselho: string | null
+          usuario_id: string
+        }
+        Insert: {
+          categoria_profissional: string
+          certificado_info?: Json | null
+          conselho_uf?: string | null
+          created_at?: string
+          documento_id: string
+          documento_ref?: Json
+          documento_tipo: string
+          hash_documento: string
+          id?: string
+          metodo?: string
+          nome_profissional: string
+          numero_conselho?: string | null
+          usuario_id: string
+        }
+        Update: {
+          categoria_profissional?: string
+          certificado_info?: Json | null
+          conselho_uf?: string | null
+          created_at?: string
+          documento_id?: string
+          documento_ref?: Json
+          documento_tipo?: string
+          hash_documento?: string
+          id?: string
+          metodo?: string
+          nome_profissional?: string
+          numero_conselho?: string | null
+          usuario_id?: string
+        }
+        Relationships: []
+      }
       auditoria_prontuario: {
         Row: {
           acao: string
@@ -591,12 +639,15 @@ export type Database = {
           aprovado: boolean
           aprovado_em: string | null
           aprovado_por: string | null
+          categoria_assinatura: string | null
           celular: string | null
+          conselho_uf: string | null
           created_at: string
           email: string | null
           full_name: string
           funcao: string | null
           id: string
+          pin_hash: string | null
           registro_profissional: string | null
           status_aprovacao: string
         }
@@ -604,12 +655,15 @@ export type Database = {
           aprovado?: boolean
           aprovado_em?: string | null
           aprovado_por?: string | null
+          categoria_assinatura?: string | null
           celular?: string | null
+          conselho_uf?: string | null
           created_at?: string
           email?: string | null
           full_name?: string
           funcao?: string | null
           id: string
+          pin_hash?: string | null
           registro_profissional?: string | null
           status_aprovacao?: string
         }
@@ -617,12 +671,15 @@ export type Database = {
           aprovado?: boolean
           aprovado_em?: string | null
           aprovado_por?: string | null
+          categoria_assinatura?: string | null
           celular?: string | null
+          conselho_uf?: string | null
           created_at?: string
           email?: string | null
           full_name?: string
           funcao?: string | null
           id?: string
+          pin_hash?: string | null
           registro_profissional?: string | null
           status_aprovacao?: string
         }
@@ -817,7 +874,9 @@ export type Database = {
           data: string
           evolucao: string | null
           id: string
+          motivo_retificacao: string | null
           residente_id: string
+          retifica_id: string | null
           secoes: Json
           turno: Database["public"]["Enums"]["shift"]
           updated_at: string
@@ -831,7 +890,9 @@ export type Database = {
           data?: string
           evolucao?: string | null
           id?: string
+          motivo_retificacao?: string | null
           residente_id: string
+          retifica_id?: string | null
           secoes?: Json
           turno: Database["public"]["Enums"]["shift"]
           updated_at?: string
@@ -845,7 +906,9 @@ export type Database = {
           data?: string
           evolucao?: string | null
           id?: string
+          motivo_retificacao?: string | null
           residente_id?: string
+          retifica_id?: string | null
           secoes?: Json
           turno?: Database["public"]["Enums"]["shift"]
           updated_at?: string
@@ -856,6 +919,13 @@ export type Database = {
             columns: ["residente_id"]
             isOneToOne: false
             referencedRelation: "residentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sae_registros_retifica_id_fkey"
+            columns: ["retifica_id"]
+            isOneToOne: false
+            referencedRelation: "sae_registros"
             referencedColumns: ["id"]
           },
         ]
@@ -949,6 +1019,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      definir_pin_assinatura: { Args: { _pin: string }; Returns: boolean }
       listar_profissionais: {
         Args: never
         Returns: {
@@ -965,6 +1036,18 @@ export type Database = {
         }[]
       }
       redefinir_senha_painel: { Args: { _nova: string }; Returns: boolean }
+      registrar_assinatura: {
+        Args: {
+          _documento_id: string
+          _documento_ref?: Json
+          _documento_tipo: string
+          _hash: string
+          _metodo?: string
+          _pin?: string
+        }
+        Returns: string
+      }
+      tenho_pin_assinatura: { Args: never; Returns: boolean }
       verificar_senha_painel: { Args: { _senha: string }; Returns: boolean }
     }
     Enums: {
