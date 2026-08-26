@@ -516,10 +516,27 @@ function MedRow({
         );
       })}
       <td className="border border-border/60 text-center">
-        <button onClick={onDelete} className="text-muted-foreground hover:text-primary p-1" title="Excluir">
-          <Trash2 className="size-3.5" />
-        </button>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="text-muted-foreground hover:text-primary p-1" title="Excluir">
+              <Trash2 className="size-3.5" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-56 p-2 space-y-1">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground px-1">Excluir medicamento</p>
+            <Button variant="outline" size="sm" className="w-full justify-start text-xs" onClick={() => onDelete("mes")}>
+              Remover apenas deste mês
+            </Button>
+            <Button variant="destructive" size="sm" className="w-full justify-start text-xs" onClick={() => onDelete("definitivo")}>
+              Eliminar definitivamente
+            </Button>
+            <p className="text-[10px] text-muted-foreground px-1">
+              "Definitivamente" apaga este mês e os meses seguintes.
+            </p>
+          </PopoverContent>
+        </Popover>
       </td>
+
     </tr>
   );
 }
