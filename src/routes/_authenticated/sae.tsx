@@ -207,9 +207,28 @@ function SaePage() {
     },
   });
 
+  const assinaturas = useQuery({
+    queryKey: ["assinaturas-sae", residenteId, historico.data?.length],
+    enabled: !!residenteId && !!historico.data?.length,
+    queryFn: async () => {
+      const ids = (historico.data ?? []).map((r: any) => r.id);
+      const { data, error } = await supabase
+        .from("assinaturas")
+        .select("*")
+        .eq("documento_tipo", "sae")
+        .in("documento_id", ids)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as unknown as Assinatura[];
+    },
+  });
+
+  const assinaturaDe = (registroId: string) =>
+    (assinaturas.data ?? []).find((a) => a.documento_id === registroId) ?? null;
+
   const salvar = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase.from("sae_registros").insert({
+    mutationFn: async (cred: CredencialAssinatura) => {
+      const payload = {
         residente_id: residenteId!,
         autor_id: perfil!.userId,
         autor_nome: perfil!.fullName,
@@ -219,15 +238,42 @@ function SaePage() {
         secoes: valores as never,
         evolucao: evolucao || null,
         assinatura: `${perfil!.fullName}${perfil!.registroProfissional ? ` — ${perfil!.registroProfissional}` : ""}`,
-      });
+        retifica_id: retificaDe?.id ?? null,
+        motivo_retificacao: retificaDe ? motivoRetificacao.trim() || null : null,
+      };
+      const { data: inserido, error } = await supabase
+        .from("sae_registros")
+        .insert(payload as never)
+        .select("id")
+        .single();
       if (error) throw error;
+
+      const hash = await hashDocumento({
+        residente_id: payload.residente_id,
+        data: payload.data,
+        turno: payload.turno,
+        secoes: valores,
+        evolucao: payload.evolucao,
+        retifica_id: payload.retifica_id,
+      });
+      const { error: erroAss } = await supabase.rpc("registrar_assinatura", {
+        _documento_tipo: "sae",
+        _documento_id: (inserido as { id: string }).id,
+        _hash: hash,
+        _pin: cred.pin ?? undefined,
+        _documento_ref: { residente_id: residenteId, data, turno } as never,
+        _metodo: cred.metodo,
+      });
+      if (erroAss) throw erroAss;
     },
     onSuccess: () => {
-      toast.success("Evolução de SAE salva");
+      toast.success("Evolução de SAE assinada eletronicamente");
       setValores({});
       setEvolucao("");
-      setAssinado(false);
+      setRetificaDe(null);
+      setMotivoRetificacao("");
       queryClient.invalidateQueries({ queryKey: ["sae-historico", residenteId] });
+      queryClient.invalidateQueries({ queryKey: ["assinaturas-sae"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -246,8 +292,60 @@ function SaePage() {
     if (!data) return toast.error("Informe a data do registro");
     if (!turno) return toast.error("Selecione o turno");
     if (!perfil) return toast.error("Profissional responsável não identificado");
-    if (!assinado) return toast.error("Confirme a assinatura do profissional");
-    salvar.mutate();
+    if (retificaDe && !motivoRetificacao.trim())
+      return toast.error("Informe o motivo da retificação");
+    setAssinaturaAberta(true);
+  };
+
+  const imprimirRegistro = (r: any) => {
+    const a = assinaturaDe(r.id);
+    const secoesHtml = SAE_SECOES.map((secao) => {
+      const vals = (r.secoes ?? {})[secao.id] ?? {};
+      const campos = secao.campos.filter((c) => {
+        const v = vals[c.id];
+        return Array.isArray(v) ? v.length > 0 : v !== undefined && v !== "" && v !== null;
+      });
+      if (!campos.length) return "";
+      const itens = campos
+        .map(
+          (c) =>
+            `<p><span class="lbl">${c.label}:</span> <b>${
+              Array.isArray(vals[c.id]) ? (vals[c.id] as string[]).join(", ") : String(vals[c.id])
+            }</b></p>`,
+        )
+        .join("");
+      return `<div class="sec"><h2>${secao.titulo}</h2>${itens}</div>`;
+    }).join("");
+    const rodape = a
+      ? `<div class="ass"><p><b>${carimbo(a)}</b></p>
+         <p>Assinado eletronicamente em ${new Date(a.created_at).toLocaleString("pt-BR")}</p>
+         <p>Documento íntegro — hash: ${a.hash_documento.slice(0, 8)}</p></div>`
+      : `<div class="ass"><p>Registro sem assinatura eletrônica.</p></div>`;
+    const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"/>
+<title>SAE — ${residente?.nome_completo ?? ""}</title>
+<style>
+  @page { size: A4; margin: 12mm; }
+  body { font-family: Arial, sans-serif; color:#111; font-size:10pt; }
+  h1 { font-size:14pt; text-transform:uppercase; margin:0 0 4px; }
+  h2 { font-size:9pt; text-transform:uppercase; margin:0 0 4px; }
+  .sec { border:1px solid #999; padding:6px; margin-bottom:6px; }
+  .lbl { color:#555; }
+  .ass { margin-top:20px; border-top:1px solid #111; padding-top:6px; font-size:9pt; }
+  p { margin:1px 0; }
+</style></head><body>
+<h1>Sistematização da Assistência de Enfermagem</h1>
+<p><b>${residente?.nome_completo ?? ""}</b> — ${String(r.data).split("-").reverse().join("/")} • ${TURNO_LABEL[r.turno] ?? r.turno}</p>
+${r.retifica_id ? `<p><b>Retificação</b> de registro anterior${r.motivo_retificacao ? ` — motivo: ${r.motivo_retificacao}` : ""}</p>` : ""}
+${secoesHtml}
+${r.evolucao ? `<div class="sec"><h2>Evolução de enfermagem</h2><p>${String(r.evolucao).replace(/\n/g, "<br/>")}</p></div>` : ""}
+${rodape}
+<script>window.addEventListener('load',()=>setTimeout(()=>window.print(),300));</script>
+</body></html>`;
+    const w = window.open("", "_blank", "width=900,height=1000");
+    if (!w) return toast.error("Bloqueador de pop-ups impediu a impressão");
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
   };
 
   return (
