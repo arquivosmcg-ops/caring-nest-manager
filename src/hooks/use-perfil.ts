@@ -6,6 +6,8 @@ export type PerfilAtual = {
   fullName: string;
   funcao: string | null;
   registroProfissional: string | null;
+  categoriaAssinatura: string | null;
+  conselhoUf: string | null;
   roles: string[];
   isMultiprofissional: boolean;
   isAdmin: boolean;
@@ -23,7 +25,7 @@ export function usePerfilAtual() {
       const [{ data: prof }, { data: roleRows }] = await Promise.all([
         supabase
           .from("profiles")
-          .select("full_name, funcao, registro_profissional")
+          .select("full_name, funcao, registro_profissional, categoria_assinatura, conselho_uf")
           .eq("id", user.id)
           .maybeSingle(),
         supabase.from("user_roles").select("role").eq("user_id", user.id),
@@ -35,6 +37,8 @@ export function usePerfilAtual() {
         fullName: prof?.full_name || user.email || "Usuário",
         funcao: prof?.funcao ?? null,
         registroProfissional: prof?.registro_profissional ?? null,
+        categoriaAssinatura: prof?.categoria_assinatura ?? null,
+        conselhoUf: prof?.conselho_uf ?? null,
         roles,
         isMultiprofissional,
         isAdmin: roles.includes("admin"),

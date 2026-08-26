@@ -15,8 +15,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Lock, Pencil, Printer, Save, ClipboardList, CalendarDays, Table2 } from "lucide-react";
+import { Lock, Pencil, Printer, Save, ClipboardList, CalendarDays, Table2, PenLine } from "lucide-react";
 import { DitarAudio } from "@/components/ditar-audio";
+import {
+  AssinaturaDialog,
+  CarimboAssinatura,
+  type CredencialAssinatura,
+} from "@/components/assinatura-dialog";
+import { hashDocumento, carimbo, type Assinatura } from "@/lib/assinatura";
 import {
   DIAGNOSTICOS_ENFERMAGEM,
   MESES,
@@ -104,6 +110,7 @@ function PrescricaoEnfermagemPage() {
   const [diagOutros, setDiagOutros] = useState("");
   const [assinaturaEnf, setAssinaturaEnf] = useState("");
   const [celula, setCelula] = useState<RegistroCuidado | null>(null);
+  const [assinaturaAberta, setAssinaturaAberta] = useState(false);
 
   const residentes = useQuery({
     queryKey: ["residentes-presc-enf"],
@@ -212,8 +219,34 @@ function PrescricaoEnfermagemPage() {
 
   const feitosCount = Object.values(marcacoes).filter((m) => m.feito).length;
 
+  const assinaturasMes = useQuery({
+    queryKey: ["assinaturas-presc-enf", residenteId, mes, ano],
+    enabled: !!residenteId,
+    queryFn: async () => {
+      const { data: rows, error } = await supabase
+        .from("assinaturas")
+        .select("*")
+        .eq("documento_tipo", "prescricao_enfermagem_turno")
+        .eq("documento_id", residenteId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return ((rows ?? []) as unknown as Assinatura[]).filter((a) => {
+        const ref = (a.documento_ref ?? {}) as { data?: string };
+        return !!ref.data && ref.data >= primeiroDia && ref.data <= ultimoDia;
+      });
+    },
+  });
+
+  const assinaturaDoTurno = (d: string, t: Turno) =>
+    (assinaturasMes.data ?? []).find((a) => {
+      const ref = (a.documento_ref ?? {}) as { data?: string; turno?: string };
+      return ref.data === d && ref.turno === t;
+    }) ?? null;
+
+  const turnoAssinado = assinaturaDoTurno(data, turno);
+
   const salvarTurno = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (cred: CredencialAssinatura) => {
       if (!residenteId) throw new Error("Selecione um residente");
       const { data: userData } = await supabase.auth.getUser();
       const uid = userData.user?.id;
@@ -252,10 +285,32 @@ function PrescricaoEnfermagemPage() {
           );
         if (error) throw error;
       }
+
+      const hash = await hashDocumento({
+        tipo: "prescricao_enfermagem_turno",
+        residente_id: residenteId,
+        data,
+        turno,
+        cuidados: paraSalvar.map((c) => ({
+          numero: c.numero,
+          descricao: c.descricao,
+          observacao: marcacoes[c.id]?.observacao?.trim() || null,
+        })),
+      });
+      const { error: erroAss } = await supabase.rpc("registrar_assinatura", {
+        _documento_tipo: "prescricao_enfermagem_turno",
+        _documento_id: residenteId,
+        _hash: hash,
+        _pin: cred.pin ?? undefined,
+        _metodo: cred.metodo,
+        _documento_ref: { residente_id: residenteId, data, turno } as never,
+      });
+      if (erroAss) throw erroAss;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["registros-cuidados"] });
-      toast.success("Turno registrado");
+      qc.invalidateQueries({ queryKey: ["assinaturas-presc-enf"] });
+      toast.success("Turno registrado e assinado eletronicamente");
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -347,6 +402,8 @@ function PrescricaoEnfermagemPage() {
   td.ok { background:#c6f0c6; font-weight:700; }
   .ass { display:flex; gap:24px; margin-top:18px; font-size:8pt; }
   .ass div { flex:1; border-top:1px solid #111; padding-top:3px; }
+  .assel { margin-top:10px; font-size:7pt; border-top:1px solid #111; padding-top:4px; }
+  .assel div { margin:1px 0; }
 </style></head><body>
   <h1>Prescrição de Enfermagem</h1>
   <div class="meta"><b>${esc(residente.nome_completo)}</b> — Nasc.: ${residente.data_nascimento ? new Date(residente.data_nascimento + "T00:00:00").toLocaleDateString("pt-BR") : "—"} • Quarto: ${esc((residente as any).quartos?.numero ?? "—")} • HD: ${esc(hd.data ?? "—")} • Ref.: ${MESES[mes - 1]}/${ano}</div>
@@ -355,6 +412,19 @@ function PrescricaoEnfermagemPage() {
   <div class="ass">
     <div>Carimbo e assinatura da Enfermeira: ${esc(assinaturaEnf || "")}</div>
     <div>Equipe de enfermagem: ${esc(equipeDoMes.join(", ") || "—")}</div>
+  </div>
+  <div class="assel">
+    <b>Assinaturas eletrônicas do período</b>
+    ${
+      (assinaturasMes.data ?? []).length
+        ? (assinaturasMes.data ?? [])
+            .map((a) => {
+              const ref = (a.documento_ref ?? {}) as { data?: string; turno?: string };
+              return `<div>${esc(carimbo(a))} — ${ref.data ? new Date(ref.data + "T00:00:00").toLocaleDateString("pt-BR") : "—"} ${ref.turno ? esc(TURNO_LABEL[ref.turno as Turno]) : ""} • assinado em ${new Date(a.created_at).toLocaleString("pt-BR")} • documento íntegro — hash: ${esc(a.hash_documento.slice(0, 8))}</div>`;
+            })
+            .join("")
+        : "<div>Nenhuma assinatura eletrônica registrada neste mês.</div>"
+    }
   </div>
   <script>window.addEventListener('load', () => setTimeout(() => window.print(), 300));</script>
 </body></html>`;
@@ -651,10 +721,31 @@ function PrescricaoEnfermagemPage() {
                 )}
               </div>
 
-              <div className="flex justify-end pt-2 border-t border-border">
-                <Button onClick={() => salvarTurno.mutate()} disabled={salvarTurno.isPending}>
-                  <Save className="size-4 mr-1" /> Salvar turno
-                </Button>
+              <div className="pt-2 border-t border-border space-y-3">
+                {turnoAssinado ? (
+                  <div className="border border-border rounded-md p-3 bg-muted/40">
+                    <p className="text-xs font-bold mb-1 flex items-center gap-1.5">
+                      <Lock className="size-3.5" /> Turno já assinado eletronicamente
+                    </p>
+                    <CarimboAssinatura assinatura={turnoAssinado} />
+                    <p className="text-[11px] text-muted-foreground mt-2">
+                      Uma nova assinatura sobrepõe o registro anterior e fica registrada no
+                      histórico de auditoria.
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Ao salvar, o turno será assinado eletronicamente por{" "}
+                    <strong>{perfil?.fullName ?? "—"}</strong>, substituindo o campo manuscrito
+                    “Assinatura e Carimbo”.
+                  </p>
+                )}
+                <div className="flex justify-end">
+                  <Button onClick={() => setAssinaturaAberta(true)} disabled={salvarTurno.isPending}>
+                    <PenLine className="size-4 mr-1" />
+                    {salvarTurno.isPending ? "Assinando…" : "Salvar e assinar turno"}
+                  </Button>
+                </div>
               </div>
             </div>
           ) : (
@@ -826,10 +917,28 @@ function PrescricaoEnfermagemPage() {
                 </p>
                 <p>{celula.observacao || "—"}</p>
               </div>
+              {(() => {
+                const a = assinaturaDoTurno(celula.data, celula.turno as Turno);
+                return a ? (
+                  <div className="border-t border-border pt-3">
+                    <CarimboAssinatura assinatura={a} />
+                  </div>
+                ) : null;
+              })()}
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      <AssinaturaDialog
+        open={assinaturaAberta}
+        onOpenChange={setAssinaturaAberta}
+        titulo="Assinar registro do turno"
+        descricao="Substitui o campo manuscrito “Assinatura e Carimbo” do formulário físico."
+        onConfirmar={async (cred) => {
+          await salvarTurno.mutateAsync(cred);
+        }}
+      />
     </div>
   );
 }
