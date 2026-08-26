@@ -325,7 +325,7 @@ function RecebimentoFraldasPage() {
             id="obs"
             value={observacoes}
             onChange={(e) => setObservacoes(e.target.value)}
-            onTranscricao={(t) => setObservacoes((v) => (v ? `${v} ${t}` : t))}
+            
             placeholder="Ex.: fardo violado, produto vencendo em breve…"
           />
         </div>
