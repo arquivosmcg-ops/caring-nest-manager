@@ -483,6 +483,24 @@ function ResidentesPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const removeResidente = useMutation({
+    mutationFn: async (r: Residente) => {
+      const { error } = await supabase.from("residentes").delete().eq("id", r.id);
+      if (error) throw error;
+      if (r.foto_url) {
+        await supabase.storage.from("residentes-fotos").remove([r.foto_url]);
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["residentes"] });
+      qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
+      qc.invalidateQueries({ queryKey: ["dashboard-residentes"] });
+      setDeleting(null);
+      toast.success("Registro de residente eliminado");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const startEdit = (id: string, nome: string) => { setEditingId(id); setEditingNome(nome); };
   const cancelEdit = () => { setEditingId(null); setEditingNome(""); };
   const saveEdit = () => {
