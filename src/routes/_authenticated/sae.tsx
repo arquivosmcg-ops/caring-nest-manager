@@ -156,9 +156,11 @@ function SaePage() {
   const [turno, setTurno] = useState<string>("");
   const [valores, setValores] = useState<SaeValores>({});
   const [evolucao, setEvolucao] = useState("");
-  const [assinado, setAssinado] = useState(false);
   const [aberta, setAberta] = useState<string | null>(SAE_SECOES[0]?.id ?? null);
   const [verRegistro, setVerRegistro] = useState<any | null>(null);
+  const [assinaturaAberta, setAssinaturaAberta] = useState(false);
+  const [retificaDe, setRetificaDe] = useState<any | null>(null);
+  const [motivoRetificacao, setMotivoRetificacao] = useState("");
 
   const residentes = useQuery({
     queryKey: ["residentes-sae"],
