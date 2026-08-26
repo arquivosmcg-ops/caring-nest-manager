@@ -18,6 +18,7 @@ import { Route as ApiTranscreverRouteImport } from './routes/api/transcrever'
 import { Route as AuthenticatedSinaisVitaisRouteImport } from './routes/_authenticated/sinais-vitais'
 import { Route as AuthenticatedSaeRouteImport } from './routes/_authenticated/sae'
 import { Route as AuthenticatedResidentesRouteImport } from './routes/_authenticated/residentes'
+import { Route as AuthenticatedRecebimentoFraldasRouteImport } from './routes/_authenticated/recebimento-fraldas'
 import { Route as AuthenticatedQuartosRouteImport } from './routes/_authenticated/quartos'
 import { Route as AuthenticatedProntuarioRouteImport } from './routes/_authenticated/prontuario'
 import { Route as AuthenticatedPrescricaoEnfermagemRouteImport } from './routes/_authenticated/prescricao-enfermagem'
@@ -75,6 +76,12 @@ const AuthenticatedResidentesRoute = AuthenticatedResidentesRouteImport.update({
   path: '/residentes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedRecebimentoFraldasRoute =
+  AuthenticatedRecebimentoFraldasRouteImport.update({
+    id: '/recebimento-fraldas',
+    path: '/recebimento-fraldas',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedQuartosRoute = AuthenticatedQuartosRouteImport.update({
   id: '/quartos',
   path: '/quartos',
@@ -153,6 +160,7 @@ export interface FileRoutesByFullPath {
   '/prescricao-enfermagem': typeof AuthenticatedPrescricaoEnfermagemRoute
   '/prontuario': typeof AuthenticatedProntuarioRoute
   '/quartos': typeof AuthenticatedQuartosRoute
+  '/recebimento-fraldas': typeof AuthenticatedRecebimentoFraldasRoute
   '/residentes': typeof AuthenticatedResidentesRoute
   '/sae': typeof AuthenticatedSaeRoute
   '/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
@@ -174,6 +182,7 @@ export interface FileRoutesByTo {
   '/prescricao-enfermagem': typeof AuthenticatedPrescricaoEnfermagemRoute
   '/prontuario': typeof AuthenticatedProntuarioRoute
   '/quartos': typeof AuthenticatedQuartosRoute
+  '/recebimento-fraldas': typeof AuthenticatedRecebimentoFraldasRoute
   '/residentes': typeof AuthenticatedResidentesRoute
   '/sae': typeof AuthenticatedSaeRoute
   '/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
@@ -197,6 +206,7 @@ export interface FileRoutesById {
   '/_authenticated/prescricao-enfermagem': typeof AuthenticatedPrescricaoEnfermagemRoute
   '/_authenticated/prontuario': typeof AuthenticatedProntuarioRoute
   '/_authenticated/quartos': typeof AuthenticatedQuartosRoute
+  '/_authenticated/recebimento-fraldas': typeof AuthenticatedRecebimentoFraldasRoute
   '/_authenticated/residentes': typeof AuthenticatedResidentesRoute
   '/_authenticated/sae': typeof AuthenticatedSaeRoute
   '/_authenticated/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
@@ -220,6 +230,7 @@ export interface FileRouteTypes {
     | '/prescricao-enfermagem'
     | '/prontuario'
     | '/quartos'
+    | '/recebimento-fraldas'
     | '/residentes'
     | '/sae'
     | '/sinais-vitais'
@@ -241,6 +252,7 @@ export interface FileRouteTypes {
     | '/prescricao-enfermagem'
     | '/prontuario'
     | '/quartos'
+    | '/recebimento-fraldas'
     | '/residentes'
     | '/sae'
     | '/sinais-vitais'
@@ -263,6 +275,7 @@ export interface FileRouteTypes {
     | '/_authenticated/prescricao-enfermagem'
     | '/_authenticated/prontuario'
     | '/_authenticated/quartos'
+    | '/_authenticated/recebimento-fraldas'
     | '/_authenticated/residentes'
     | '/_authenticated/sae'
     | '/_authenticated/sinais-vitais'
@@ -341,6 +354,13 @@ declare module '@tanstack/react-router' {
       path: '/residentes'
       fullPath: '/residentes'
       preLoaderRoute: typeof AuthenticatedResidentesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/recebimento-fraldas': {
+      id: '/_authenticated/recebimento-fraldas'
+      path: '/recebimento-fraldas'
+      fullPath: '/recebimento-fraldas'
+      preLoaderRoute: typeof AuthenticatedRecebimentoFraldasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/quartos': {
@@ -435,6 +455,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPrescricaoEnfermagemRoute: typeof AuthenticatedPrescricaoEnfermagemRoute
   AuthenticatedProntuarioRoute: typeof AuthenticatedProntuarioRoute
   AuthenticatedQuartosRoute: typeof AuthenticatedQuartosRoute
+  AuthenticatedRecebimentoFraldasRoute: typeof AuthenticatedRecebimentoFraldasRoute
   AuthenticatedResidentesRoute: typeof AuthenticatedResidentesRoute
   AuthenticatedSaeRoute: typeof AuthenticatedSaeRoute
   AuthenticatedSinaisVitaisRoute: typeof AuthenticatedSinaisVitaisRoute
@@ -453,6 +474,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedPrescricaoEnfermagemRoute,
   AuthenticatedProntuarioRoute: AuthenticatedProntuarioRoute,
   AuthenticatedQuartosRoute: AuthenticatedQuartosRoute,
+  AuthenticatedRecebimentoFraldasRoute: AuthenticatedRecebimentoFraldasRoute,
   AuthenticatedResidentesRoute: AuthenticatedResidentesRoute,
   AuthenticatedSaeRoute: AuthenticatedSaeRoute,
   AuthenticatedSinaisVitaisRoute: AuthenticatedSinaisVitaisRoute,

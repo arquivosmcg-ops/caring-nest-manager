@@ -14,6 +14,7 @@ import {
   Stethoscope,
   UserCog,
   Cake,
+  Package,
   LogOut,
 } from "lucide-react";
 import logoAsset from "@/assets/logo_instituto_maior.png.asset.json";
@@ -37,6 +38,7 @@ const navItems = [
   { to: "/sinais-vitais", label: "Sinais Vitais", icon: Activity, multi: false },
   { to: "/incidentes", label: "Incidentes", icon: AlertTriangle, multi: false },
   { to: "/checklists", label: "Checklists", icon: ClipboardCheck, multi: false },
+  { to: "/recebimento-fraldas", label: "Recebimento de Fraldas", icon: Package, multi: false },
   { to: "/admin-aprovacoes", label: "Área Admin", icon: ShieldCheck, multi: false },
   { to: "/admin-usuarios", label: "Gerenciar Administradores", icon: UserCog, multi: false, adminOnly: true },
 ] as const;
