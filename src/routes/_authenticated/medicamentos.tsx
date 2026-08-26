@@ -403,7 +403,7 @@ function PlanilhaPrescricao({
                 mes={mes}
                 ano={ano}
                 onPatch={(patch) => updateMed.mutate({ id: m.id, patch })}
-                onDelete={() => deleteMed.mutate(m.id)}
+                onDelete={(modo) => deleteMed.mutate({ med: m, modo })}
               />
             ))}
           </tbody>
