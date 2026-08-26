@@ -15,6 +15,7 @@ import { Route as AguardandoAprovacaoRouteImport } from './routes/aguardando-apr
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSinaisVitaisRouteImport } from './routes/_authenticated/sinais-vitais'
+import { Route as AuthenticatedSaeRouteImport } from './routes/_authenticated/sae'
 import { Route as AuthenticatedResidentesRouteImport } from './routes/_authenticated/residentes'
 import { Route as AuthenticatedQuartosRouteImport } from './routes/_authenticated/quartos'
 import { Route as AuthenticatedProntuarioRouteImport } from './routes/_authenticated/prontuario'
@@ -57,6 +58,11 @@ const AuthenticatedSinaisVitaisRoute =
     path: '/sinais-vitais',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSaeRoute = AuthenticatedSaeRouteImport.update({
+  id: '/sae',
+  path: '/sae',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedResidentesRoute = AuthenticatedResidentesRouteImport.update({
   id: '/residentes',
   path: '/residentes',
@@ -134,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/prontuario': typeof AuthenticatedProntuarioRoute
   '/quartos': typeof AuthenticatedQuartosRoute
   '/residentes': typeof AuthenticatedResidentesRoute
+  '/sae': typeof AuthenticatedSaeRoute
   '/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
 }
 export interface FileRoutesByTo {
@@ -152,6 +159,7 @@ export interface FileRoutesByTo {
   '/prontuario': typeof AuthenticatedProntuarioRoute
   '/quartos': typeof AuthenticatedQuartosRoute
   '/residentes': typeof AuthenticatedResidentesRoute
+  '/sae': typeof AuthenticatedSaeRoute
   '/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
 }
 export interface FileRoutesById {
@@ -172,6 +180,7 @@ export interface FileRoutesById {
   '/_authenticated/prontuario': typeof AuthenticatedProntuarioRoute
   '/_authenticated/quartos': typeof AuthenticatedQuartosRoute
   '/_authenticated/residentes': typeof AuthenticatedResidentesRoute
+  '/_authenticated/sae': typeof AuthenticatedSaeRoute
   '/_authenticated/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
 }
 export interface FileRouteTypes {
@@ -192,6 +201,7 @@ export interface FileRouteTypes {
     | '/prontuario'
     | '/quartos'
     | '/residentes'
+    | '/sae'
     | '/sinais-vitais'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -210,6 +220,7 @@ export interface FileRouteTypes {
     | '/prontuario'
     | '/quartos'
     | '/residentes'
+    | '/sae'
     | '/sinais-vitais'
   id:
     | '__root__'
@@ -229,6 +240,7 @@ export interface FileRouteTypes {
     | '/_authenticated/prontuario'
     | '/_authenticated/quartos'
     | '/_authenticated/residentes'
+    | '/_authenticated/sae'
     | '/_authenticated/sinais-vitais'
   fileRoutesById: FileRoutesById
 }
@@ -282,6 +294,13 @@ declare module '@tanstack/react-router' {
       path: '/sinais-vitais'
       fullPath: '/sinais-vitais'
       preLoaderRoute: typeof AuthenticatedSinaisVitaisRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/sae': {
+      id: '/_authenticated/sae'
+      path: '/sae'
+      fullPath: '/sae'
+      preLoaderRoute: typeof AuthenticatedSaeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/residentes': {
@@ -376,6 +395,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProntuarioRoute: typeof AuthenticatedProntuarioRoute
   AuthenticatedQuartosRoute: typeof AuthenticatedQuartosRoute
   AuthenticatedResidentesRoute: typeof AuthenticatedResidentesRoute
+  AuthenticatedSaeRoute: typeof AuthenticatedSaeRoute
   AuthenticatedSinaisVitaisRoute: typeof AuthenticatedSinaisVitaisRoute
 }
 
@@ -391,6 +411,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProntuarioRoute: AuthenticatedProntuarioRoute,
   AuthenticatedQuartosRoute: AuthenticatedQuartosRoute,
   AuthenticatedResidentesRoute: AuthenticatedResidentesRoute,
+  AuthenticatedSaeRoute: AuthenticatedSaeRoute,
   AuthenticatedSinaisVitaisRoute: AuthenticatedSinaisVitaisRoute,
 }
 

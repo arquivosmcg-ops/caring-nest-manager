@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -667,6 +667,59 @@ export type Database = {
             columns: ["quarto_id"]
             isOneToOne: false
             referencedRelation: "quartos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sae_registros: {
+        Row: {
+          assinatura: string | null
+          autor_id: string
+          autor_nome: string
+          autor_registro: string | null
+          created_at: string
+          data: string
+          evolucao: string | null
+          id: string
+          residente_id: string
+          secoes: Json
+          turno: Database["public"]["Enums"]["shift"]
+          updated_at: string
+        }
+        Insert: {
+          assinatura?: string | null
+          autor_id: string
+          autor_nome: string
+          autor_registro?: string | null
+          created_at?: string
+          data?: string
+          evolucao?: string | null
+          id?: string
+          residente_id: string
+          secoes?: Json
+          turno: Database["public"]["Enums"]["shift"]
+          updated_at?: string
+        }
+        Update: {
+          assinatura?: string | null
+          autor_id?: string
+          autor_nome?: string
+          autor_registro?: string | null
+          created_at?: string
+          data?: string
+          evolucao?: string | null
+          id?: string
+          residente_id?: string
+          secoes?: Json
+          turno?: Database["public"]["Enums"]["shift"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sae_registros_residente_id_fkey"
+            columns: ["residente_id"]
+            isOneToOne: false
+            referencedRelation: "residentes"
             referencedColumns: ["id"]
           },
         ]
