@@ -169,15 +169,67 @@ function PlanilhaPrescricao({
         .maybeSingle();
       if (error) throw error;
       if (found) return found as Prescricao;
+
+      // Busca a prescrição anterior mais recente para replicar automaticamente
+      const { data: anteriores } = await supabase
+        .from("prescricoes")
+        .select("*")
+        .eq("residente_id", residente.id)
+        .or(`ano.lt.${ano},and(ano.eq.${ano},mes.lt.${mes})`)
+        .order("ano", { ascending: false })
+        .order("mes", { ascending: false })
+        .limit(1);
+      const anterior = (anteriores?.[0] ?? null) as Prescricao | null;
+
       const { data: created, error: err2 } = await supabase
         .from("prescricoes")
-        .insert({ residente_id: residente.id, mes, ano, alergias: residente.alergias, hd: residente.historico_medico })
+        .insert({
+          residente_id: residente.id,
+          mes,
+          ano,
+          alergias: anterior?.alergias ?? residente.alergias,
+          hd: anterior?.hd ?? residente.historico_medico,
+          medico_nome: anterior?.medico_nome ?? null,
+          crm: anterior?.crm ?? null,
+          andar: anterior?.andar ?? null,
+        })
         .select("*")
         .single();
       if (err2) throw err2;
-      return created as Prescricao;
+      const nova = created as Prescricao;
+
+      if (anterior) {
+        const { data: medsAnt } = await supabase
+          .from("medicamentos")
+          .select("*")
+          .eq("prescricao_id", anterior.id)
+          .eq("ativo", true)
+          .order("numero", { ascending: true });
+        const lista = (medsAnt ?? []) as unknown as Medicamento[];
+        if (lista.length > 0) {
+          const novos = lista.map((m, i) => {
+            const horario = m.horarios?.[0] ?? "";
+            const map: Record<string, string> = {};
+            matchingDays(mes, ano, m.dias_semana ?? []).forEach((d) => (map[String(d)] = horario));
+            return {
+              prescricao_id: nova.id,
+              residente_id: residente.id,
+              nome: m.nome,
+              dosagem: m.dosagem,
+              via: m.via,
+              horarios: m.horarios ?? [],
+              dias_semana: m.dias_semana ?? [],
+              dias_do_mes: map,
+              numero: m.numero ?? i + 1,
+            };
+          });
+          await supabase.from("medicamentos").insert(novos as never);
+        }
+      }
+      return nova;
     },
   });
+
 
   const prescricao = prescricaoQ.data;
 
@@ -215,16 +267,34 @@ function PlanilhaPrescricao({
   });
 
   const deleteMed = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("medicamentos").update({ ativo: false }).eq("id", id);
+    mutationFn: async ({ med, modo }: { med: Medicamento; modo: "mes" | "definitivo" }) => {
+      if (modo === "mes") {
+        const { error } = await supabase.from("medicamentos").update({ ativo: false }).eq("id", med.id);
+        if (error) throw error;
+        return;
+      }
+      // Elimina definitivamente: este mês e todos os meses seguintes
+      const { data: futuras } = await supabase
+        .from("prescricoes")
+        .select("id")
+        .eq("residente_id", residente.id)
+        .or(`ano.gt.${ano},and(ano.eq.${ano},mes.gte.${mes})`);
+      const ids = (futuras ?? []).map((p) => p.id);
+      const { error } = await supabase
+        .from("medicamentos")
+        .delete()
+        .eq("residente_id", residente.id)
+        .eq("nome", med.nome)
+        .in("prescricao_id", ids.length ? ids : [med.prescricao_id ?? med.id]);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_d, vars) => {
       qc.invalidateQueries({ queryKey: ["prescricao-meds", prescricao?.id] });
-      toast.success("Medicamento removido");
+      toast.success(vars.modo === "mes" ? "Medicamento removido deste mês" : "Medicamento eliminado definitivamente");
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   const [addOpen, setAddOpen] = useState(false);
   const createMed = useMutation({
@@ -333,7 +403,7 @@ function PlanilhaPrescricao({
                 mes={mes}
                 ano={ano}
                 onPatch={(patch) => updateMed.mutate({ id: m.id, patch })}
-                onDelete={() => deleteMed.mutate(m.id)}
+                onDelete={(modo) => deleteMed.mutate({ med: m, modo })}
               />
             ))}
           </tbody>
@@ -374,7 +444,7 @@ function MedRow({
   med, idx, total, mes, ano, onPatch, onDelete,
 }: {
   med: Medicamento; idx: number; total: number; mes: number; ano: number;
-  onPatch: (patch: Partial<Medicamento>) => void; onDelete: () => void;
+  onPatch: (patch: Partial<Medicamento>) => void; onDelete: (modo: "mes" | "definitivo") => void;
 }) {
   const [nome, setNome] = useState(med.nome);
   const [dose, setDose] = useState(med.dosagem);
@@ -446,10 +516,27 @@ function MedRow({
         );
       })}
       <td className="border border-border/60 text-center">
-        <button onClick={onDelete} className="text-muted-foreground hover:text-primary p-1" title="Excluir">
-          <Trash2 className="size-3.5" />
-        </button>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="text-muted-foreground hover:text-primary p-1" title="Excluir">
+              <Trash2 className="size-3.5" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-56 p-2 space-y-1">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground px-1">Excluir medicamento</p>
+            <Button variant="outline" size="sm" className="w-full justify-start text-xs" onClick={() => onDelete("mes")}>
+              Remover apenas deste mês
+            </Button>
+            <Button variant="destructive" size="sm" className="w-full justify-start text-xs" onClick={() => onDelete("definitivo")}>
+              Eliminar definitivamente
+            </Button>
+            <p className="text-[10px] text-muted-foreground px-1">
+              "Definitivamente" apaga este mês e os meses seguintes.
+            </p>
+          </PopoverContent>
+        </Popover>
       </td>
+
     </tr>
   );
 }
