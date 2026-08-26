@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePerfilAtual } from "@/hooks/use-perfil";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { ChevronDown, ClipboardList, Save, History } from "lucide-react";
+import { ChevronDown, ClipboardList, Save, History, PenLine, Printer, FileWarning } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/dialog";
 import { SAE_SECOES, resumoSecao, type SaeValores, type SaeCampo } from "@/lib/sae-schema";
 import { DitarAudio } from "@/components/ditar-audio";
+import { AssinaturaDialog, CarimboAssinatura, type CredencialAssinatura } from "@/components/assinatura-dialog";
+import { hashDocumento, carimbo, type Assinatura } from "@/lib/assinatura";
 
 export const Route = createFileRoute("/_authenticated/sae")({
   head: () => ({
