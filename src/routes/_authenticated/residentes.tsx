@@ -56,6 +56,17 @@ function normalizeNome(raw: string): string {
     .join(" ");
 }
 
+export function calcularIdade(data: string | null): number | null {
+  if (!data) return null;
+  const [y, m, d] = data.split("-").map(Number);
+  if (!y || !m || !d) return null;
+  const hoje = new Date();
+  let idade = hoje.getFullYear() - y;
+  const mesAtual = hoje.getMonth() + 1;
+  if (mesAtual < m || (mesAtual === m && hoje.getDate() < d)) idade--;
+  return idade;
+}
+
 export const Route = createFileRoute("/_authenticated/residentes")({
   component: ResidentesPage,
 });
