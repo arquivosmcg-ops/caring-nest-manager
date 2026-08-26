@@ -267,16 +267,34 @@ function PlanilhaPrescricao({
   });
 
   const deleteMed = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("medicamentos").update({ ativo: false }).eq("id", id);
+    mutationFn: async ({ med, modo }: { med: Medicamento; modo: "mes" | "definitivo" }) => {
+      if (modo === "mes") {
+        const { error } = await supabase.from("medicamentos").update({ ativo: false }).eq("id", med.id);
+        if (error) throw error;
+        return;
+      }
+      // Elimina definitivamente: este mês e todos os meses seguintes
+      const { data: futuras } = await supabase
+        .from("prescricoes")
+        .select("id")
+        .eq("residente_id", residente.id)
+        .or(`ano.gt.${ano},and(ano.eq.${ano},mes.gte.${mes})`);
+      const ids = (futuras ?? []).map((p) => p.id);
+      const { error } = await supabase
+        .from("medicamentos")
+        .delete()
+        .eq("residente_id", residente.id)
+        .eq("nome", med.nome)
+        .in("prescricao_id", ids.length ? ids : [med.prescricao_id ?? med.id]);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_d, vars) => {
       qc.invalidateQueries({ queryKey: ["prescricao-meds", prescricao?.id] });
-      toast.success("Medicamento removido");
+      toast.success(vars.modo === "mes" ? "Medicamento removido deste mês" : "Medicamento eliminado definitivamente");
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   const [addOpen, setAddOpen] = useState(false);
   const createMed = useMutation({
