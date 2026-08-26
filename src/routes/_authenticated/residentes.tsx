@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { TextareaDitavel } from "@/components/ditar-audio";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Upload, X, Wand2, Pencil, Check, FilePen, Printer, Trash2, ListOrdered } from "lucide-react";
@@ -311,7 +311,7 @@ function ResidenteForm({
       </div>
       <div className="col-span-2">
         <Label>Contatos</Label>
-        <Textarea name="contatos" rows={2} placeholder="Telefones, e-mails, familiares..." defaultValue={residente?.contatos ?? ""} />
+        <TextareaDitavel name="contatos" rows={2} placeholder="Telefones, e-mails, familiares..." defaultValue={residente?.contatos ?? ""} />
       </div>
       <div>
         <Label>Alergias</Label>
@@ -370,11 +370,11 @@ function ResidenteForm({
 
       <div className="col-span-2">
         <Label>Histórico médico resumido</Label>
-        <Textarea name="historico_medico" rows={3} defaultValue={residente?.historico_medico ?? ""} />
+        <TextareaDitavel name="historico_medico" rows={3} defaultValue={residente?.historico_medico ?? ""} />
       </div>
       <div className="col-span-2">
         <Label>Observações</Label>
-        <Textarea name="observacoes" rows={3} defaultValue={residente?.observacoes ?? ""} />
+        <TextareaDitavel name="observacoes" rows={3} defaultValue={residente?.observacoes ?? ""} />
       </div>
 
       <div className="col-span-2 flex justify-end gap-2 pt-2">

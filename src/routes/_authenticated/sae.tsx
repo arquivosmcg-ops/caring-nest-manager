@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { SAE_SECOES, resumoSecao, type SaeValores, type SaeCampo } from "@/lib/sae-schema";
+import { DitarAudio } from "@/components/ditar-audio";
 
 export const Route = createFileRoute("/_authenticated/sae")({
   head: () => ({
@@ -103,32 +104,42 @@ function CampoRender({
     );
   }
   if (campo.tipo === "textarea") {
+    const atual = (valor as string) ?? "";
     return (
       <div className="space-y-1.5">
         <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
           {campo.label}
         </p>
-        <textarea
-          rows={3}
-          value={(valor as string) ?? ""}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-full text-sm border border-border rounded-md px-3 py-2 bg-surface"
-        />
+        <div className="flex items-start gap-2">
+          <textarea
+            rows={3}
+            value={atual}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-full text-sm border border-border rounded-md px-3 py-2 bg-surface"
+          />
+          <DitarAudio onTexto={(t) => onChange(atual ? `${atual.trim()} ${t}` : t)} />
+        </div>
       </div>
     );
   }
+  const atual = (valor as string) ?? "";
   return (
     <div className="space-y-1.5">
       <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
         {campo.label}
         {campo.tipo === "numero" && campo.unidade ? ` (${campo.unidade})` : ""}
       </p>
-      <input
-        type={campo.tipo === "numero" ? "number" : "text"}
-        value={(valor as string) ?? ""}
-        onChange={(e) => onChange(e.target.value === "" ? undefined : e.target.value)}
-        className="w-full text-sm border border-border rounded-md px-3 py-2 bg-surface"
-      />
+      <div className="flex items-center gap-2">
+        <input
+          type={campo.tipo === "numero" ? "number" : "text"}
+          value={atual}
+          onChange={(e) => onChange(e.target.value === "" ? undefined : e.target.value)}
+          className="w-full text-sm border border-border rounded-md px-3 py-2 bg-surface"
+        />
+        {campo.tipo === "texto" && (
+          <DitarAudio onTexto={(t) => onChange(atual ? `${atual.trim()} ${t}` : t)} />
+        )}
+      </div>
     </div>
   );
 }
@@ -362,13 +373,18 @@ function SaePage() {
                 {data.split("-").reverse().join("/")} • {TURNO_LABEL[turno] ?? "turno não definido"} •{" "}
                 {perfil?.fullName ?? "—"}
               </p>
-              <textarea
-                rows={7}
-                value={evolucao}
-                onChange={(e) => setEvolucao(e.target.value)}
-                placeholder="Descreva a evolução do plantão…"
-                className="w-full text-sm border border-border rounded-md px-3 py-2 bg-background"
-              />
+              <div className="flex items-start gap-2">
+                <textarea
+                  rows={7}
+                  value={evolucao}
+                  onChange={(e) => setEvolucao(e.target.value)}
+                  placeholder="Descreva a evolução do plantão… ou use o microfone para ditar"
+                  className="w-full text-sm border border-border rounded-md px-3 py-2 bg-background"
+                />
+                <DitarAudio
+                  onTexto={(t) => setEvolucao((prev) => (prev ? `${prev.trim()} ${t}` : t))}
+                />
+              </div>
             </div>
 
             <div className="bg-surface border border-border rounded-lg p-4">

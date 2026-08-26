@@ -14,6 +14,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AguardandoAprovacaoRouteImport } from './routes/aguardando-aprovacao'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiTranscreverRouteImport } from './routes/api/transcrever'
 import { Route as AuthenticatedSinaisVitaisRouteImport } from './routes/_authenticated/sinais-vitais'
 import { Route as AuthenticatedSaeRouteImport } from './routes/_authenticated/sae'
 import { Route as AuthenticatedResidentesRouteImport } from './routes/_authenticated/residentes'
@@ -50,6 +51,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTranscreverRoute = ApiTranscreverRouteImport.update({
+  id: '/api/transcrever',
+  path: '/api/transcrever',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSinaisVitaisRoute =
@@ -142,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/residentes': typeof AuthenticatedResidentesRoute
   '/sae': typeof AuthenticatedSaeRoute
   '/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
+  '/api/transcrever': typeof ApiTranscreverRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -161,6 +168,7 @@ export interface FileRoutesByTo {
   '/residentes': typeof AuthenticatedResidentesRoute
   '/sae': typeof AuthenticatedSaeRoute
   '/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
+  '/api/transcrever': typeof ApiTranscreverRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -182,6 +190,7 @@ export interface FileRoutesById {
   '/_authenticated/residentes': typeof AuthenticatedResidentesRoute
   '/_authenticated/sae': typeof AuthenticatedSaeRoute
   '/_authenticated/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
+  '/api/transcrever': typeof ApiTranscreverRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -203,6 +212,7 @@ export interface FileRouteTypes {
     | '/residentes'
     | '/sae'
     | '/sinais-vitais'
+    | '/api/transcrever'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -222,6 +232,7 @@ export interface FileRouteTypes {
     | '/residentes'
     | '/sae'
     | '/sinais-vitais'
+    | '/api/transcrever'
   id:
     | '__root__'
     | '/'
@@ -242,6 +253,7 @@ export interface FileRouteTypes {
     | '/_authenticated/residentes'
     | '/_authenticated/sae'
     | '/_authenticated/sinais-vitais'
+    | '/api/transcrever'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -250,6 +262,7 @@ export interface RootRouteChildren {
   AguardandoAprovacaoRoute: typeof AguardandoAprovacaoRoute
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiTranscreverRoute: typeof ApiTranscreverRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -287,6 +300,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/transcrever': {
+      id: '/api/transcrever'
+      path: '/api/transcrever'
+      fullPath: '/api/transcrever'
+      preLoaderRoute: typeof ApiTranscreverRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/sinais-vitais': {
@@ -424,6 +444,7 @@ const rootRouteChildren: RootRouteChildren = {
   AguardandoAprovacaoRoute: AguardandoAprovacaoRoute,
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiTranscreverRoute: ApiTranscreverRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
