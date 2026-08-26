@@ -645,6 +645,53 @@ function ResidentesPage() {
     w.document.close();
   };
 
+  const printListagem = () => {
+    const esc = (v: string | null | undefined) =>
+      (v ?? "—").toString().replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]!));
+    const lista = [...(residentes.data ?? [])].sort((a, b) =>
+      a.nome_completo.localeCompare(b.nome_completo, "pt-BR"),
+    );
+    if (lista.length === 0) { toast.error("Nenhuma residente para listar"); return; }
+    const linhas = lista
+      .map((r, i) => {
+        const idade = calcularIdade(r.data_nascimento);
+        return `<tr><td class="num">${i + 1}</td><td class="nome">${esc(r.nome_completo)}</td><td>${idade ?? "—"}</td><td class="mono">${esc(r.quartos?.numero ?? null)}</td><td>${esc(r.convenio)}</td></tr>`;
+      })
+      .join("");
+    const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"/>
+<title>Listagem de residentes</title>
+<style>
+  @page { size: A4 portrait; margin: 15mm; }
+  body { font-family: Inter, Arial, sans-serif; color:#111; margin:0; font-size:10.5pt; }
+  h1 { font-size:16pt; margin:0 0 2px; }
+  .sub { font-size:9pt; color:#666; text-transform:uppercase; letter-spacing:.08em; font-weight:700; }
+  header { border-bottom:3px solid #8B0000; padding-bottom:10px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:flex-end; }
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; font-size:8.5pt; text-transform:uppercase; letter-spacing:.06em; border-bottom:1.5px solid #333; padding:6px 6px; }
+  td { padding:6px; border-bottom:1px solid #e5e5e5; }
+  tr { page-break-inside:avoid; }
+  .num { width:28px; color:#888; }
+  .nome { font-weight:700; }
+  .mono { font-family:ui-monospace, monospace; }
+  footer { margin-top:12px; font-size:8pt; color:#888; text-align:center; }
+</style></head><body>
+  <header>
+    <div><h1>Listagem de Residentes</h1><div class="sub">Residencial São Camilo</div></div>
+    <div class="sub">${lista.length} residentes • ${new Date().toLocaleDateString("pt-BR")}</div>
+  </header>
+  <table>
+    <thead><tr><th></th><th>Nome</th><th>Idade</th><th>Quarto</th><th>Convênio</th></tr></thead>
+    <tbody>${linhas}</tbody>
+  </table>
+  <footer>Documento confidencial — uso interno do Residencial São Camilo.</footer>
+  <script>window.addEventListener('load', () => setTimeout(() => window.print(), 300));</script>
+</body></html>`;
+    const w = window.open("", "_blank", "width=900,height=1000");
+    if (!w) { toast.error("Bloqueador de pop-ups impediu a impressão"); return; }
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+  };
 
   return (
     <div className="space-y-6">
