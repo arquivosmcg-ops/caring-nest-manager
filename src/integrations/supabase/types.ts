@@ -671,6 +671,59 @@ export type Database = {
           },
         ]
       }
+      sae_registros: {
+        Row: {
+          assinatura: string | null
+          autor_id: string
+          autor_nome: string
+          autor_registro: string | null
+          created_at: string
+          data: string
+          evolucao: string | null
+          id: string
+          residente_id: string
+          secoes: Json
+          turno: Database["public"]["Enums"]["shift"]
+          updated_at: string
+        }
+        Insert: {
+          assinatura?: string | null
+          autor_id: string
+          autor_nome: string
+          autor_registro?: string | null
+          created_at?: string
+          data?: string
+          evolucao?: string | null
+          id?: string
+          residente_id: string
+          secoes?: Json
+          turno: Database["public"]["Enums"]["shift"]
+          updated_at?: string
+        }
+        Update: {
+          assinatura?: string | null
+          autor_id?: string
+          autor_nome?: string
+          autor_registro?: string | null
+          created_at?: string
+          data?: string
+          evolucao?: string | null
+          id?: string
+          residente_id?: string
+          secoes?: Json
+          turno?: Database["public"]["Enums"]["shift"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sae_registros_residente_id_fkey"
+            columns: ["residente_id"]
+            isOneToOne: false
+            referencedRelation: "residentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sinais_vitais: {
         Row: {
           frequencia_cardiaca: number | null
