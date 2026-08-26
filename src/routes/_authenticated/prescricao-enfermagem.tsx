@@ -705,10 +705,31 @@ function PrescricaoEnfermagemPage() {
                 )}
               </div>
 
-              <div className="flex justify-end pt-2 border-t border-border">
-                <Button onClick={() => salvarTurno.mutate()} disabled={salvarTurno.isPending}>
-                  <Save className="size-4 mr-1" /> Salvar turno
-                </Button>
+              <div className="pt-2 border-t border-border space-y-3">
+                {turnoAssinado ? (
+                  <div className="border border-border rounded-md p-3 bg-muted/40">
+                    <p className="text-xs font-bold mb-1 flex items-center gap-1.5">
+                      <Lock className="size-3.5" /> Turno já assinado eletronicamente
+                    </p>
+                    <CarimboAssinatura assinatura={turnoAssinado} />
+                    <p className="text-[11px] text-muted-foreground mt-2">
+                      Uma nova assinatura sobrepõe o registro anterior e fica registrada no
+                      histórico de auditoria.
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Ao salvar, o turno será assinado eletronicamente por{" "}
+                    <strong>{perfil?.fullName ?? "—"}</strong>, substituindo o campo manuscrito
+                    “Assinatura e Carimbo”.
+                  </p>
+                )}
+                <div className="flex justify-end">
+                  <Button onClick={() => setAssinaturaAberta(true)} disabled={salvarTurno.isPending}>
+                    <PenLine className="size-4 mr-1" />
+                    {salvarTurno.isPending ? "Assinando…" : "Salvar e assinar turno"}
+                  </Button>
+                </div>
               </div>
             </div>
           ) : (
