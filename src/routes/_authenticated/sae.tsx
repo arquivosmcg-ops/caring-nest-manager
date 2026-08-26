@@ -619,13 +619,56 @@ ${rodape}
                   <p className="whitespace-pre-wrap">{verRegistro.evolucao}</p>
                 </div>
               )}
-              {verRegistro.assinatura && (
-                <p className="text-xs italic text-muted-foreground">Assinado: {verRegistro.assinatura}</p>
-              )}
+              {(() => {
+                const a = assinaturaDe(verRegistro.id);
+                return a ? (
+                  <div className="border-t border-border pt-3">
+                    <CarimboAssinatura assinatura={a} />
+                  </div>
+                ) : verRegistro.assinatura ? (
+                  <p className="text-xs italic text-muted-foreground">
+                    Assinado: {verRegistro.assinatura}
+                  </p>
+                ) : null;
+              })()}
+
+              <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
+                <button
+                  onClick={() => imprimirRegistro(verRegistro)}
+                  className="text-xs font-bold border border-border rounded-md px-3 py-2 flex items-center gap-1.5 hover:bg-black/[0.03]"
+                >
+                  <Printer className="size-3.5" /> Imprimir (A4)
+                </button>
+                <button
+                  onClick={() => {
+                    setValores((verRegistro.secoes ?? {}) as SaeValores);
+                    setEvolucao(verRegistro.evolucao ?? "");
+                    setData(verRegistro.data);
+                    setTurno(verRegistro.turno);
+                    setRetificaDe(verRegistro);
+                    setMotivoRetificacao("");
+                    setVerRegistro(null);
+                    toast.info("Preencha as correções e assine a retificação");
+                  }}
+                  className="text-xs font-bold border border-border rounded-md px-3 py-2 flex items-center gap-1.5 hover:bg-black/[0.03]"
+                >
+                  <FileWarning className="size-3.5" /> Criar retificação
+                </button>
+              </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      <AssinaturaDialog
+        open={assinaturaAberta}
+        onOpenChange={setAssinaturaAberta}
+        titulo={retificaDe ? "Assinar retificação da SAE" : "Assinar evolução de SAE"}
+        descricao="Substitui o campo “Assinatura e Carimbo Enfermeira”. Após assinado, o registro não pode ser editado."
+        onConfirmar={async (cred) => {
+          await salvar.mutateAsync(cred);
+        }}
+      />
     </div>
   );
 }
