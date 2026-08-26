@@ -863,6 +863,27 @@ function ResidentesPage() {
           </tbody>
         </table>
       </div>
+
+      <AlertDialog open={deleting !== null} onOpenChange={(v) => { if (!v) setDeleting(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar registro de residente?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação é definitiva. Todo o histórico de <b>{deleting?.nome_completo}</b> (prescrições,
+              sinais vitais, evoluções, incidentes e checklists) será eliminado permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={removeResidente.isPending}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); if (deleting) removeResidente.mutate(deleting); }}
+              disabled={removeResidente.isPending}
+            >
+              {removeResidente.isPending ? "Eliminando…" : "Eliminar definitivamente"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
