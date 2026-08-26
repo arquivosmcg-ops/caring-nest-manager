@@ -489,21 +489,41 @@ ${rodape}
               </div>
             </div>
 
-            <div className="bg-surface border border-border rounded-lg p-4">
-              <p className="font-bold text-sm mb-2">13. Assinatura</p>
-              <label className="flex items-center gap-3 text-sm">
-                <input
-                  type="checkbox"
-                  checked={assinado}
-                  onChange={(e) => setAssinado(e.target.checked)}
-                  className="size-4 accent-[var(--color-primary)]"
-                />
-                <span>
-                  Confirmo o registro como{" "}
-                  <strong>{perfil?.fullName ?? "—"}</strong>
-                  {perfil?.registroProfissional ? ` — ${perfil.registroProfissional}` : ""}
-                </span>
-              </label>
+            <div className="bg-surface border border-border rounded-lg p-4 space-y-2">
+              <p className="font-bold text-sm">13. Assinatura eletrônica</p>
+              <p className="text-xs text-muted-foreground">
+                Ao salvar, será solicitada a confirmação de identidade (PIN ou senha). A assinatura
+                eletrônica substitui o campo manuscrito “Assinatura e Carimbo Enfermeira” e bloqueia
+                o registro para edição.
+              </p>
+              <p className="text-sm font-semibold">
+                {perfil?.fullName ?? "—"}
+                {perfil?.registroProfissional ? ` — ${perfil.registroProfissional}` : ""}
+              </p>
+              {retificaDe && (
+                <div className="border border-amber-500/40 bg-amber-500/10 rounded-md p-3 space-y-2">
+                  <p className="text-xs font-bold flex items-center gap-1.5">
+                    <FileWarning className="size-3.5" /> Retificação do registro de{" "}
+                    {String(retificaDe.data).split("-").reverse().join("/")} •{" "}
+                    {TURNO_LABEL[retificaDe.turno] ?? retificaDe.turno}
+                  </p>
+                  <input
+                    value={motivoRetificacao}
+                    onChange={(e) => setMotivoRetificacao(e.target.value)}
+                    placeholder="Motivo da retificação"
+                    className="w-full text-sm border border-border rounded-md px-3 py-2 bg-background"
+                  />
+                  <button
+                    className="text-xs font-semibold text-muted-foreground underline"
+                    onClick={() => {
+                      setRetificaDe(null);
+                      setMotivoRetificacao("");
+                    }}
+                  >
+                    Cancelar retificação
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="bg-surface border border-border rounded-lg p-4">
@@ -512,18 +532,29 @@ ${rodape}
               </p>
               {historico.data?.length ? (
                 <div className="space-y-2">
-                  {historico.data.map((r: any) => (
-                    <button
-                      key={r.id}
-                      onClick={() => setVerRegistro(r)}
-                      className="w-full text-left border border-border rounded-md px-3 py-2 hover:bg-black/[0.03] flex justify-between items-center"
-                    >
-                      <span className="text-sm font-semibold">
-                        {String(r.data).split("-").reverse().join("/")} • {TURNO_LABEL[r.turno] ?? r.turno}
-                      </span>
-                      <span className="text-xs text-muted-foreground truncate max-w-[50%]">{r.autor_nome}</span>
-                    </button>
-                  ))}
+                  {historico.data.map((r: any) => {
+                    const a = assinaturaDe(r.id);
+                    return (
+                      <button
+                        key={r.id}
+                        onClick={() => setVerRegistro(r)}
+                        className="w-full text-left border border-border rounded-md px-3 py-2 hover:bg-black/[0.03] flex justify-between items-center gap-3"
+                      >
+                        <span className="text-sm font-semibold">
+                          {String(r.data).split("-").reverse().join("/")} • {TURNO_LABEL[r.turno] ?? r.turno}
+                          {r.retifica_id && (
+                            <span className="ml-2 text-[10px] uppercase font-bold text-amber-700">
+                              retificação
+                            </span>
+                          )}
+                        </span>
+                        <span className="text-xs text-muted-foreground truncate max-w-[55%] flex items-center gap-1 justify-end">
+                          {a ? <PenLine className="size-3" /> : null}
+                          {a ? carimbo(a) : r.autor_nome}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">Nenhum registro de SAE para esta residente.</p>
@@ -537,7 +568,7 @@ ${rodape}
                 className="bg-primary text-primary-foreground px-6 py-3 rounded-md font-bold text-sm flex items-center gap-2 shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-60"
               >
                 <Save className="size-4" />
-                {salvar.isPending ? "Salvando…" : "Salvar evolução"}
+                {salvar.isPending ? "Assinando…" : "Salvar e assinar"}
               </button>
             </div>
           </>
