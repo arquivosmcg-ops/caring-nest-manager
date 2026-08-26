@@ -110,6 +110,7 @@ function PrescricaoEnfermagemPage() {
   const [diagOutros, setDiagOutros] = useState("");
   const [assinaturaEnf, setAssinaturaEnf] = useState("");
   const [celula, setCelula] = useState<RegistroCuidado | null>(null);
+  const [assinaturaAberta, setAssinaturaAberta] = useState(false);
 
   const residentes = useQuery({
     queryKey: ["residentes-presc-enf"],
