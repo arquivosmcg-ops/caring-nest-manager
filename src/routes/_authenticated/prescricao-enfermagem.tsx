@@ -15,8 +15,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Lock, Pencil, Printer, Save, ClipboardList, CalendarDays, Table2 } from "lucide-react";
+import { Lock, Pencil, Printer, Save, ClipboardList, CalendarDays, Table2, PenLine } from "lucide-react";
 import { DitarAudio } from "@/components/ditar-audio";
+import {
+  AssinaturaDialog,
+  CarimboAssinatura,
+  type CredencialAssinatura,
+} from "@/components/assinatura-dialog";
+import { hashDocumento, carimbo, type Assinatura } from "@/lib/assinatura";
 import {
   DIAGNOSTICOS_ENFERMAGEM,
   MESES,
