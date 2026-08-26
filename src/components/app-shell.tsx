@@ -29,6 +29,7 @@ const navItems = [
   { to: "/aniversariantes", label: "Aniversariantes do Mês", icon: Cake, multi: true },
   { to: "/prontuario", label: "Prontuário", icon: FileText, multi: true },
   { to: "/evolucao-multi", label: "Evolução Multiprofissional", icon: Stethoscope, multi: true },
+  { to: "/sae", label: "SAE", icon: ClipboardList, multi: false },
   { to: "/quartos", label: "Quartos", icon: BedDouble, multi: false },
   { to: "/medicamentos", label: "Prescrição Médica", icon: Pill, multi: false },
   { to: "/sinais-vitais", label: "Sinais Vitais", icon: Activity, multi: false },
