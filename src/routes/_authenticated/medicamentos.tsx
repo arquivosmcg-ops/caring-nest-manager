@@ -444,7 +444,7 @@ function MedRow({
   med, idx, total, mes, ano, onPatch, onDelete,
 }: {
   med: Medicamento; idx: number; total: number; mes: number; ano: number;
-  onPatch: (patch: Partial<Medicamento>) => void; onDelete: () => void;
+  onPatch: (patch: Partial<Medicamento>) => void; onDelete: (modo: "mes" | "definitivo") => void;
 }) {
   const [nome, setNome] = useState(med.nome);
   const [dose, setDose] = useState(med.dosagem);
