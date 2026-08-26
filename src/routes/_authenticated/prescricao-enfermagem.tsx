@@ -402,6 +402,8 @@ function PrescricaoEnfermagemPage() {
   td.ok { background:#c6f0c6; font-weight:700; }
   .ass { display:flex; gap:24px; margin-top:18px; font-size:8pt; }
   .ass div { flex:1; border-top:1px solid #111; padding-top:3px; }
+  .assel { margin-top:10px; font-size:7pt; border-top:1px solid #111; padding-top:4px; }
+  .assel div { margin:1px 0; }
 </style></head><body>
   <h1>Prescrição de Enfermagem</h1>
   <div class="meta"><b>${esc(residente.nome_completo)}</b> — Nasc.: ${residente.data_nascimento ? new Date(residente.data_nascimento + "T00:00:00").toLocaleDateString("pt-BR") : "—"} • Quarto: ${esc((residente as any).quartos?.numero ?? "—")} • HD: ${esc(hd.data ?? "—")} • Ref.: ${MESES[mes - 1]}/${ano}</div>
