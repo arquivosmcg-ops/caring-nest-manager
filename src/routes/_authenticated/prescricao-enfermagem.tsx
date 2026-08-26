@@ -902,10 +902,28 @@ function PrescricaoEnfermagemPage() {
                 </p>
                 <p>{celula.observacao || "—"}</p>
               </div>
+              {(() => {
+                const a = assinaturaDoTurno(celula.data, celula.turno as Turno);
+                return a ? (
+                  <div className="border-t border-border pt-3">
+                    <CarimboAssinatura assinatura={a} />
+                  </div>
+                ) : null;
+              })()}
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      <AssinaturaDialog
+        open={assinaturaAberta}
+        onOpenChange={setAssinaturaAberta}
+        titulo="Assinar registro do turno"
+        descricao="Substitui o campo manuscrito “Assinatura e Carimbo” do formulário físico."
+        onConfirmar={async (cred) => {
+          await salvarTurno.mutateAsync(cred);
+        }}
+      />
     </div>
   );
 }
