@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   Stethoscope,
   UserCog,
+  Cake,
   LogOut,
 } from "lucide-react";
 import logoAsset from "@/assets/logo_instituto_maior.png.asset.json";
