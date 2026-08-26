@@ -846,6 +846,15 @@ function ResidentesPage() {
                     >
                       <Printer className="size-4" />
                     </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="size-8 text-primary hover:bg-primary/10"
+                      onClick={() => setDeleting(r)}
+                      title="Eliminar registro"
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
                   </div>
                 </td>
 
