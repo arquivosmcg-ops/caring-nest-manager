@@ -169,15 +169,67 @@ function PlanilhaPrescricao({
         .maybeSingle();
       if (error) throw error;
       if (found) return found as Prescricao;
+
+      // Busca a prescrição anterior mais recente para replicar automaticamente
+      const { data: anteriores } = await supabase
+        .from("prescricoes")
+        .select("*")
+        .eq("residente_id", residente.id)
+        .or(`ano.lt.${ano},and(ano.eq.${ano},mes.lt.${mes})`)
+        .order("ano", { ascending: false })
+        .order("mes", { ascending: false })
+        .limit(1);
+      const anterior = (anteriores?.[0] ?? null) as Prescricao | null;
+
       const { data: created, error: err2 } = await supabase
         .from("prescricoes")
-        .insert({ residente_id: residente.id, mes, ano, alergias: residente.alergias, hd: residente.historico_medico })
+        .insert({
+          residente_id: residente.id,
+          mes,
+          ano,
+          alergias: anterior?.alergias ?? residente.alergias,
+          hd: anterior?.hd ?? residente.historico_medico,
+          medico_nome: anterior?.medico_nome ?? null,
+          crm: anterior?.crm ?? null,
+          andar: anterior?.andar ?? null,
+        })
         .select("*")
         .single();
       if (err2) throw err2;
-      return created as Prescricao;
+      const nova = created as Prescricao;
+
+      if (anterior) {
+        const { data: medsAnt } = await supabase
+          .from("medicamentos")
+          .select("*")
+          .eq("prescricao_id", anterior.id)
+          .eq("ativo", true)
+          .order("numero", { ascending: true });
+        const lista = (medsAnt ?? []) as unknown as Medicamento[];
+        if (lista.length > 0) {
+          const novos = lista.map((m, i) => {
+            const horario = m.horarios?.[0] ?? "";
+            const map: Record<string, string> = {};
+            matchingDays(mes, ano, m.dias_semana ?? []).forEach((d) => (map[String(d)] = horario));
+            return {
+              prescricao_id: nova.id,
+              residente_id: residente.id,
+              nome: m.nome,
+              dosagem: m.dosagem,
+              via: m.via,
+              horarios: m.horarios ?? [],
+              dias_semana: m.dias_semana ?? [],
+              dias_do_mes: map,
+              numero: m.numero ?? i + 1,
+            };
+          });
+          await supabase.from("medicamentos").insert(novos as never);
+        }
+      }
+      return nova;
     },
   });
+
 
   const prescricao = prescricaoQ.data;
 
