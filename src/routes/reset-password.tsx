@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/password-input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import logoAsset from "@/assets/logo_instituto_maior.png.asset.json";
@@ -80,9 +81,8 @@ function ResetPasswordPage() {
             <form onSubmit={submit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="nova-senha">Nova senha</Label>
-                <Input
+                <PasswordInput
                   id="nova-senha"
-                  type="password"
                   required
                   minLength={6}
                   value={senha}
@@ -92,9 +92,8 @@ function ResetPasswordPage() {
               </div>
               <div>
                 <Label htmlFor="confirmar-senha">Confirmar nova senha</Label>
-                <Input
+                <PasswordInput
                   id="confirmar-senha"
-                  type="password"
                   required
                   minLength={6}
                   value={confirmar}

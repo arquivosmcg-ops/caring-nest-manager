@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/password-input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -203,9 +204,8 @@ export function AssinaturaDialog({
             {modo === "pin" && temPin.data ? (
               <div>
                 <Label htmlFor="pin-assinatura">PIN de assinatura</Label>
-                <Input
+                <PasswordInput
                   id="pin-assinatura"
-                  type="password"
                   inputMode="numeric"
                   autoComplete="off"
                   maxLength={6}
@@ -224,9 +224,8 @@ export function AssinaturaDialog({
             ) : (
               <div>
                 <Label htmlFor="senha-assinatura">Senha da conta</Label>
-                <Input
+                <PasswordInput
                   id="senha-assinatura"
-                  type="password"
                   autoComplete="current-password"
                   value={senha}
                   onChange={(e) => setSenha(e.target.value)}
@@ -247,9 +246,8 @@ export function AssinaturaDialog({
               <div className="border-t border-border pt-3">
                 <Label htmlFor="novo-pin">Cadastrar um PIN (4 a 6 dígitos)</Label>
                 <div className="flex gap-2 mt-1">
-                  <Input
+                  <PasswordInput
                     id="novo-pin"
-                    type="password"
                     inputMode="numeric"
                     maxLength={6}
                     value={novoPin}
