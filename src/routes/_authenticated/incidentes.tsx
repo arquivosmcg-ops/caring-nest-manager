@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { TextareaDitavel } from "@/components/ditar-audio";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, AlertTriangle, CheckCircle2 } from "lucide-react";
@@ -135,11 +136,11 @@ function IncidentesPage() {
               </div>
               <div>
                 <Label>Descrição *</Label>
-                <Textarea name="descricao" required rows={3} />
+                <TextareaDitavel name="descricao" required rows={3} />
               </div>
               <div>
                 <Label>Ação tomada</Label>
-                <Textarea name="acao_tomada" rows={2} />
+                <TextareaDitavel name="acao_tomada" rows={2} />
               </div>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>

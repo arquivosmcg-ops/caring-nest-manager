@@ -139,3 +139,35 @@ export function DitarAudio({
     </button>
   );
 }
+
+/** Textarea com botão de ditado acoplado (funciona também em formulários não controlados). */
+export function TextareaDitavel(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  const { className, ...rest } = props;
+  return (
+    <div className="flex items-start gap-2">
+      <textarea
+        ref={ref}
+        {...rest}
+        className={cn(
+          "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          className,
+        )}
+      />
+      <DitarAudio
+        onTexto={(t) => {
+          const el = ref.current;
+          if (!el) return;
+          const novo = el.value ? `${el.value.trim()} ${t}` : t;
+          const setter = Object.getOwnPropertyDescriptor(
+            window.HTMLTextAreaElement.prototype,
+            "value",
+          )?.set;
+          setter?.call(el, novo);
+          el.dispatchEvent(new Event("input", { bubbles: true }));
+          el.focus();
+        }}
+      />
+    </div>
+  );
+}

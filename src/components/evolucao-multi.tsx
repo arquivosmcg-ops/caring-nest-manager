@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { DitarAudio } from "@/components/ditar-audio";
 import {
   Select,
   SelectContent,
@@ -430,7 +431,10 @@ footer { margin-top:24px; font-size:9px; color:#666; border-top:1px solid #ccc; 
           </div>
           <div>
             <Label>Evolução</Label>
-            <Textarea rows={7} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Descreva a avaliação, conduta e orientações…" />
+            <div className="flex items-start gap-2">
+              <Textarea rows={7} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Descreva a avaliação, conduta e orientações… ou use o microfone para ditar" />
+              <DitarAudio onTexto={(t) => setTexto((prev) => (prev ? `${prev.trim()} ${t}` : t))} />
+            </div>
           </div>
           <div>
             <Label className="flex items-center gap-2 text-sm">
