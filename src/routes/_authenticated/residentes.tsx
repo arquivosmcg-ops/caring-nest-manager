@@ -7,7 +7,17 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Upload, X, Wand2, Pencil, Check, FilePen, Printer } from "lucide-react";
+import { Plus, Upload, X, Wand2, Pencil, Check, FilePen, Printer, Trash2, ListOrdered } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -44,6 +54,17 @@ function normalizeNome(raw: string): string {
       return word.charAt(0).toLocaleUpperCase("pt-BR") + word.slice(1);
     })
     .join(" ");
+}
+
+export function calcularIdade(data: string | null): number | null {
+  if (!data) return null;
+  const [y, m, d] = data.split("-").map(Number);
+  if (!y || !m || !d) return null;
+  const hoje = new Date();
+  let idade = hoje.getFullYear() - y;
+  const mesAtual = hoje.getMonth() + 1;
+  if (mesAtual < m || (mesAtual === m && hoje.getDate() < d)) idade--;
+  return idade;
 }
 
 export const Route = createFileRoute("/_authenticated/residentes")({
@@ -370,6 +391,7 @@ function ResidentesPage() {
   const [editingResidente, setEditingResidente] = useState<Residente | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingNome, setEditingNome] = useState("");
+  const [deleting, setDeleting] = useState<Residente | null>(null);
 
   const residentes = useQuery({
     queryKey: ["residentes"],
@@ -469,6 +491,24 @@ function ResidentesPage() {
       qc.invalidateQueries({ queryKey: ["dashboard-residentes"] });
       setEditingResidente(null);
       toast.success("Residente atualizado");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const removeResidente = useMutation({
+    mutationFn: async (r: Residente) => {
+      const { error } = await supabase.from("residentes").delete().eq("id", r.id);
+      if (error) throw error;
+      if (r.foto_url) {
+        await supabase.storage.from("residentes-fotos").remove([r.foto_url]);
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["residentes"] });
+      qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
+      qc.invalidateQueries({ queryKey: ["dashboard-residentes"] });
+      setDeleting(null);
+      toast.success("Registro de residente eliminado");
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -605,6 +645,53 @@ function ResidentesPage() {
     w.document.close();
   };
 
+  const printListagem = () => {
+    const esc = (v: string | null | undefined) =>
+      (v ?? "—").toString().replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]!));
+    const lista = [...(residentes.data ?? [])].sort((a, b) =>
+      a.nome_completo.localeCompare(b.nome_completo, "pt-BR"),
+    );
+    if (lista.length === 0) { toast.error("Nenhuma residente para listar"); return; }
+    const linhas = lista
+      .map((r, i) => {
+        const idade = calcularIdade(r.data_nascimento);
+        return `<tr><td class="num">${i + 1}</td><td class="nome">${esc(r.nome_completo)}</td><td>${idade ?? "—"}</td><td class="mono">${esc(r.quartos?.numero ?? null)}</td><td>${esc(r.convenio)}</td></tr>`;
+      })
+      .join("");
+    const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"/>
+<title>Listagem de residentes</title>
+<style>
+  @page { size: A4 portrait; margin: 15mm; }
+  body { font-family: Inter, Arial, sans-serif; color:#111; margin:0; font-size:10.5pt; }
+  h1 { font-size:16pt; margin:0 0 2px; }
+  .sub { font-size:9pt; color:#666; text-transform:uppercase; letter-spacing:.08em; font-weight:700; }
+  header { border-bottom:3px solid #8B0000; padding-bottom:10px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:flex-end; }
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; font-size:8.5pt; text-transform:uppercase; letter-spacing:.06em; border-bottom:1.5px solid #333; padding:6px 6px; }
+  td { padding:6px; border-bottom:1px solid #e5e5e5; }
+  tr { page-break-inside:avoid; }
+  .num { width:28px; color:#888; }
+  .nome { font-weight:700; }
+  .mono { font-family:ui-monospace, monospace; }
+  footer { margin-top:12px; font-size:8pt; color:#888; text-align:center; }
+</style></head><body>
+  <header>
+    <div><h1>Listagem de Residentes</h1><div class="sub">Residencial São Camilo</div></div>
+    <div class="sub">${lista.length} residentes • ${new Date().toLocaleDateString("pt-BR")}</div>
+  </header>
+  <table>
+    <thead><tr><th></th><th>Nome</th><th>Idade</th><th>Quarto</th><th>Convênio</th></tr></thead>
+    <tbody>${linhas}</tbody>
+  </table>
+  <footer>Documento confidencial — uso interno do Residencial São Camilo.</footer>
+  <script>window.addEventListener('load', () => setTimeout(() => window.print(), 300));</script>
+</body></html>`;
+    const w = window.open("", "_blank", "width=900,height=1000");
+    if (!w) { toast.error("Bloqueador de pop-ups impediu a impressão"); return; }
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+  };
 
   return (
     <div className="space-y-6">
@@ -622,6 +709,14 @@ function ResidentesPage() {
             title="Padroniza capitalização e remove espaços extras nos nomes"
           >
             <Wand2 className="size-4 mr-1" /> Corrigir nomes
+          </Button>
+          <Button
+            variant="outline"
+            onClick={printListagem}
+            disabled={!residentes.data?.length}
+            title="Imprimir listagem alfabética (A4)"
+          >
+            <ListOrdered className="size-4 mr-1" /> Imprimir listagem
           </Button>
           <Dialog open={open} onOpenChange={(v) => { setOpen(v); }}>
             <DialogTrigger asChild>
@@ -751,6 +846,15 @@ function ResidentesPage() {
                     >
                       <Printer className="size-4" />
                     </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="size-8 text-primary hover:bg-primary/10"
+                      onClick={() => setDeleting(r)}
+                      title="Eliminar registro"
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
                   </div>
                 </td>
 
@@ -759,6 +863,27 @@ function ResidentesPage() {
           </tbody>
         </table>
       </div>
+
+      <AlertDialog open={deleting !== null} onOpenChange={(v) => { if (!v) setDeleting(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar registro de residente?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação é definitiva. Todo o histórico de <b>{deleting?.nome_completo}</b> (prescrições,
+              sinais vitais, evoluções, incidentes e checklists) será eliminado permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={removeResidente.isPending}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); if (deleting) removeResidente.mutate(deleting); }}
+              disabled={removeResidente.isPending}
+            >
+              {removeResidente.isPending ? "Eliminando…" : "Eliminar definitivamente"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

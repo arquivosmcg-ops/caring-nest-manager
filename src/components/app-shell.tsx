@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   Stethoscope,
   UserCog,
+  Cake,
   LogOut,
 } from "lucide-react";
 import logoAsset from "@/assets/logo_instituto_maior.png.asset.json";
@@ -25,6 +26,7 @@ import { AlertasSino } from "@/components/alertas-sino";
 const navItems = [
   { to: "/dashboard", label: "Painel Geral", icon: LayoutDashboard, multi: false },
   { to: "/residentes", label: "Residentes", icon: Users, multi: true },
+  { to: "/aniversariantes", label: "Aniversariantes do Mês", icon: Cake, multi: true },
   { to: "/prontuario", label: "Prontuário", icon: FileText, multi: true },
   { to: "/evolucao-multi", label: "Evolução Multiprofissional", icon: Stethoscope, multi: true },
   { to: "/quartos", label: "Quartos", icon: BedDouble, multi: false },
