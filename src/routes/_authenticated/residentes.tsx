@@ -710,6 +710,14 @@ function ResidentesPage() {
           >
             <Wand2 className="size-4 mr-1" /> Corrigir nomes
           </Button>
+          <Button
+            variant="outline"
+            onClick={printListagem}
+            disabled={!residentes.data?.length}
+            title="Imprimir listagem alfabética (A4)"
+          >
+            <ListOrdered className="size-4 mr-1" /> Imprimir listagem
+          </Button>
           <Dialog open={open} onOpenChange={(v) => { setOpen(v); }}>
             <DialogTrigger asChild>
               <Button><Plus className="size-4 mr-1" /> Novo residente</Button>
