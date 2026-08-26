@@ -31,6 +31,7 @@ const navItems = [
   { to: "/prontuario", label: "Prontuário", icon: FileText, multi: true },
   { to: "/evolucao-multi", label: "Evolução Multiprofissional", icon: Stethoscope, multi: true },
   { to: "/sae", label: "SAE", icon: ClipboardList, multi: false },
+  { to: "/prescricao-enfermagem", label: "Prescrição de Enfermagem", icon: ClipboardCheck, multi: false },
   { to: "/quartos", label: "Quartos", icon: BedDouble, multi: false },
   { to: "/medicamentos", label: "Prescrição Médica", icon: Pill, multi: false },
   { to: "/sinais-vitais", label: "Sinais Vitais", icon: Activity, multi: false },
