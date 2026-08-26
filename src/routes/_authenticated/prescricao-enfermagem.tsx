@@ -411,6 +411,19 @@ function PrescricaoEnfermagemPage() {
     <div>Carimbo e assinatura da Enfermeira: ${esc(assinaturaEnf || "")}</div>
     <div>Equipe de enfermagem: ${esc(equipeDoMes.join(", ") || "—")}</div>
   </div>
+  <div class="assel">
+    <b>Assinaturas eletrônicas do período</b>
+    ${
+      (assinaturasMes.data ?? []).length
+        ? (assinaturasMes.data ?? [])
+            .map((a) => {
+              const ref = (a.documento_ref ?? {}) as { data?: string; turno?: string };
+              return `<div>${esc(carimbo(a))} — ${ref.data ? new Date(ref.data + "T00:00:00").toLocaleDateString("pt-BR") : "—"} ${ref.turno ? esc(TURNO_LABEL[ref.turno as Turno]) : ""} • assinado em ${new Date(a.created_at).toLocaleString("pt-BR")} • documento íntegro — hash: ${esc(a.hash_documento.slice(0, 8))}</div>`;
+            })
+            .join("")
+        : "<div>Nenhuma assinatura eletrônica registrada neste mês.</div>"
+    }
+  </div>
   <script>window.addEventListener('load', () => setTimeout(() => window.print(), 300));</script>
 </body></html>`;
     const w = window.open("", "_blank", "width=1200,height=900");
