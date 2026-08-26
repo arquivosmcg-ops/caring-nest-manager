@@ -218,8 +218,34 @@ function PrescricaoEnfermagemPage() {
 
   const feitosCount = Object.values(marcacoes).filter((m) => m.feito).length;
 
+  const assinaturasMes = useQuery({
+    queryKey: ["assinaturas-presc-enf", residenteId, mes, ano],
+    enabled: !!residenteId,
+    queryFn: async () => {
+      const { data: rows, error } = await supabase
+        .from("assinaturas")
+        .select("*")
+        .eq("documento_tipo", "prescricao_enfermagem_turno")
+        .eq("documento_id", residenteId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return ((rows ?? []) as unknown as Assinatura[]).filter((a) => {
+        const ref = (a.documento_ref ?? {}) as { data?: string };
+        return !!ref.data && ref.data >= primeiroDia && ref.data <= ultimoDia;
+      });
+    },
+  });
+
+  const assinaturaDoTurno = (d: string, t: Turno) =>
+    (assinaturasMes.data ?? []).find((a) => {
+      const ref = (a.documento_ref ?? {}) as { data?: string; turno?: string };
+      return ref.data === d && ref.turno === t;
+    }) ?? null;
+
+  const turnoAssinado = assinaturaDoTurno(data, turno);
+
   const salvarTurno = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (cred: CredencialAssinatura) => {
       if (!residenteId) throw new Error("Selecione um residente");
       const { data: userData } = await supabase.auth.getUser();
       const uid = userData.user?.id;
@@ -258,10 +284,32 @@ function PrescricaoEnfermagemPage() {
           );
         if (error) throw error;
       }
+
+      const hash = await hashDocumento({
+        tipo: "prescricao_enfermagem_turno",
+        residente_id: residenteId,
+        data,
+        turno,
+        cuidados: paraSalvar.map((c) => ({
+          numero: c.numero,
+          descricao: c.descricao,
+          observacao: marcacoes[c.id]?.observacao?.trim() || null,
+        })),
+      });
+      const { error: erroAss } = await supabase.rpc("registrar_assinatura", {
+        _documento_tipo: "prescricao_enfermagem_turno",
+        _documento_id: residenteId,
+        _hash: hash,
+        _pin: cred.pin ?? undefined,
+        _metodo: cred.metodo,
+        _documento_ref: { residente_id: residenteId, data, turno } as never,
+      });
+      if (erroAss) throw erroAss;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["registros-cuidados"] });
-      toast.success("Turno registrado");
+      qc.invalidateQueries({ queryKey: ["assinaturas-presc-enf"] });
+      toast.success("Turno registrado e assinado eletronicamente");
     },
     onError: (e: Error) => toast.error(e.message),
   });
