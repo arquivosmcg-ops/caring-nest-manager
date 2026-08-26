@@ -20,6 +20,7 @@ import { Route as AuthenticatedSaeRouteImport } from './routes/_authenticated/sa
 import { Route as AuthenticatedResidentesRouteImport } from './routes/_authenticated/residentes'
 import { Route as AuthenticatedQuartosRouteImport } from './routes/_authenticated/quartos'
 import { Route as AuthenticatedProntuarioRouteImport } from './routes/_authenticated/prontuario'
+import { Route as AuthenticatedPrescricaoEnfermagemRouteImport } from './routes/_authenticated/prescricao-enfermagem'
 import { Route as AuthenticatedMedicamentosRouteImport } from './routes/_authenticated/medicamentos'
 import { Route as AuthenticatedIncidentesRouteImport } from './routes/_authenticated/incidentes'
 import { Route as AuthenticatedEvolucaoMultiRouteImport } from './routes/_authenticated/evolucao-multi'
@@ -84,6 +85,12 @@ const AuthenticatedProntuarioRoute = AuthenticatedProntuarioRouteImport.update({
   path: '/prontuario',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPrescricaoEnfermagemRoute =
+  AuthenticatedPrescricaoEnfermagemRouteImport.update({
+    id: '/prescricao-enfermagem',
+    path: '/prescricao-enfermagem',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedMedicamentosRoute =
   AuthenticatedMedicamentosRouteImport.update({
     id: '/medicamentos',
@@ -143,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/evolucao-multi': typeof AuthenticatedEvolucaoMultiRoute
   '/incidentes': typeof AuthenticatedIncidentesRoute
   '/medicamentos': typeof AuthenticatedMedicamentosRoute
+  '/prescricao-enfermagem': typeof AuthenticatedPrescricaoEnfermagemRoute
   '/prontuario': typeof AuthenticatedProntuarioRoute
   '/quartos': typeof AuthenticatedQuartosRoute
   '/residentes': typeof AuthenticatedResidentesRoute
@@ -163,6 +171,7 @@ export interface FileRoutesByTo {
   '/evolucao-multi': typeof AuthenticatedEvolucaoMultiRoute
   '/incidentes': typeof AuthenticatedIncidentesRoute
   '/medicamentos': typeof AuthenticatedMedicamentosRoute
+  '/prescricao-enfermagem': typeof AuthenticatedPrescricaoEnfermagemRoute
   '/prontuario': typeof AuthenticatedProntuarioRoute
   '/quartos': typeof AuthenticatedQuartosRoute
   '/residentes': typeof AuthenticatedResidentesRoute
@@ -185,6 +194,7 @@ export interface FileRoutesById {
   '/_authenticated/evolucao-multi': typeof AuthenticatedEvolucaoMultiRoute
   '/_authenticated/incidentes': typeof AuthenticatedIncidentesRoute
   '/_authenticated/medicamentos': typeof AuthenticatedMedicamentosRoute
+  '/_authenticated/prescricao-enfermagem': typeof AuthenticatedPrescricaoEnfermagemRoute
   '/_authenticated/prontuario': typeof AuthenticatedProntuarioRoute
   '/_authenticated/quartos': typeof AuthenticatedQuartosRoute
   '/_authenticated/residentes': typeof AuthenticatedResidentesRoute
@@ -207,6 +217,7 @@ export interface FileRouteTypes {
     | '/evolucao-multi'
     | '/incidentes'
     | '/medicamentos'
+    | '/prescricao-enfermagem'
     | '/prontuario'
     | '/quartos'
     | '/residentes'
@@ -227,6 +238,7 @@ export interface FileRouteTypes {
     | '/evolucao-multi'
     | '/incidentes'
     | '/medicamentos'
+    | '/prescricao-enfermagem'
     | '/prontuario'
     | '/quartos'
     | '/residentes'
@@ -248,6 +260,7 @@ export interface FileRouteTypes {
     | '/_authenticated/evolucao-multi'
     | '/_authenticated/incidentes'
     | '/_authenticated/medicamentos'
+    | '/_authenticated/prescricao-enfermagem'
     | '/_authenticated/prontuario'
     | '/_authenticated/quartos'
     | '/_authenticated/residentes'
@@ -344,6 +357,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProntuarioRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/prescricao-enfermagem': {
+      id: '/_authenticated/prescricao-enfermagem'
+      path: '/prescricao-enfermagem'
+      fullPath: '/prescricao-enfermagem'
+      preLoaderRoute: typeof AuthenticatedPrescricaoEnfermagemRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/medicamentos': {
       id: '/_authenticated/medicamentos'
       path: '/medicamentos'
@@ -412,6 +432,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEvolucaoMultiRoute: typeof AuthenticatedEvolucaoMultiRoute
   AuthenticatedIncidentesRoute: typeof AuthenticatedIncidentesRoute
   AuthenticatedMedicamentosRoute: typeof AuthenticatedMedicamentosRoute
+  AuthenticatedPrescricaoEnfermagemRoute: typeof AuthenticatedPrescricaoEnfermagemRoute
   AuthenticatedProntuarioRoute: typeof AuthenticatedProntuarioRoute
   AuthenticatedQuartosRoute: typeof AuthenticatedQuartosRoute
   AuthenticatedResidentesRoute: typeof AuthenticatedResidentesRoute
@@ -428,6 +449,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEvolucaoMultiRoute: AuthenticatedEvolucaoMultiRoute,
   AuthenticatedIncidentesRoute: AuthenticatedIncidentesRoute,
   AuthenticatedMedicamentosRoute: AuthenticatedMedicamentosRoute,
+  AuthenticatedPrescricaoEnfermagemRoute:
+    AuthenticatedPrescricaoEnfermagemRoute,
   AuthenticatedProntuarioRoute: AuthenticatedProntuarioRoute,
   AuthenticatedQuartosRoute: AuthenticatedQuartosRoute,
   AuthenticatedResidentesRoute: AuthenticatedResidentesRoute,
