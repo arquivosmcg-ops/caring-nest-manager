@@ -8,6 +8,7 @@ import {
   Activity,
   AlertTriangle,
   ClipboardCheck,
+  ClipboardList,
   FileText,
   ShieldCheck,
   Stethoscope,
