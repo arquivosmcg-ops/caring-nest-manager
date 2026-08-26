@@ -103,32 +103,42 @@ function CampoRender({
     );
   }
   if (campo.tipo === "textarea") {
+    const atual = (valor as string) ?? "";
     return (
       <div className="space-y-1.5">
         <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
           {campo.label}
         </p>
-        <textarea
-          rows={3}
-          value={(valor as string) ?? ""}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-full text-sm border border-border rounded-md px-3 py-2 bg-surface"
-        />
+        <div className="flex items-start gap-2">
+          <textarea
+            rows={3}
+            value={atual}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-full text-sm border border-border rounded-md px-3 py-2 bg-surface"
+          />
+          <DitarAudio onTexto={(t) => onChange(atual ? `${atual.trim()} ${t}` : t)} />
+        </div>
       </div>
     );
   }
+  const atual = (valor as string) ?? "";
   return (
     <div className="space-y-1.5">
       <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
         {campo.label}
         {campo.tipo === "numero" && campo.unidade ? ` (${campo.unidade})` : ""}
       </p>
-      <input
-        type={campo.tipo === "numero" ? "number" : "text"}
-        value={(valor as string) ?? ""}
-        onChange={(e) => onChange(e.target.value === "" ? undefined : e.target.value)}
-        className="w-full text-sm border border-border rounded-md px-3 py-2 bg-surface"
-      />
+      <div className="flex items-center gap-2">
+        <input
+          type={campo.tipo === "numero" ? "number" : "text"}
+          value={atual}
+          onChange={(e) => onChange(e.target.value === "" ? undefined : e.target.value)}
+          className="w-full text-sm border border-border rounded-md px-3 py-2 bg-surface"
+        />
+        {campo.tipo === "texto" && (
+          <DitarAudio onTexto={(t) => onChange(atual ? `${atual.trim()} ${t}` : t)} />
+        )}
+      </div>
     </div>
   );
 }
