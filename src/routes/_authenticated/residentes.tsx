@@ -380,6 +380,7 @@ function ResidentesPage() {
   const [editingResidente, setEditingResidente] = useState<Residente | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingNome, setEditingNome] = useState("");
+  const [deleting, setDeleting] = useState<Residente | null>(null);
 
   const residentes = useQuery({
     queryKey: ["residentes"],
