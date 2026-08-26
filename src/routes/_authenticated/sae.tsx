@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { SAE_SECOES, resumoSecao, type SaeValores, type SaeCampo } from "@/lib/sae-schema";
+import { DitarAudio } from "@/components/ditar-audio";
 
 export const Route = createFileRoute("/_authenticated/sae")({
   head: () => ({
