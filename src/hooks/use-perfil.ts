@@ -6,6 +6,8 @@ export type PerfilAtual = {
   fullName: string;
   funcao: string | null;
   registroProfissional: string | null;
+  categoriaAssinatura: string | null;
+  conselhoUf: string | null;
   roles: string[];
   isMultiprofissional: boolean;
   isAdmin: boolean;
