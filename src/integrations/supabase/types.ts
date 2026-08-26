@@ -265,6 +265,50 @@ export type Database = {
         }
         Relationships: []
       }
+      diagnosticos_enfermagem: {
+        Row: {
+          ano: number
+          assinatura_enfermeira: string | null
+          created_at: string
+          diagnosticos: string[]
+          id: string
+          mes: number
+          outros_texto: string | null
+          residente_id: string
+          updated_at: string
+        }
+        Insert: {
+          ano: number
+          assinatura_enfermeira?: string | null
+          created_at?: string
+          diagnosticos?: string[]
+          id?: string
+          mes: number
+          outros_texto?: string | null
+          residente_id: string
+          updated_at?: string
+        }
+        Update: {
+          ano?: number
+          assinatura_enfermeira?: string | null
+          created_at?: string
+          diagnosticos?: string[]
+          id?: string
+          mes?: number
+          outros_texto?: string | null
+          residente_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diagnosticos_enfermagem_residente_id_fkey"
+            columns: ["residente_id"]
+            isOneToOne: false
+            referencedRelation: "residentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       evolucoes_multi: {
         Row: {
           anexos: Json
@@ -454,6 +498,44 @@ export type Database = {
           },
         ]
       }
+      plano_cuidados: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          descricao: string
+          id: string
+          numero: number
+          residente_id: string | null
+          turnos_aplicaveis: Database["public"]["Enums"]["shift"][]
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          descricao: string
+          id?: string
+          numero: number
+          residente_id?: string | null
+          turnos_aplicaveis?: Database["public"]["Enums"]["shift"][]
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          descricao?: string
+          id?: string
+          numero?: number
+          residente_id?: string | null
+          turnos_aplicaveis?: Database["public"]["Enums"]["shift"][]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plano_cuidados_residente_id_fkey"
+            columns: ["residente_id"]
+            isOneToOne: false
+            referencedRelation: "residentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prescricoes: {
         Row: {
           alergias: string | null
@@ -575,6 +657,60 @@ export type Database = {
           status?: Database["public"]["Enums"]["room_status"]
         }
         Relationships: []
+      }
+      registros_cuidados: {
+        Row: {
+          created_at: string
+          cuidado_id: string
+          data: string
+          feito_em: string
+          id: string
+          observacao: string | null
+          residente_id: string
+          responsavel_id: string | null
+          responsavel_nome: string | null
+          turno: Database["public"]["Enums"]["shift"]
+        }
+        Insert: {
+          created_at?: string
+          cuidado_id: string
+          data: string
+          feito_em?: string
+          id?: string
+          observacao?: string | null
+          residente_id: string
+          responsavel_id?: string | null
+          responsavel_nome?: string | null
+          turno: Database["public"]["Enums"]["shift"]
+        }
+        Update: {
+          created_at?: string
+          cuidado_id?: string
+          data?: string
+          feito_em?: string
+          id?: string
+          observacao?: string | null
+          residente_id?: string
+          responsavel_id?: string | null
+          responsavel_nome?: string | null
+          turno?: Database["public"]["Enums"]["shift"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registros_cuidados_cuidado_id_fkey"
+            columns: ["cuidado_id"]
+            isOneToOne: false
+            referencedRelation: "plano_cuidados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registros_cuidados_residente_id_fkey"
+            columns: ["residente_id"]
+            isOneToOne: false
+            referencedRelation: "residentes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       residentes: {
         Row: {
