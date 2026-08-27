@@ -40,19 +40,7 @@ type Prescricao = {
   andar: string | null;
 };
 
-type Medicamento = {
-  id: string;
-  prescricao_id: string | null;
-  residente_id: string;
-  numero: number | null;
-  nome: string;
-  dosagem: string;
-  via: string | null;
-  horarios: string[];
-  dias_semana: string[];
-  dias_do_mes: Record<string, string>;
-  ativo: boolean;
-};
+type Medicamento = MedicamentoPrescrito;
 
 const DIAS_SEMANA = [
   { key: "todos", label: "Todos os dias" },
