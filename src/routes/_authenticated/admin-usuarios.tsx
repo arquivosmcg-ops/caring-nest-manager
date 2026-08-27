@@ -26,7 +26,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ShieldCheck, ShieldMinus, ShieldPlus, Search, History } from "lucide-react";
+import { ShieldCheck, ShieldMinus, ShieldPlus, Search, History, Trash2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { excluirProfissional } from "@/lib/admin-usuarios.functions";
 
 export const Route = createFileRoute("/_authenticated/admin-usuarios")({
   head: () => ({
@@ -157,6 +159,25 @@ function AdminUsuarios() {
       if (error) throw error;
       return data ?? [];
     },
+  });
+
+  const excluirFn = useServerFn(excluirProfissional);
+
+  const excluir = useMutation({
+    mutationFn: async ({ userId }: { userId: string }) =>
+      excluirFn({
+        data: {
+          userId,
+          ip: (await obterIp()) ?? undefined,
+          equipamento: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
+        },
+      }),
+    onSuccess: () => {
+      toast.success("Profissional eliminado com sucesso");
+      qc.invalidateQueries({ queryKey: ["profissionais-admin"] });
+      qc.invalidateQueries({ queryKey: ["auditoria-privilegios"] });
+    },
+    onError: (e: Error) => toast.error(e.message || "Não foi possível eliminar o profissional"),
   });
 
   const alterar = useMutation({
@@ -329,6 +350,7 @@ function AdminUsuarios() {
                         </td>
                         <td className="p-3 text-muted-foreground">{dataBr(p.created_at)}</td>
                         <td className="p-3 text-right">
+                          <div className="flex justify-end gap-2">
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button
@@ -373,6 +395,48 @@ function AdminUsuarios() {
                               </AlertDialogFooter>
                             </AlertDialogContent>
                           </AlertDialog>
+
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-destructive"
+                                disabled={excluir.isPending || souEu || ehAdmin}
+                                title={
+                                  souEu
+                                    ? "Não é possível eliminar a sua própria conta"
+                                    : ehAdmin
+                                      ? "Remova primeiro os privilégios de administrador"
+                                      : "Eliminar profissional"
+                                }
+                              >
+                                <Trash2 className="size-4" /> Eliminar
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Eliminar profissional</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem a certeza que pretende <strong>eliminar definitivamente</strong> a
+                                  conta de <strong>{p.full_name}</strong>? Esta ação é irreversível e a
+                                  pessoa perde o acesso ao sistema. Registos clínicos já assinados
+                                  permanecem no prontuário.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  className="bg-destructive text-white hover:bg-destructive/90"
+                                  disabled={excluir.isPending}
+                                  onClick={() => excluir.mutate({ userId: p.id })}
+                                >
+                                  Sim, eliminar
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -415,7 +479,7 @@ function AdminUsuarios() {
                         </td>
                         <td className="p-3">
                           <Badge variant={d.operacao === "promocao" ? "default" : "destructive"}>
-                            {d.operacao === "promocao" ? "Promoção" : "Revogação"}
+                            {d.operacao === "promocao" ? "Promoção" : d.operacao === "exclusao_conta" ? "Exclusão de conta" : "Revogação"}
                           </Badge>
                         </td>
                         <td className="p-3">{a.user_nome ?? "—"}</td>
