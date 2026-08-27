@@ -441,6 +441,7 @@ function PlanilhaPrescricao({
                 ano={ano}
                 onPatch={(patch) => updateMed.mutate({ id: m.id, patch })}
                 onDelete={(modo) => deleteMed.mutate({ med: m, modo })}
+                onSuspender={() => suspender.mutate(m)}
               />
             ))}
           </tbody>
@@ -448,6 +449,12 @@ function PlanilhaPrescricao({
       </div>
 
       <AddMedDialog open={addOpen} onOpenChange={setAddOpen} onSubmit={(v) => createMed.mutate(v)} loading={createMed.isPending} />
+      <AdministracaoDiariaDialog
+        open={admOpen}
+        onOpenChange={setAdmOpen}
+        residenteId={residente.id}
+        residenteNome={residente.nome_completo}
+      />
     </div>
   );
 }
