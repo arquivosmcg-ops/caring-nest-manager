@@ -99,7 +99,7 @@ function AuthPage() {
       },
     });
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(error.message || "Não foi possível concluir o registro. Tente novamente.");
     toast.success("Registro enviado. Aguarde a aprovação do administrador.");
     navigate({ to: "/aguardando-aprovacao" });
   };
