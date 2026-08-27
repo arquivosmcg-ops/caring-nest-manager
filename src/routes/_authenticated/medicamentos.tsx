@@ -584,8 +584,11 @@ function MedRow({
               <Trash2 className="size-3.5" />
             </button>
           </PopoverTrigger>
-          <PopoverContent align="end" className="w-56 p-2 space-y-1">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground px-1">Excluir medicamento</p>
+          <PopoverContent align="end" className="w-60 p-2 space-y-1">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground px-1">Ações do medicamento</p>
+            <Button variant="outline" size="sm" className="w-full justify-start text-xs" onClick={onSuspender}>
+              <Ban className="size-3 mr-1" /> {med.status === "suspenso" ? "Reativar medicamento" : "Suspender medicamento"}
+            </Button>
             <Button variant="outline" size="sm" className="w-full justify-start text-xs" onClick={() => onDelete("mes")}>
               Remover apenas deste mês
             </Button>
