@@ -606,20 +606,43 @@ function MedRow({
   );
 }
 
+type NovoMedPayload = {
+  nome: string;
+  dosagem: string;
+  via: string | null;
+  horario: string;
+  dias_semana: string[];
+  turnos: string[];
+  se_necessario: boolean;
+  duracao_tipo: "continuo" | "determinado";
+  data_inicio: string | null;
+  numero_dias: number | null;
+};
+
 function AddMedDialog({
   open, onOpenChange, onSubmit, loading,
 }: {
   open: boolean; onOpenChange: (v: boolean) => void; loading: boolean;
-  onSubmit: (v: { nome: string; dosagem: string; via: string | null; horario: string; dias_semana: string[] }) => void;
+  onSubmit: (v: NovoMedPayload) => void;
 }) {
   const [nome, setNome] = useState("");
   const [dose, setDose] = useState("");
   const [via, setVia] = useState("");
   const [horario, setHorario] = useState("");
   const [dias, setDias] = useState<string[]>(["todos"]);
+  const [turnos, setTurnos] = useState<string[]>([]);
+  const [seNecessario, setSeNecessario] = useState(false);
+  const [duracao, setDuracao] = useState<"continuo" | "determinado">("continuo");
+  const [dataInicio, setDataInicio] = useState(isoDate(new Date()));
+  const [numeroDias, setNumeroDias] = useState("7");
+  const [duracaoOpen, setDuracaoOpen] = useState(false);
 
   useEffect(() => {
-    if (open) { setNome(""); setDose(""); setVia(""); setHorario(""); setDias(["todos"]); }
+    if (open) {
+      setNome(""); setDose(""); setVia(""); setHorario(""); setDias(["todos"]);
+      setTurnos([]); setSeNecessario(false); setDuracao("continuo");
+      setDataInicio(isoDate(new Date())); setNumeroDias("7"); setDuracaoOpen(false);
+    }
   }, [open]);
 
   const toggle = (key: string) => {
@@ -634,14 +657,33 @@ function AddMedDialog({
       ? "Selecione..."
       : dias.map((k) => DIAS_SEMANA.find((d) => d.key === k)?.label).filter(Boolean).join(", ");
 
+  const dataFim = duracao === "determinado" && dataInicio && Number(numeroDias) > 0
+    ? calcularDataFim(dataInicio, Number(numeroDias))
+    : null;
+
   const submit = () => {
     if (!nome.trim() || !dose.trim()) { toast.error("Nome e dose são obrigatórios"); return; }
-    onSubmit({ nome: nome.trim(), dosagem: dose.trim(), via: via.trim() || null, horario: horario.trim(), dias_semana: dias });
+    if (!seNecessario && turnos.length === 0) { toast.error("Selecione ao menos um turno (M/T/N) ou marque \"Se necessário\""); return; }
+    if (duracao === "determinado" && (!dataInicio || !(Number(numeroDias) > 0))) {
+      toast.error("Informe a data de início e o número de dias"); return;
+    }
+    onSubmit({
+      nome: nome.trim(),
+      dosagem: dose.trim(),
+      via: via.trim() || null,
+      horario: horario.trim(),
+      dias_semana: dias,
+      turnos,
+      se_necessario: seNecessario,
+      duracao_tipo: duracao,
+      data_inicio: duracao === "determinado" ? dataInicio : null,
+      numero_dias: duracao === "determinado" ? Number(numeroDias) : null,
+    });
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[88vh] overflow-y-auto">
         <DialogHeader><DialogTitle>Novo medicamento</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <div>
@@ -658,38 +700,121 @@ function AddMedDialog({
               <Input value={via} onChange={(e) => setVia(e.target.value)} placeholder="VO" />
             </div>
           </div>
+
           <div>
-            <Label>Dia da Semana</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-between font-normal">
-                  <span className="truncate text-left">{label}</span>
-                  <ChevronDown className="size-4 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-64 p-2">
-                {DIAS_SEMANA.map((d) => (
-                  <label key={d.key} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer">
-                    <Checkbox checked={dias.includes(d.key)} onCheckedChange={() => toggle(d.key)} />
-                    <span className="text-sm">{d.label}</span>
-                  </label>
+            <Label>Duração do tratamento</Label>
+            <div className="flex gap-2 mt-1">
+              <Button
+                type="button"
+                size="sm"
+                variant={duracao === "continuo" ? "default" : "outline"}
+                onClick={() => setDuracao("continuo")}
+              >
+                Uso contínuo
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={duracao === "determinado" ? "default" : "outline"}
+                onClick={() => { setDuracao("determinado"); setDuracaoOpen(true); }}
+              >
+                Por tempo determinado
+              </Button>
+            </div>
+            {duracao === "determinado" && (
+              <p className="text-[11px] text-muted-foreground mt-1">
+                {dataFim
+                  ? `${numeroDias} dia(s) — de ${new Date(dataInicio + "T00:00:00").toLocaleDateString("pt-BR")} até ${new Date(dataFim + "T00:00:00").toLocaleDateString("pt-BR")}.`
+                  : "Defina os dias de tratamento."}{" "}
+                <button type="button" className="underline" onClick={() => setDuracaoOpen(true)}>alterar</button>
+              </p>
+            )}
+          </div>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <Checkbox checked={seNecessario} onCheckedChange={(v) => { setSeNecessario(!!v); if (v) setTurnos([]); }} />
+            <span className="text-sm">Se necessário (SN) — sem turno fixo</span>
+          </label>
+
+          {!seNecessario && (
+            <div>
+              <Label>Turnos de administração *</Label>
+              <div className="flex gap-2 mt-1">
+                {TURNOS_MED.map((t) => (
+                  <Button
+                    key={t.key}
+                    type="button"
+                    size="sm"
+                    variant={turnos.includes(t.key) ? "default" : "outline"}
+                    onClick={() => setTurnos(turnos.includes(t.key) ? turnos.filter((x) => x !== t.key) : [...turnos, t.key])}
+                  >
+                    {t.label}
+                  </Button>
                 ))}
-              </PopoverContent>
-            </Popover>
-          </div>
-          <div>
-            <Label>Horário (será aplicado aos dias selecionados)</Label>
-            <Input value={horario} onChange={(e) => setHorario(e.target.value)} placeholder="08:00" />
-            <p className="text-[11px] text-muted-foreground mt-1">
-              O horário informado será replicado automaticamente para todos os dias correspondentes no mês. Você pode editar qualquer célula depois.
-            </p>
-          </div>
+              </div>
+            </div>
+          )}
+
+          {!seNecessario && (
+            <>
+              <div>
+                <Label>Dia da Semana</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-between font-normal">
+                      <span className="truncate text-left">{label}</span>
+                      <ChevronDown className="size-4 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64 p-2">
+                    {DIAS_SEMANA.map((d) => (
+                      <label key={d.key} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer">
+                        <Checkbox checked={dias.includes(d.key)} onCheckedChange={() => toggle(d.key)} />
+                        <span className="text-sm">{d.label}</span>
+                      </label>
+                    ))}
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div>
+                <Label>Horário (será aplicado aos dias selecionados)</Label>
+                <Input value={horario} onChange={(e) => setHorario(e.target.value)} placeholder="08:00" />
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  O horário informado será replicado automaticamente para todos os dias correspondentes no mês (respeitando o prazo do tratamento). Você pode editar qualquer célula depois.
+                </p>
+              </div>
+            </>
+          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
           <Button onClick={submit} disabled={loading}>Adicionar</Button>
         </DialogFooter>
       </DialogContent>
+
+      <Dialog open={duracaoOpen} onOpenChange={(v) => { setDuracaoOpen(v); if (!v && !(Number(numeroDias) > 0)) setDuracao("continuo"); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>Tratamento por tempo determinado</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Quantos dias de tratamento?</Label>
+              <Input type="number" min={1} value={numeroDias} onChange={(e) => setNumeroDias(e.target.value)} />
+            </div>
+            <div>
+              <Label>Data de início</Label>
+              <Input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} />
+            </div>
+            {dataFim && (
+              <p className="text-xs text-muted-foreground">
+                Término previsto: <b>{new Date(dataFim + "T00:00:00").toLocaleDateString("pt-BR")}</b>
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setDuracaoOpen(false)} disabled={!(Number(numeroDias) > 0) || !dataInicio}>Confirmar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }
