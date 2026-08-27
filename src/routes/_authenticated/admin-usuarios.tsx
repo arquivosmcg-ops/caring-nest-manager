@@ -161,6 +161,25 @@ function AdminUsuarios() {
     },
   });
 
+  const excluirFn = useServerFn(excluirProfissional);
+
+  const excluir = useMutation({
+    mutationFn: async ({ userId }: { userId: string }) =>
+      excluirFn({
+        data: {
+          userId,
+          ip: (await obterIp()) ?? undefined,
+          equipamento: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
+        },
+      }),
+    onSuccess: () => {
+      toast.success("Profissional eliminado com sucesso");
+      qc.invalidateQueries({ queryKey: ["profissionais-admin"] });
+      qc.invalidateQueries({ queryKey: ["auditoria-privilegios"] });
+    },
+    onError: (e: Error) => toast.error(e.message || "Não foi possível eliminar o profissional"),
+  });
+
   const alterar = useMutation({
     mutationFn: async ({ userId, tornar }: { userId: string; tornar: boolean }) => {
       const { error } = await supabase.rpc("definir_admin", {
