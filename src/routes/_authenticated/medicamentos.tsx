@@ -389,6 +389,7 @@ function PlanilhaPrescricao({
         </div>
         <div className="flex items-center gap-2">
           <Button onClick={() => setAddOpen(true)} size="sm"><Plus className="size-4 mr-1" /> Novo medicamento</Button>
+          <Button onClick={() => setAdmOpen(true)} size="sm" variant="secondary"><ClipboardCheck className="size-4 mr-1" /> Administração diária</Button>
           <Button onClick={doPrint} size="sm" variant="outline"><Printer className="size-4 mr-1" /> Imprimir</Button>
         </div>
       </div>
