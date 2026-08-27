@@ -525,6 +525,23 @@ function MedRow({
       <td className="border border-border/60">
         <input value={nome} onChange={(e) => setNome(e.target.value)} onBlur={() => nome !== med.nome && onPatch({ nome })}
           className="w-full px-2 py-1 bg-transparent focus:bg-white focus:outline focus:outline-1 focus:outline-primary text-[11px]" />
+        <div className="flex flex-wrap gap-1 px-2 pb-1">
+          {med.se_necessario && (
+            <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold">SN — Se necessário</span>
+          )}
+          {!med.se_necessario && (med.turnos?.length ?? 0) > 0 && (
+            <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-muted font-mono">
+              {med.turnos.map((t) => TURNOS_MED.find((x) => x.key === t)?.sigla ?? t).join("/")}
+            </span>
+          )}
+          <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full ${
+            med.status === "suspenso" || rotuloDuracao(med, isoDate(new Date())) === "Encerrado"
+              ? "bg-destructive/10 text-destructive"
+              : "bg-muted text-muted-foreground"
+          }`}>
+            {rotuloDuracao(med, isoDate(new Date()))}
+          </span>
+        </div>
       </td>
       <td className="border border-border/60">
         <input value={dose} onChange={(e) => setDose(e.target.value)} onBlur={() => dose !== med.dosagem && onPatch({ dosagem: dose })}
