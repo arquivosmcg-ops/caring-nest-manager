@@ -395,6 +395,48 @@ function AdminUsuarios() {
                               </AlertDialogFooter>
                             </AlertDialogContent>
                           </AlertDialog>
+
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-destructive"
+                                disabled={excluir.isPending || souEu || ehAdmin}
+                                title={
+                                  souEu
+                                    ? "Não é possível eliminar a sua própria conta"
+                                    : ehAdmin
+                                      ? "Remova primeiro os privilégios de administrador"
+                                      : "Eliminar profissional"
+                                }
+                              >
+                                <Trash2 className="size-4" /> Eliminar
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Eliminar profissional</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem a certeza que pretende <strong>eliminar definitivamente</strong> a
+                                  conta de <strong>{p.full_name}</strong>? Esta ação é irreversível e a
+                                  pessoa perde o acesso ao sistema. Registos clínicos já assinados
+                                  permanecem no prontuário.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  className="bg-destructive text-white hover:bg-destructive/90"
+                                  disabled={excluir.isPending}
+                                  onClick={() => excluir.mutate({ userId: p.id })}
+                                >
+                                  Sim, eliminar
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                          </div>
                         </td>
                       </tr>
                     );
