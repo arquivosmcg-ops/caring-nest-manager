@@ -479,7 +479,7 @@ function AdminUsuarios() {
                         </td>
                         <td className="p-3">
                           <Badge variant={d.operacao === "promocao" ? "default" : "destructive"}>
-                            {d.operacao === "promocao" ? "Promoção" : "Revogação"}
+                            {d.operacao === "promocao" ? "Promoção" : d.operacao === "exclusao_conta" ? "Exclusão de conta" : "Revogação"}
                           </Badge>
                         </td>
                         <td className="p-3">{a.user_nome ?? "—"}</td>
