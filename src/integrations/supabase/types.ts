@@ -74,6 +74,66 @@ export type Database = {
           },
         ]
       }
+      administracoes_medicamento: {
+        Row: {
+          administrado: boolean
+          created_at: string
+          data: string
+          horario: string
+          id: string
+          medicamento_id: string
+          motivo: string | null
+          registrado_por: string | null
+          registrado_por_nome: string | null
+          residente_id: string
+          turno: string | null
+          updated_at: string
+        }
+        Insert: {
+          administrado?: boolean
+          created_at?: string
+          data: string
+          horario?: string
+          id?: string
+          medicamento_id: string
+          motivo?: string | null
+          registrado_por?: string | null
+          registrado_por_nome?: string | null
+          residente_id: string
+          turno?: string | null
+          updated_at?: string
+        }
+        Update: {
+          administrado?: boolean
+          created_at?: string
+          data?: string
+          horario?: string
+          id?: string
+          medicamento_id?: string
+          motivo?: string | null
+          registrado_por?: string | null
+          registrado_por_nome?: string | null
+          residente_id?: string
+          turno?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "administracoes_medicamento_medicamento_id_fkey"
+            columns: ["medicamento_id"]
+            isOneToOne: false
+            referencedRelation: "medicamentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "administracoes_medicamento_residente_id_fkey"
+            columns: ["residente_id"]
+            isOneToOne: false
+            referencedRelation: "residentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alertas_clinicos: {
         Row: {
           categoria: string
@@ -487,46 +547,73 @@ export type Database = {
         Row: {
           ativo: boolean
           created_at: string
+          data_fim: string | null
+          data_inicio: string | null
           dias_do_mes: Json
           dias_semana: string[]
           dosagem: string
+          duracao_tipo: string
           horarios: string[]
           id: string
           nome: string
           numero: number | null
+          numero_dias: number | null
           observacoes: string | null
           prescricao_id: string | null
           residente_id: string
+          se_necessario: boolean
+          status: string
+          suspenso_em: string | null
+          suspenso_por: string | null
+          turnos: string[]
           via: string | null
         }
         Insert: {
           ativo?: boolean
           created_at?: string
+          data_fim?: string | null
+          data_inicio?: string | null
           dias_do_mes?: Json
           dias_semana?: string[]
           dosagem: string
+          duracao_tipo?: string
           horarios?: string[]
           id?: string
           nome: string
           numero?: number | null
+          numero_dias?: number | null
           observacoes?: string | null
           prescricao_id?: string | null
           residente_id: string
+          se_necessario?: boolean
+          status?: string
+          suspenso_em?: string | null
+          suspenso_por?: string | null
+          turnos?: string[]
           via?: string | null
         }
         Update: {
           ativo?: boolean
           created_at?: string
+          data_fim?: string | null
+          data_inicio?: string | null
           dias_do_mes?: Json
           dias_semana?: string[]
           dosagem?: string
+          duracao_tipo?: string
           horarios?: string[]
           id?: string
           nome?: string
           numero?: number | null
+          numero_dias?: number | null
           observacoes?: string | null
           prescricao_id?: string | null
           residente_id?: string
+          se_necessario?: boolean
+          status?: string
+          suspenso_em?: string | null
+          suspenso_por?: string | null
+          turnos?: string[]
           via?: string | null
         }
         Relationships: [
