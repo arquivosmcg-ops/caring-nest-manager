@@ -8,10 +8,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Pill, Printer, Trash2, Search, ChevronDown } from "lucide-react";
+import { Plus, Pill, Printer, Trash2, Search, ChevronDown, ClipboardCheck, Ban } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import logoAsset from "@/assets/logo_instituto_maior.png.asset.json";
+import { AdministracaoDiariaDialog } from "@/components/administracao-diaria";
+import { TURNOS_MED, calcularDataFim, isoDate, rotuloDuracao, type MedicamentoPrescrito } from "@/lib/medicamentos";
 
 export const Route = createFileRoute("/_authenticated/medicamentos")({
   component: PrescricaoPage,
@@ -38,19 +40,7 @@ type Prescricao = {
   andar: string | null;
 };
 
-type Medicamento = {
-  id: string;
-  prescricao_id: string | null;
-  residente_id: string;
-  numero: number | null;
-  nome: string;
-  dosagem: string;
-  via: string | null;
-  horarios: string[];
-  dias_semana: string[];
-  dias_do_mes: Record<string, string>;
-  ativo: boolean;
-};
+type Medicamento = MedicamentoPrescrito;
 
 const DIAS_SEMANA = [
   { key: "todos", label: "Todos os dias" },
@@ -205,12 +195,19 @@ function PlanilhaPrescricao({
           .eq("prescricao_id", anterior.id)
           .eq("ativo", true)
           .order("numero", { ascending: true });
-        const lista = (medsAnt ?? []) as unknown as Medicamento[];
+        const primeiroDia = `${ano}-${String(mes).padStart(2, "0")}-01`;
+        const lista = ((medsAnt ?? []) as unknown as Medicamento[]).filter(
+          (m) =>
+            m.status !== "suspenso" &&
+            !(m.duracao_tipo === "determinado" && m.data_fim && m.data_fim < primeiroDia),
+        );
         if (lista.length > 0) {
           const novos = lista.map((m, i) => {
             const horario = m.horarios?.[0] ?? "";
             const map: Record<string, string> = {};
-            matchingDays(mes, ano, m.dias_semana ?? []).forEach((d) => (map[String(d)] = horario));
+            if (!m.se_necessario) {
+              matchingDays(mes, ano, m.dias_semana ?? []).forEach((d) => (map[String(d)] = horario));
+            }
             return {
               prescricao_id: nova.id,
               residente_id: residente.id,
@@ -221,6 +218,11 @@ function PlanilhaPrescricao({
               dias_semana: m.dias_semana ?? [],
               dias_do_mes: map,
               numero: m.numero ?? i + 1,
+              turnos: m.turnos ?? [],
+              duracao_tipo: m.duracao_tipo ?? "continuo",
+              data_inicio: m.data_inicio,
+              numero_dias: m.numero_dias,
+              se_necessario: m.se_necessario ?? false,
             };
           });
           await supabase.from("medicamentos").insert(novos as never);
@@ -297,13 +299,22 @@ function PlanilhaPrescricao({
 
 
   const [addOpen, setAddOpen] = useState(false);
+  const [admOpen, setAdmOpen] = useState(false);
+
   const createMed = useMutation({
-    mutationFn: async (payload: {
-      nome: string; dosagem: string; via: string | null; horario: string; dias_semana: string[];
-    }) => {
-      const dias = matchingDays(mes, ano, payload.dias_semana);
+    mutationFn: async (payload: NovoMedPayload) => {
       const map: Record<string, string> = {};
-      dias.forEach((d) => (map[String(d)] = payload.horario));
+      if (!payload.se_necessario) {
+        let dias = matchingDays(mes, ano, payload.dias_semana);
+        if (payload.duracao_tipo === "determinado" && payload.data_inicio && payload.numero_dias) {
+          const fim = calcularDataFim(payload.data_inicio, payload.numero_dias);
+          dias = dias.filter((d) => {
+            const iso = `${ano}-${String(mes).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+            return iso >= payload.data_inicio! && iso <= fim;
+          });
+        }
+        dias.forEach((d) => (map[String(d)] = payload.horario));
+      }
       const numero = (medsQ.data?.length ?? 0) + 1;
       const { error } = await supabase.from("medicamentos").insert({
         prescricao_id: prescricao!.id,
@@ -315,6 +326,11 @@ function PlanilhaPrescricao({
         dias_semana: payload.dias_semana,
         dias_do_mes: map,
         numero,
+        turnos: payload.se_necessario ? [] : payload.turnos,
+        se_necessario: payload.se_necessario,
+        duracao_tipo: payload.duracao_tipo,
+        data_inicio: payload.duracao_tipo === "determinado" ? payload.data_inicio : null,
+        numero_dias: payload.duracao_tipo === "determinado" ? payload.numero_dias : null,
       } as never);
       if (error) throw error;
     },
@@ -322,6 +338,26 @@ function PlanilhaPrescricao({
       qc.invalidateQueries({ queryKey: ["prescricao-meds", prescricao?.id] });
       setAddOpen(false);
       toast.success("Medicamento adicionado");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const suspender = useMutation({
+    mutationFn: async (med: Medicamento) => {
+      const { data: userData } = await supabase.auth.getUser();
+      const { error } = await supabase
+        .from("medicamentos")
+        .update({
+          status: med.status === "suspenso" ? "ativo" : "suspenso",
+          suspenso_em: med.status === "suspenso" ? null : new Date().toISOString(),
+          suspenso_por: med.status === "suspenso" ? null : (userData.user?.id ?? null),
+        } as never)
+        .eq("id", med.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["prescricao-meds", prescricao?.id] });
+      toast.success("Situação do medicamento atualizada");
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -353,6 +389,7 @@ function PlanilhaPrescricao({
         </div>
         <div className="flex items-center gap-2">
           <Button onClick={() => setAddOpen(true)} size="sm"><Plus className="size-4 mr-1" /> Novo medicamento</Button>
+          <Button onClick={() => setAdmOpen(true)} size="sm" variant="secondary"><ClipboardCheck className="size-4 mr-1" /> Administração diária</Button>
           <Button onClick={doPrint} size="sm" variant="outline"><Printer className="size-4 mr-1" /> Imprimir</Button>
         </div>
       </div>
@@ -404,6 +441,7 @@ function PlanilhaPrescricao({
                 ano={ano}
                 onPatch={(patch) => updateMed.mutate({ id: m.id, patch })}
                 onDelete={(modo) => deleteMed.mutate({ med: m, modo })}
+                onSuspender={() => suspender.mutate(m)}
               />
             ))}
           </tbody>
@@ -411,6 +449,12 @@ function PlanilhaPrescricao({
       </div>
 
       <AddMedDialog open={addOpen} onOpenChange={setAddOpen} onSubmit={(v) => createMed.mutate(v)} loading={createMed.isPending} />
+      <AdministracaoDiariaDialog
+        open={admOpen}
+        onOpenChange={setAdmOpen}
+        residenteId={residente.id}
+        residenteNome={residente.nome_completo}
+      />
     </div>
   );
 }
@@ -441,10 +485,11 @@ function HeaderField({
 }
 
 function MedRow({
-  med, idx, total, mes, ano, onPatch, onDelete,
+  med, idx, total, mes, ano, onPatch, onDelete, onSuspender,
 }: {
   med: Medicamento; idx: number; total: number; mes: number; ano: number;
   onPatch: (patch: Partial<Medicamento>) => void; onDelete: (modo: "mes" | "definitivo") => void;
+  onSuspender: () => void;
 }) {
   const [nome, setNome] = useState(med.nome);
   const [dose, setDose] = useState(med.dosagem);
@@ -480,6 +525,23 @@ function MedRow({
       <td className="border border-border/60">
         <input value={nome} onChange={(e) => setNome(e.target.value)} onBlur={() => nome !== med.nome && onPatch({ nome })}
           className="w-full px-2 py-1 bg-transparent focus:bg-white focus:outline focus:outline-1 focus:outline-primary text-[11px]" />
+        <div className="flex flex-wrap gap-1 px-2 pb-1">
+          {med.se_necessario && (
+            <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold">SN — Se necessário</span>
+          )}
+          {!med.se_necessario && (med.turnos?.length ?? 0) > 0 && (
+            <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-muted font-mono">
+              {med.turnos.map((t) => TURNOS_MED.find((x) => x.key === t)?.sigla ?? t).join("/")}
+            </span>
+          )}
+          <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full ${
+            med.status === "suspenso" || rotuloDuracao(med, isoDate(new Date())) === "Encerrado"
+              ? "bg-destructive/10 text-destructive"
+              : "bg-muted text-muted-foreground"
+          }`}>
+            {rotuloDuracao(med, isoDate(new Date()))}
+          </span>
+        </div>
       </td>
       <td className="border border-border/60">
         <input value={dose} onChange={(e) => setDose(e.target.value)} onBlur={() => dose !== med.dosagem && onPatch({ dosagem: dose })}
@@ -522,8 +584,11 @@ function MedRow({
               <Trash2 className="size-3.5" />
             </button>
           </PopoverTrigger>
-          <PopoverContent align="end" className="w-56 p-2 space-y-1">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground px-1">Excluir medicamento</p>
+          <PopoverContent align="end" className="w-60 p-2 space-y-1">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground px-1">Ações do medicamento</p>
+            <Button variant="outline" size="sm" className="w-full justify-start text-xs" onClick={onSuspender}>
+              <Ban className="size-3 mr-1" /> {med.status === "suspenso" ? "Reativar medicamento" : "Suspender medicamento"}
+            </Button>
             <Button variant="outline" size="sm" className="w-full justify-start text-xs" onClick={() => onDelete("mes")}>
               Remover apenas deste mês
             </Button>
@@ -541,20 +606,43 @@ function MedRow({
   );
 }
 
+type NovoMedPayload = {
+  nome: string;
+  dosagem: string;
+  via: string | null;
+  horario: string;
+  dias_semana: string[];
+  turnos: string[];
+  se_necessario: boolean;
+  duracao_tipo: "continuo" | "determinado";
+  data_inicio: string | null;
+  numero_dias: number | null;
+};
+
 function AddMedDialog({
   open, onOpenChange, onSubmit, loading,
 }: {
   open: boolean; onOpenChange: (v: boolean) => void; loading: boolean;
-  onSubmit: (v: { nome: string; dosagem: string; via: string | null; horario: string; dias_semana: string[] }) => void;
+  onSubmit: (v: NovoMedPayload) => void;
 }) {
   const [nome, setNome] = useState("");
   const [dose, setDose] = useState("");
   const [via, setVia] = useState("");
   const [horario, setHorario] = useState("");
   const [dias, setDias] = useState<string[]>(["todos"]);
+  const [turnos, setTurnos] = useState<string[]>([]);
+  const [seNecessario, setSeNecessario] = useState(false);
+  const [duracao, setDuracao] = useState<"continuo" | "determinado">("continuo");
+  const [dataInicio, setDataInicio] = useState(isoDate(new Date()));
+  const [numeroDias, setNumeroDias] = useState("7");
+  const [duracaoOpen, setDuracaoOpen] = useState(false);
 
   useEffect(() => {
-    if (open) { setNome(""); setDose(""); setVia(""); setHorario(""); setDias(["todos"]); }
+    if (open) {
+      setNome(""); setDose(""); setVia(""); setHorario(""); setDias(["todos"]);
+      setTurnos([]); setSeNecessario(false); setDuracao("continuo");
+      setDataInicio(isoDate(new Date())); setNumeroDias("7"); setDuracaoOpen(false);
+    }
   }, [open]);
 
   const toggle = (key: string) => {
@@ -569,14 +657,33 @@ function AddMedDialog({
       ? "Selecione..."
       : dias.map((k) => DIAS_SEMANA.find((d) => d.key === k)?.label).filter(Boolean).join(", ");
 
+  const dataFim = duracao === "determinado" && dataInicio && Number(numeroDias) > 0
+    ? calcularDataFim(dataInicio, Number(numeroDias))
+    : null;
+
   const submit = () => {
     if (!nome.trim() || !dose.trim()) { toast.error("Nome e dose são obrigatórios"); return; }
-    onSubmit({ nome: nome.trim(), dosagem: dose.trim(), via: via.trim() || null, horario: horario.trim(), dias_semana: dias });
+    if (!seNecessario && turnos.length === 0) { toast.error("Selecione ao menos um turno (M/T/N) ou marque \"Se necessário\""); return; }
+    if (duracao === "determinado" && (!dataInicio || !(Number(numeroDias) > 0))) {
+      toast.error("Informe a data de início e o número de dias"); return;
+    }
+    onSubmit({
+      nome: nome.trim(),
+      dosagem: dose.trim(),
+      via: via.trim() || null,
+      horario: horario.trim(),
+      dias_semana: dias,
+      turnos,
+      se_necessario: seNecessario,
+      duracao_tipo: duracao,
+      data_inicio: duracao === "determinado" ? dataInicio : null,
+      numero_dias: duracao === "determinado" ? Number(numeroDias) : null,
+    });
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[88vh] overflow-y-auto">
         <DialogHeader><DialogTitle>Novo medicamento</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <div>
@@ -593,38 +700,121 @@ function AddMedDialog({
               <Input value={via} onChange={(e) => setVia(e.target.value)} placeholder="VO" />
             </div>
           </div>
+
           <div>
-            <Label>Dia da Semana</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-between font-normal">
-                  <span className="truncate text-left">{label}</span>
-                  <ChevronDown className="size-4 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-64 p-2">
-                {DIAS_SEMANA.map((d) => (
-                  <label key={d.key} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer">
-                    <Checkbox checked={dias.includes(d.key)} onCheckedChange={() => toggle(d.key)} />
-                    <span className="text-sm">{d.label}</span>
-                  </label>
+            <Label>Duração do tratamento</Label>
+            <div className="flex gap-2 mt-1">
+              <Button
+                type="button"
+                size="sm"
+                variant={duracao === "continuo" ? "default" : "outline"}
+                onClick={() => setDuracao("continuo")}
+              >
+                Uso contínuo
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={duracao === "determinado" ? "default" : "outline"}
+                onClick={() => { setDuracao("determinado"); setDuracaoOpen(true); }}
+              >
+                Por tempo determinado
+              </Button>
+            </div>
+            {duracao === "determinado" && (
+              <p className="text-[11px] text-muted-foreground mt-1">
+                {dataFim
+                  ? `${numeroDias} dia(s) — de ${new Date(dataInicio + "T00:00:00").toLocaleDateString("pt-BR")} até ${new Date(dataFim + "T00:00:00").toLocaleDateString("pt-BR")}.`
+                  : "Defina os dias de tratamento."}{" "}
+                <button type="button" className="underline" onClick={() => setDuracaoOpen(true)}>alterar</button>
+              </p>
+            )}
+          </div>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <Checkbox checked={seNecessario} onCheckedChange={(v) => { setSeNecessario(!!v); if (v) setTurnos([]); }} />
+            <span className="text-sm">Se necessário (SN) — sem turno fixo</span>
+          </label>
+
+          {!seNecessario && (
+            <div>
+              <Label>Turnos de administração *</Label>
+              <div className="flex gap-2 mt-1">
+                {TURNOS_MED.map((t) => (
+                  <Button
+                    key={t.key}
+                    type="button"
+                    size="sm"
+                    variant={turnos.includes(t.key) ? "default" : "outline"}
+                    onClick={() => setTurnos(turnos.includes(t.key) ? turnos.filter((x) => x !== t.key) : [...turnos, t.key])}
+                  >
+                    {t.label}
+                  </Button>
                 ))}
-              </PopoverContent>
-            </Popover>
-          </div>
-          <div>
-            <Label>Horário (será aplicado aos dias selecionados)</Label>
-            <Input value={horario} onChange={(e) => setHorario(e.target.value)} placeholder="08:00" />
-            <p className="text-[11px] text-muted-foreground mt-1">
-              O horário informado será replicado automaticamente para todos os dias correspondentes no mês. Você pode editar qualquer célula depois.
-            </p>
-          </div>
+              </div>
+            </div>
+          )}
+
+          {!seNecessario && (
+            <>
+              <div>
+                <Label>Dia da Semana</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-between font-normal">
+                      <span className="truncate text-left">{label}</span>
+                      <ChevronDown className="size-4 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64 p-2">
+                    {DIAS_SEMANA.map((d) => (
+                      <label key={d.key} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer">
+                        <Checkbox checked={dias.includes(d.key)} onCheckedChange={() => toggle(d.key)} />
+                        <span className="text-sm">{d.label}</span>
+                      </label>
+                    ))}
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div>
+                <Label>Horário (será aplicado aos dias selecionados)</Label>
+                <Input value={horario} onChange={(e) => setHorario(e.target.value)} placeholder="08:00" />
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  O horário informado será replicado automaticamente para todos os dias correspondentes no mês (respeitando o prazo do tratamento). Você pode editar qualquer célula depois.
+                </p>
+              </div>
+            </>
+          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
           <Button onClick={submit} disabled={loading}>Adicionar</Button>
         </DialogFooter>
       </DialogContent>
+
+      <Dialog open={duracaoOpen} onOpenChange={(v) => { setDuracaoOpen(v); if (!v && !(Number(numeroDias) > 0)) setDuracao("continuo"); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>Tratamento por tempo determinado</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Quantos dias de tratamento?</Label>
+              <Input type="number" min={1} value={numeroDias} onChange={(e) => setNumeroDias(e.target.value)} />
+            </div>
+            <div>
+              <Label>Data de início</Label>
+              <Input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} />
+            </div>
+            {dataFim && (
+              <p className="text-xs text-muted-foreground">
+                Término previsto: <b>{new Date(dataFim + "T00:00:00").toLocaleDateString("pt-BR")}</b>
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setDuracaoOpen(false)} disabled={!(Number(numeroDias) > 0) || !dataInicio}>Confirmar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }
