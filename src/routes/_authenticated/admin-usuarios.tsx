@@ -350,6 +350,7 @@ function AdminUsuarios() {
                         </td>
                         <td className="p-3 text-muted-foreground">{dataBr(p.created_at)}</td>
                         <td className="p-3 text-right">
+                          <div className="flex justify-end gap-2">
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button
