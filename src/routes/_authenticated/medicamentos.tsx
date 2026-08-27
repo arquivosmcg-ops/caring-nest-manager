@@ -299,13 +299,22 @@ function PlanilhaPrescricao({
 
 
   const [addOpen, setAddOpen] = useState(false);
+  const [admOpen, setAdmOpen] = useState(false);
+
   const createMed = useMutation({
-    mutationFn: async (payload: {
-      nome: string; dosagem: string; via: string | null; horario: string; dias_semana: string[];
-    }) => {
-      const dias = matchingDays(mes, ano, payload.dias_semana);
+    mutationFn: async (payload: NovoMedPayload) => {
       const map: Record<string, string> = {};
-      dias.forEach((d) => (map[String(d)] = payload.horario));
+      if (!payload.se_necessario) {
+        let dias = matchingDays(mes, ano, payload.dias_semana);
+        if (payload.duracao_tipo === "determinado" && payload.data_inicio && payload.numero_dias) {
+          const fim = calcularDataFim(payload.data_inicio, payload.numero_dias);
+          dias = dias.filter((d) => {
+            const iso = `${ano}-${String(mes).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+            return iso >= payload.data_inicio! && iso <= fim;
+          });
+        }
+        dias.forEach((d) => (map[String(d)] = payload.horario));
+      }
       const numero = (medsQ.data?.length ?? 0) + 1;
       const { error } = await supabase.from("medicamentos").insert({
         prescricao_id: prescricao!.id,
@@ -317,6 +326,11 @@ function PlanilhaPrescricao({
         dias_semana: payload.dias_semana,
         dias_do_mes: map,
         numero,
+        turnos: payload.se_necessario ? [] : payload.turnos,
+        se_necessario: payload.se_necessario,
+        duracao_tipo: payload.duracao_tipo,
+        data_inicio: payload.duracao_tipo === "determinado" ? payload.data_inicio : null,
+        numero_dias: payload.duracao_tipo === "determinado" ? payload.numero_dias : null,
       } as never);
       if (error) throw error;
     },
@@ -324,6 +338,26 @@ function PlanilhaPrescricao({
       qc.invalidateQueries({ queryKey: ["prescricao-meds", prescricao?.id] });
       setAddOpen(false);
       toast.success("Medicamento adicionado");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const suspender = useMutation({
+    mutationFn: async (med: Medicamento) => {
+      const { data: userData } = await supabase.auth.getUser();
+      const { error } = await supabase
+        .from("medicamentos")
+        .update({
+          status: med.status === "suspenso" ? "ativo" : "suspenso",
+          suspenso_em: med.status === "suspenso" ? null : new Date().toISOString(),
+          suspenso_por: med.status === "suspenso" ? null : (userData.user?.id ?? null),
+        } as never)
+        .eq("id", med.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["prescricao-meds", prescricao?.id] });
+      toast.success("Situação do medicamento atualizada");
     },
     onError: (e: Error) => toast.error(e.message),
   });
