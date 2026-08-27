@@ -195,12 +195,19 @@ function PlanilhaPrescricao({
           .eq("prescricao_id", anterior.id)
           .eq("ativo", true)
           .order("numero", { ascending: true });
-        const lista = (medsAnt ?? []) as unknown as Medicamento[];
+        const primeiroDia = `${ano}-${String(mes).padStart(2, "0")}-01`;
+        const lista = ((medsAnt ?? []) as unknown as Medicamento[]).filter(
+          (m) =>
+            m.status !== "suspenso" &&
+            !(m.duracao_tipo === "determinado" && m.data_fim && m.data_fim < primeiroDia),
+        );
         if (lista.length > 0) {
           const novos = lista.map((m, i) => {
             const horario = m.horarios?.[0] ?? "";
             const map: Record<string, string> = {};
-            matchingDays(mes, ano, m.dias_semana ?? []).forEach((d) => (map[String(d)] = horario));
+            if (!m.se_necessario) {
+              matchingDays(mes, ano, m.dias_semana ?? []).forEach((d) => (map[String(d)] = horario));
+            }
             return {
               prescricao_id: nova.id,
               residente_id: residente.id,
@@ -211,6 +218,11 @@ function PlanilhaPrescricao({
               dias_semana: m.dias_semana ?? [],
               dias_do_mes: map,
               numero: m.numero ?? i + 1,
+              turnos: m.turnos ?? [],
+              duracao_tipo: m.duracao_tipo ?? "continuo",
+              data_inicio: m.data_inicio,
+              numero_dias: m.numero_dias,
+              se_necessario: m.se_necessario ?? false,
             };
           });
           await supabase.from("medicamentos").insert(novos as never);
