@@ -8,10 +8,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Pill, Printer, Trash2, Search, ChevronDown } from "lucide-react";
+import { Plus, Pill, Printer, Trash2, Search, ChevronDown, ClipboardCheck, Ban } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import logoAsset from "@/assets/logo_instituto_maior.png.asset.json";
+import { AdministracaoDiariaDialog } from "@/components/administracao-diaria";
+import { TURNOS_MED, calcularDataFim, isoDate, rotuloDuracao, type MedicamentoPrescrito } from "@/lib/medicamentos";
 
 export const Route = createFileRoute("/_authenticated/medicamentos")({
   component: PrescricaoPage,
