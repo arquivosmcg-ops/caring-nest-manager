@@ -485,10 +485,11 @@ function HeaderField({
 }
 
 function MedRow({
-  med, idx, total, mes, ano, onPatch, onDelete,
+  med, idx, total, mes, ano, onPatch, onDelete, onSuspender,
 }: {
   med: Medicamento; idx: number; total: number; mes: number; ano: number;
   onPatch: (patch: Partial<Medicamento>) => void; onDelete: (modo: "mes" | "definitivo") => void;
+  onSuspender: () => void;
 }) {
   const [nome, setNome] = useState(med.nome);
   const [dose, setDose] = useState(med.dosagem);
