@@ -18,6 +18,7 @@ import { Route as ApiTranscreverRouteImport } from './routes/api/transcrever'
 import { Route as AuthenticatedSinaisVitaisRouteImport } from './routes/_authenticated/sinais-vitais'
 import { Route as AuthenticatedSaeRouteImport } from './routes/_authenticated/sae'
 import { Route as AuthenticatedResidentesRouteImport } from './routes/_authenticated/residentes'
+import { Route as AuthenticatedReceituarioRouteImport } from './routes/_authenticated/receituario'
 import { Route as AuthenticatedRecebimentoFraldasRouteImport } from './routes/_authenticated/recebimento-fraldas'
 import { Route as AuthenticatedQuartosRouteImport } from './routes/_authenticated/quartos'
 import { Route as AuthenticatedProntuarioRouteImport } from './routes/_authenticated/prontuario'
@@ -77,6 +78,12 @@ const AuthenticatedResidentesRoute = AuthenticatedResidentesRouteImport.update({
   path: '/residentes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedReceituarioRoute =
+  AuthenticatedReceituarioRouteImport.update({
+    id: '/receituario',
+    path: '/receituario',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedRecebimentoFraldasRoute =
   AuthenticatedRecebimentoFraldasRouteImport.update({
     id: '/recebimento-fraldas',
@@ -168,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/prontuario': typeof AuthenticatedProntuarioRoute
   '/quartos': typeof AuthenticatedQuartosRoute
   '/recebimento-fraldas': typeof AuthenticatedRecebimentoFraldasRoute
+  '/receituario': typeof AuthenticatedReceituarioRoute
   '/residentes': typeof AuthenticatedResidentesRoute
   '/sae': typeof AuthenticatedSaeRoute
   '/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
@@ -191,6 +199,7 @@ export interface FileRoutesByTo {
   '/prontuario': typeof AuthenticatedProntuarioRoute
   '/quartos': typeof AuthenticatedQuartosRoute
   '/recebimento-fraldas': typeof AuthenticatedRecebimentoFraldasRoute
+  '/receituario': typeof AuthenticatedReceituarioRoute
   '/residentes': typeof AuthenticatedResidentesRoute
   '/sae': typeof AuthenticatedSaeRoute
   '/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
@@ -216,6 +225,7 @@ export interface FileRoutesById {
   '/_authenticated/prontuario': typeof AuthenticatedProntuarioRoute
   '/_authenticated/quartos': typeof AuthenticatedQuartosRoute
   '/_authenticated/recebimento-fraldas': typeof AuthenticatedRecebimentoFraldasRoute
+  '/_authenticated/receituario': typeof AuthenticatedReceituarioRoute
   '/_authenticated/residentes': typeof AuthenticatedResidentesRoute
   '/_authenticated/sae': typeof AuthenticatedSaeRoute
   '/_authenticated/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
@@ -241,6 +251,7 @@ export interface FileRouteTypes {
     | '/prontuario'
     | '/quartos'
     | '/recebimento-fraldas'
+    | '/receituario'
     | '/residentes'
     | '/sae'
     | '/sinais-vitais'
@@ -264,6 +275,7 @@ export interface FileRouteTypes {
     | '/prontuario'
     | '/quartos'
     | '/recebimento-fraldas'
+    | '/receituario'
     | '/residentes'
     | '/sae'
     | '/sinais-vitais'
@@ -288,6 +300,7 @@ export interface FileRouteTypes {
     | '/_authenticated/prontuario'
     | '/_authenticated/quartos'
     | '/_authenticated/recebimento-fraldas'
+    | '/_authenticated/receituario'
     | '/_authenticated/residentes'
     | '/_authenticated/sae'
     | '/_authenticated/sinais-vitais'
@@ -366,6 +379,13 @@ declare module '@tanstack/react-router' {
       path: '/residentes'
       fullPath: '/residentes'
       preLoaderRoute: typeof AuthenticatedResidentesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/receituario': {
+      id: '/_authenticated/receituario'
+      path: '/receituario'
+      fullPath: '/receituario'
+      preLoaderRoute: typeof AuthenticatedReceituarioRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/recebimento-fraldas': {
@@ -476,6 +496,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProntuarioRoute: typeof AuthenticatedProntuarioRoute
   AuthenticatedQuartosRoute: typeof AuthenticatedQuartosRoute
   AuthenticatedRecebimentoFraldasRoute: typeof AuthenticatedRecebimentoFraldasRoute
+  AuthenticatedReceituarioRoute: typeof AuthenticatedReceituarioRoute
   AuthenticatedResidentesRoute: typeof AuthenticatedResidentesRoute
   AuthenticatedSaeRoute: typeof AuthenticatedSaeRoute
   AuthenticatedSinaisVitaisRoute: typeof AuthenticatedSinaisVitaisRoute
@@ -496,6 +517,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProntuarioRoute: AuthenticatedProntuarioRoute,
   AuthenticatedQuartosRoute: AuthenticatedQuartosRoute,
   AuthenticatedRecebimentoFraldasRoute: AuthenticatedRecebimentoFraldasRoute,
+  AuthenticatedReceituarioRoute: AuthenticatedReceituarioRoute,
   AuthenticatedResidentesRoute: AuthenticatedResidentesRoute,
   AuthenticatedSaeRoute: AuthenticatedSaeRoute,
   AuthenticatedSinaisVitaisRoute: AuthenticatedSinaisVitaisRoute,
