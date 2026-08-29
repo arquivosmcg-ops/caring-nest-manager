@@ -97,9 +97,24 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const currentPage = navItems.find((n) => pathname.startsWith(n.to))?.label ?? "Painel";
 
+  const [menuAberto, setMenuAberto] = useState(false);
+
   return (
     <div className="flex min-h-screen bg-background text-foreground selection:bg-primary/10">
-      <aside className="w-64 border-r border-border bg-sidebar flex flex-col sticky top-0 h-screen">
+      {menuAberto && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={() => setMenuAberto(false)}
+          aria-hidden
+        />
+      )}
+      <aside
+        className={cn(
+          "w-64 border-r border-border bg-sidebar flex flex-col h-screen z-50",
+          "fixed inset-y-0 left-0 transition-transform lg:sticky lg:top-0 lg:translate-x-0",
+          menuAberto ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
         <div className="p-6 border-b border-border">
           <div className="flex items-center gap-2">
             <div className="size-8 bg-white rounded-sm grid place-items-center overflow-hidden border border-border">
