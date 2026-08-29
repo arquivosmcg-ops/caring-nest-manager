@@ -996,6 +996,127 @@ export type Database = {
           },
         ]
       }
+      recebimentos_itens: {
+        Row: {
+          criado_em: string
+          data_recebimento: string
+          id: string
+          nome_convenio: string | null
+          nome_familiar: string | null
+          nome_fornecedor: string | null
+          observacoes: string | null
+          origem: Database["public"]["Enums"]["origem_recebimento_item"]
+          origem_correios:
+            | Database["public"]["Enums"]["origem_correios_fralda"]
+            | null
+          origem_outro_texto: string | null
+          recebido_por: string
+          registrado_por: string | null
+          residente_id: string
+          updated_at: string
+        }
+        Insert: {
+          criado_em?: string
+          data_recebimento?: string
+          id?: string
+          nome_convenio?: string | null
+          nome_familiar?: string | null
+          nome_fornecedor?: string | null
+          observacoes?: string | null
+          origem: Database["public"]["Enums"]["origem_recebimento_item"]
+          origem_correios?:
+            | Database["public"]["Enums"]["origem_correios_fralda"]
+            | null
+          origem_outro_texto?: string | null
+          recebido_por: string
+          registrado_por?: string | null
+          residente_id: string
+          updated_at?: string
+        }
+        Update: {
+          criado_em?: string
+          data_recebimento?: string
+          id?: string
+          nome_convenio?: string | null
+          nome_familiar?: string | null
+          nome_fornecedor?: string | null
+          observacoes?: string | null
+          origem?: Database["public"]["Enums"]["origem_recebimento_item"]
+          origem_correios?:
+            | Database["public"]["Enums"]["origem_correios_fralda"]
+            | null
+          origem_outro_texto?: string | null
+          recebido_por?: string
+          registrado_por?: string | null
+          residente_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recebimentos_itens_residente_id_fkey"
+            columns: ["residente_id"]
+            isOneToOne: false
+            referencedRelation: "residentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recebimentos_itens_detalhe: {
+        Row: {
+          categoria: Database["public"]["Enums"]["categoria_item_recebido"]
+          created_at: string
+          data_devolucao_real: string | null
+          data_prevista_devolucao: string | null
+          descricao: string
+          devolvido_para: string | null
+          id: string
+          numero_serie: string | null
+          quantidade: number
+          recebimento_id: string
+          requer_devolucao: boolean
+          status: Database["public"]["Enums"]["status_devolucao_item"] | null
+          updated_at: string
+        }
+        Insert: {
+          categoria?: Database["public"]["Enums"]["categoria_item_recebido"]
+          created_at?: string
+          data_devolucao_real?: string | null
+          data_prevista_devolucao?: string | null
+          descricao: string
+          devolvido_para?: string | null
+          id?: string
+          numero_serie?: string | null
+          quantidade?: number
+          recebimento_id: string
+          requer_devolucao?: boolean
+          status?: Database["public"]["Enums"]["status_devolucao_item"] | null
+          updated_at?: string
+        }
+        Update: {
+          categoria?: Database["public"]["Enums"]["categoria_item_recebido"]
+          created_at?: string
+          data_devolucao_real?: string | null
+          data_prevista_devolucao?: string | null
+          descricao?: string
+          devolvido_para?: string | null
+          id?: string
+          numero_serie?: string | null
+          quantidade?: number
+          recebimento_id?: string
+          requer_devolucao?: boolean
+          status?: Database["public"]["Enums"]["status_devolucao_item"] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recebimentos_itens_detalhe_recebimento_id_fkey"
+            columns: ["recebimento_id"]
+            isOneToOne: false
+            referencedRelation: "recebimentos_itens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       receituario_itens: {
         Row: {
           apresentacao: string | null
@@ -1598,12 +1719,24 @@ export type Database = {
         | "cuidador"
         | "familia"
         | "multiprofissional"
+      categoria_item_recebido:
+        | "higiene"
+        | "equipamento"
+        | "material_medico"
+        | "outro"
       forma_entrega_fralda: "familiar" | "fornecedor" | "correios"
       incident_severity: "leve" | "moderado" | "grave"
       origem_correios_fralda: "governo" | "outros"
+      origem_recebimento_item:
+        | "convenio"
+        | "familiar"
+        | "fornecedor"
+        | "correios"
+        | "outro"
       resident_status: "estavel" | "observacao" | "critico"
       room_status: "ocupado" | "vago" | "manutencao"
       shift: "manha" | "tarde" | "noite"
+      status_devolucao_item: "em_uso" | "devolvido"
       tipo_fralda: "tradicional" | "calcinha_pant" | "absorvente"
     }
     CompositeTypes: {
@@ -1740,12 +1873,26 @@ export const Constants = {
         "familia",
         "multiprofissional",
       ],
+      categoria_item_recebido: [
+        "higiene",
+        "equipamento",
+        "material_medico",
+        "outro",
+      ],
       forma_entrega_fralda: ["familiar", "fornecedor", "correios"],
       incident_severity: ["leve", "moderado", "grave"],
       origem_correios_fralda: ["governo", "outros"],
+      origem_recebimento_item: [
+        "convenio",
+        "familiar",
+        "fornecedor",
+        "correios",
+        "outro",
+      ],
       resident_status: ["estavel", "observacao", "critico"],
       room_status: ["ocupado", "vago", "manutencao"],
       shift: ["manha", "tarde", "noite"],
+      status_devolucao_item: ["em_uso", "devolvido"],
       tipo_fralda: ["tradicional", "calcinha_pant", "absorvente"],
     },
   },
