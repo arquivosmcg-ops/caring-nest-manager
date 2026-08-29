@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TextareaDitavel } from "@/components/ditar-audio";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Package, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Package, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -28,6 +28,15 @@ export const Route = createFileRoute("/_authenticated/recebimento-fraldas")({
 type Forma = "familiar" | "fornecedor" | "correios";
 type Tipo = "tradicional" | "calcinha_pant" | "absorvente";
 
+type ItemDb = {
+  id: string;
+  marca: string;
+  tipo: Tipo;
+  quantidade_fardos: number;
+  unidades_por_fardo: number;
+  total_unidades: number;
+};
+
 type Registro = {
   id: string;
   residente_id: string;
@@ -37,13 +46,17 @@ type Registro = {
   nome_familiar: string | null;
   nome_fornecedor: string | null;
   origem_correios: "governo" | "outros" | null;
-  marca: string;
-  tipo: Tipo;
-  quantidade_fardos: number;
-  unidades_por_fardo: number;
-  total_unidades: number;
   observacoes: string | null;
   residentes: { nome_completo: string } | null;
+  recebimentos_fraldas_itens: ItemDb[];
+};
+
+type ItemForm = {
+  uid: string;
+  marca: string;
+  tipo: Tipo;
+  fardos: string;
+  unidades: string;
 };
 
 const FORMAS: { v: Forma; label: string }[] = [
@@ -76,6 +89,13 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
 }
 
 const hoje = () => new Date().toISOString().slice(0, 10);
+const novoItem = (): ItemForm => ({
+  uid: crypto.randomUUID(),
+  marca: "",
+  tipo: "tradicional",
+  fardos: "",
+  unidades: "",
+});
 
 function RecebimentoFraldasPage() {
   const qc = useQueryClient();
@@ -97,7 +117,7 @@ function RecebimentoFraldasPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("recebimentos_fraldas" as never)
-        .select("*, residentes(nome_completo)")
+        .select("*, residentes(nome_completo), recebimentos_fraldas_itens(*)")
         .order("data_entrega", { ascending: false })
         .order("criado_em", { ascending: false });
       if (error) throw error;
@@ -105,7 +125,7 @@ function RecebimentoFraldasPage() {
     },
   });
 
-  // ---- formulário ----
+  // ---- formulário (cabeçalho) ----
   const [residenteId, setResidenteId] = useState("");
   const [dataEntrega, setDataEntrega] = useState(hoje());
   const [recebidoPor, setRecebidoPor] = useState("");
@@ -113,16 +133,20 @@ function RecebimentoFraldasPage() {
   const [nomeFamiliar, setNomeFamiliar] = useState("");
   const [nomeFornecedor, setNomeFornecedor] = useState("");
   const [origemCorreios, setOrigemCorreios] = useState<"governo" | "outros">("governo");
-  const [marca, setMarca] = useState("");
-  const [tipo, setTipo] = useState<Tipo>("tradicional");
-  const [fardos, setFardos] = useState("");
-  const [unidades, setUnidades] = useState("");
   const [observacoes, setObservacoes] = useState("");
+  const [itens, setItens] = useState<ItemForm[]>([novoItem()]);
 
-  const totalUnidades = (Number(fardos) || 0) * (Number(unidades) || 0);
+  const setItem = (uid: string, patch: Partial<ItemForm>) =>
+    setItens((prev) => prev.map((i) => (i.uid === uid ? { ...i, ...patch } : i)));
+
+  const totalItem = (i: ItemForm) => (Number(i.fardos) || 0) * (Number(i.unidades) || 0);
+  const totalGeral = itens.reduce((s, i) => s + totalItem(i), 0);
 
   const marcasConhecidas = useMemo(
-    () => Array.from(new Set((registros.data ?? []).map((r) => r.marca).filter(Boolean))).sort(),
+    () =>
+      Array.from(
+        new Set((registros.data ?? []).flatMap((r) => r.recebimentos_fraldas_itens.map((i) => i.marca)).filter(Boolean)),
+      ).sort(),
     [registros.data],
   );
 
@@ -134,37 +158,51 @@ function RecebimentoFraldasPage() {
     setNomeFamiliar("");
     setNomeFornecedor("");
     setOrigemCorreios("governo");
-    setMarca("");
-    setTipo("tradicional");
-    setFardos("");
-    setUnidades("");
     setObservacoes("");
+    setItens([novoItem()]);
   };
 
   const criar = useMutation({
     mutationFn: async () => {
       if (!residenteId) throw new Error("Selecione o residente");
       if (!recebidoPor.trim()) throw new Error("Informe quem recebeu a entrega");
-      if (!marca.trim()) throw new Error("Informe a marca");
       if (forma === "familiar" && !nomeFamiliar.trim()) throw new Error("Informe o nome do familiar");
       if (forma === "fornecedor" && !nomeFornecedor.trim()) throw new Error("Informe o nome do fornecedor");
+      if (itens.length === 0) throw new Error("Adicione ao menos um item");
+      itens.forEach((i, idx) => {
+        if (!i.marca.trim()) throw new Error(`Informe a marca do item ${idx + 1}`);
+        if (totalItem(i) <= 0) throw new Error(`Informe fardos e unidades do item ${idx + 1}`);
+      });
+
       const { data: user } = await supabase.auth.getUser();
-      const { error } = await supabase.from("recebimentos_fraldas" as never).insert({
-        residente_id: residenteId,
-        data_entrega: dataEntrega,
-        recebido_por: recebidoPor.trim(),
-        registrado_por: user.user?.id ?? null,
-        forma_entrega: forma,
-        nome_familiar: forma === "familiar" ? nomeFamiliar.trim() : null,
-        nome_fornecedor: forma === "fornecedor" ? nomeFornecedor.trim() : null,
-        origem_correios: forma === "correios" ? origemCorreios : null,
-        marca: marca.trim(),
-        tipo,
-        quantidade_fardos: Number(fardos) || 0,
-        unidades_por_fardo: Number(unidades) || 0,
-        observacoes: observacoes.trim() || null,
-      } as never);
+      const { data: header, error } = await supabase
+        .from("recebimentos_fraldas" as never)
+        .insert({
+          residente_id: residenteId,
+          data_entrega: dataEntrega,
+          recebido_por: recebidoPor.trim(),
+          registrado_por: user.user?.id ?? null,
+          forma_entrega: forma,
+          nome_familiar: forma === "familiar" ? nomeFamiliar.trim() : null,
+          nome_fornecedor: forma === "fornecedor" ? nomeFornecedor.trim() : null,
+          origem_correios: forma === "correios" ? origemCorreios : null,
+          observacoes: observacoes.trim() || null,
+        } as never)
+        .select("id")
+        .single();
       if (error) throw error;
+
+      const recebimentoId = (header as unknown as { id: string }).id;
+      const { error: errItens } = await supabase.from("recebimentos_fraldas_itens" as never).insert(
+        itens.map((i) => ({
+          recebimento_id: recebimentoId,
+          marca: i.marca.trim(),
+          tipo: i.tipo,
+          quantidade_fardos: Number(i.fardos) || 0,
+          unidades_por_fardo: Number(i.unidades) || 0,
+        })) as never,
+      );
+      if (errItens) throw errItens;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["recebimentos-fraldas"] });
@@ -193,6 +231,7 @@ function RecebimentoFraldasPage() {
   const [fForma, setFForma] = useState("todas");
   const [fMarca, setFMarca] = useState("");
   const [fTipo, setFTipo] = useState("todos");
+  const [abertos, setAbertos] = useState<Record<string, boolean>>({});
 
   const filtrados = useMemo(() => {
     return (registros.data ?? []).filter((r) => {
@@ -200,13 +239,16 @@ function RecebimentoFraldasPage() {
       if (fDe && r.data_entrega < fDe) return false;
       if (fAte && r.data_entrega > fAte) return false;
       if (fForma !== "todas" && r.forma_entrega !== fForma) return false;
-      if (fTipo !== "todos" && r.tipo !== fTipo) return false;
-      if (fMarca && !r.marca.toLowerCase().includes(fMarca.toLowerCase())) return false;
+      const its = r.recebimentos_fraldas_itens ?? [];
+      if (fTipo !== "todos" && !its.some((i) => i.tipo === fTipo)) return false;
+      if (fMarca && !its.some((i) => i.marca.toLowerCase().includes(fMarca.toLowerCase()))) return false;
       return true;
     });
   }, [registros.data, fResidente, fDe, fAte, fForma, fMarca, fTipo]);
 
-  const totalPeriodo = filtrados.reduce((s, r) => s + (r.total_unidades ?? 0), 0);
+  const totalRegistro = (r: Registro) =>
+    (r.recebimentos_fraldas_itens ?? []).reduce((s, i) => s + (i.total_unidades ?? 0), 0);
+  const totalPeriodo = filtrados.reduce((s, r) => s + totalRegistro(r), 0);
 
   const detalheForma = (r: Registro) =>
     r.forma_entrega === "familiar"
@@ -257,6 +299,10 @@ function RecebimentoFraldasPage() {
               <Chip key={f.v} active={forma === f.v} onClick={() => setForma(f.v)}>{f.label}</Chip>
             ))}
           </div>
+          <p className="text-[11px] text-muted-foreground">
+            A forma de entrega vale para todos os itens deste registro. Se a mesma entrega vier de origens diferentes,
+            crie um registro separado para cada forma de entrega.
+          </p>
           {forma === "familiar" && (
             <div className="space-y-1.5 pt-2 max-w-md">
               <Label htmlFor="nome-familiar">Nome do familiar</Label>
@@ -281,40 +327,85 @@ function RecebimentoFraldasPage() {
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-sm font-extrabold uppercase tracking-wider text-muted-foreground">Detalhes do produto</h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="marca">Marca</Label>
-              <Input
-                id="marca"
-                list="marcas-conhecidas"
-                value={marca}
-                onChange={(e) => setMarca(e.target.value)}
-                placeholder="Ex.: Tena, Bigfral…"
-              />
-              <datalist id="marcas-conhecidas">
-                {marcasConhecidas.map((m) => <option key={m} value={m} />)}
-              </datalist>
+          <h3 className="text-sm font-extrabold uppercase tracking-wider text-muted-foreground">Itens da entrega</h3>
+
+          <datalist id="marcas-conhecidas">
+            {marcasConhecidas.map((m) => <option key={m} value={m} />)}
+          </datalist>
+
+          {itens.map((item, idx) => (
+            <div key={item.uid} className="border border-border rounded-lg p-4 space-y-4 bg-black/[0.01]">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Item {idx + 1}</p>
+                {itens.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setItens((prev) => prev.filter((i) => i.uid !== item.uid))}
+                    className="text-muted-foreground hover:text-primary p-1"
+                    title="Remover item"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor={`marca-${item.uid}`}>Marca</Label>
+                  <Input
+                    id={`marca-${item.uid}`}
+                    list="marcas-conhecidas"
+                    value={item.marca}
+                    onChange={(e) => setItem(item.uid, { marca: e.target.value })}
+                    placeholder="Ex.: Tena, Bigfral…"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor={`fardos-${item.uid}`}>Quantidade de fardos</Label>
+                  <Input
+                    id={`fardos-${item.uid}`}
+                    type="number"
+                    min={0}
+                    value={item.fardos}
+                    onChange={(e) => setItem(item.uid, { fardos: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor={`unidades-${item.uid}`}>Unidades por fardo</Label>
+                  <Input
+                    id={`unidades-${item.uid}`}
+                    type="number"
+                    min={0}
+                    value={item.unidades}
+                    onChange={(e) => setItem(item.uid, { unidades: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor={`total-${item.uid}`}>Total de unidades</Label>
+                  <Input id={`total-${item.uid}`} readOnly value={totalItem(item)} className="bg-muted font-bold" />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Tipo</Label>
+                <div className="flex flex-wrap gap-2">
+                  {TIPOS.map((t) => (
+                    <Chip key={t.v} active={item.tipo === t.v} onClick={() => setItem(item.uid, { tipo: t.v })}>
+                      {t.label}
+                    </Chip>
+                  ))}
+                </div>
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="fardos">Quantidade de fardos</Label>
-              <Input id="fardos" type="number" min={0} value={fardos} onChange={(e) => setFardos(e.target.value)} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="unidades">Unidades por fardo</Label>
-              <Input id="unidades" type="number" min={0} value={unidades} onChange={(e) => setUnidades(e.target.value)} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="total">Total de unidades</Label>
-              <Input id="total" readOnly value={totalUnidades} className="bg-muted font-bold" />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label>Tipo</Label>
-            <div className="flex flex-wrap gap-2">
-              {TIPOS.map((t) => (
-                <Chip key={t.v} active={tipo === t.v} onClick={() => setTipo(t.v)}>{t.label}</Chip>
-              ))}
+          ))}
+
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <Button type="button" variant="outline" className="gap-2" onClick={() => setItens((p) => [...p, novoItem()])}>
+              <Plus className="size-4" />
+              Adicionar outro item
+            </Button>
+            <div className="bg-foreground text-background px-4 py-2 rounded-md text-sm font-extrabold">
+              Total geral: {totalGeral.toLocaleString("pt-BR")} unidades
             </div>
           </div>
         </div>
@@ -325,7 +416,6 @@ function RecebimentoFraldasPage() {
             id="obs"
             value={observacoes}
             onChange={(e) => setObservacoes(e.target.value)}
-            
             placeholder="Ex.: fardo violado, produto vencendo em breve…"
           />
         </div>
@@ -391,53 +481,89 @@ function RecebimentoFraldasPage() {
           </div>
         </div>
 
-        <div className="bg-surface border border-border rounded-lg overflow-x-auto">
-          <table className="w-full text-left border-collapse text-sm">
-            <thead className="bg-black/[0.02] border-b border-border">
-              <tr>
-                {["Data", "Residente", "Forma de entrega", "Marca", "Tipo", "Fardos", "Un./fardo", "Total", "Recebido por", ""].map((h) => (
-                  <th key={h} className="px-3 py-3 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filtrados.length === 0 && (
-                <tr><td colSpan={10} className="px-4 py-10 text-center text-sm text-muted-foreground">
-                  Nenhum recebimento encontrado.
-                </td></tr>
-              )}
-              {filtrados.map((r) => (
-                <tr key={r.id} className="hover:bg-black/[0.01] align-top">
-                  <td className="px-3 py-3 font-mono whitespace-nowrap">
-                    {new Date(`${r.data_entrega}T12:00:00`).toLocaleDateString("pt-BR")}
-                  </td>
-                  <td className="px-3 py-3 font-bold">{r.residentes?.nome_completo ?? "—"}</td>
-                  <td className="px-3 py-3">
-                    <p className="font-medium">{FORMAS.find((f) => f.v === r.forma_entrega)?.label}</p>
-                    <p className="text-[11px] text-muted-foreground">{detalheForma(r)}</p>
-                  </td>
-                  <td className="px-3 py-3">{r.marca}</td>
-                  <td className="px-3 py-3">{TIPOS.find((t) => t.v === r.tipo)?.label}</td>
-                  <td className="px-3 py-3 font-mono">{r.quantidade_fardos}</td>
-                  <td className="px-3 py-3 font-mono">{r.unidades_por_fardo}</td>
-                  <td className="px-3 py-3 font-mono font-bold">{r.total_unidades}</td>
-                  <td className="px-3 py-3">
-                    {r.recebido_por}
-                    {r.observacoes && <p className="text-[11px] text-muted-foreground italic mt-1">{r.observacoes}</p>}
-                  </td>
-                  <td className="px-3 py-3">
-                    <button
-                      onClick={() => remover.mutate(r.id)}
-                      className="text-muted-foreground hover:text-primary p-1"
-                      title="Excluir registro"
-                    >
-                      <Trash2 className="size-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="space-y-3">
+          {filtrados.length === 0 && (
+            <p className="bg-surface border border-border rounded-lg px-4 py-10 text-center text-sm text-muted-foreground">
+              Nenhum recebimento encontrado.
+            </p>
+          )}
+
+          {filtrados.map((r) => {
+            const aberto = !!abertos[r.id];
+            const its = r.recebimentos_fraldas_itens ?? [];
+            return (
+              <div key={r.id} className="bg-surface border border-border rounded-lg overflow-hidden">
+                <div className="flex items-start gap-3 p-4">
+                  <button
+                    type="button"
+                    onClick={() => setAbertos((p) => ({ ...p, [r.id]: !aberto }))}
+                    className="mt-0.5 text-muted-foreground hover:text-foreground"
+                    aria-label={aberto ? "Recolher itens" : "Expandir itens"}
+                  >
+                    {aberto ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+                  </button>
+
+                  <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div>
+                      <p className="font-mono text-sm">
+                        {new Date(`${r.data_entrega}T12:00:00`).toLocaleDateString("pt-BR")}
+                      </p>
+                      <p className="font-bold">{r.residentes?.nome_completo ?? "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{FORMAS.find((f) => f.v === r.forma_entrega)?.label}</p>
+                      <p className="text-[11px] text-muted-foreground">{detalheForma(r)}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm">{its.length} {its.length === 1 ? "item" : "itens"}</p>
+                      <p className="text-[11px] text-muted-foreground">Recebido por {r.recebido_por}</p>
+                    </div>
+                    <div className="md:text-right">
+                      <p className="font-mono font-extrabold">{totalRegistro(r).toLocaleString("pt-BR")} un.</p>
+                      {r.observacoes && (
+                        <p className="text-[11px] text-muted-foreground italic">{r.observacoes}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => remover.mutate(r.id)}
+                    className="text-muted-foreground hover:text-primary p-1"
+                    title="Excluir registro"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                </div>
+
+                {aberto && (
+                  <div className="border-t border-border overflow-x-auto">
+                    <table className="w-full text-left border-collapse text-sm">
+                      <thead className="bg-black/[0.02] border-b border-border">
+                        <tr>
+                          {["Marca", "Tipo", "Fardos", "Un./fardo", "Total"].map((h) => (
+                            <th key={h} className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {its.map((i) => (
+                          <tr key={i.id}>
+                            <td className="px-3 py-2">{i.marca}</td>
+                            <td className="px-3 py-2">{TIPOS.find((t) => t.v === i.tipo)?.label}</td>
+                            <td className="px-3 py-2 font-mono">{i.quantidade_fardos}</td>
+                            <td className="px-3 py-2 font-mono">{i.unidades_por_fardo}</td>
+                            <td className="px-3 py-2 font-mono font-bold">{i.total_unidades}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </section>
     </div>
