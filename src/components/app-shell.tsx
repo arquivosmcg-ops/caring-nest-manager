@@ -37,6 +37,7 @@ const navItems = [
   { to: "/prescricao-enfermagem", label: "Prescrição de Enfermagem", icon: ClipboardCheck, multi: false },
   { to: "/quartos", label: "Quartos", icon: BedDouble, multi: false },
   { to: "/medicamentos", label: "Prescrição Médica", icon: Pill, multi: false },
+  { to: "/receituario", label: "Receituário Médico", icon: FileSignature, multi: false },
   { to: "/sinais-vitais", label: "Sinais Vitais", icon: Activity, multi: false },
   { to: "/incidentes", label: "Incidentes", icon: AlertTriangle, multi: false },
   { to: "/checklists", label: "Checklists", icon: ClipboardCheck, multi: false },
