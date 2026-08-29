@@ -167,28 +167,38 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       <main className="flex-1 flex flex-col min-w-0">
-        <header className="h-20 border-b border-border bg-surface flex items-center justify-between px-8 sticky top-0 z-10">
-          <div>
-            <h1 className="text-xl font-extrabold tracking-tight">{currentPage}</h1>
-            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-0.5">
-              Plantão: {shift} • {shiftRange}
-            </p>
+        <header className="min-h-20 border-b border-border bg-surface flex items-center justify-between gap-3 px-4 lg:px-8 py-3 sticky top-0 z-30">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              onClick={() => setMenuAberto(true)}
+              className="lg:hidden p-2 -ml-2 rounded-md hover:bg-black/5"
+              aria-label="Abrir menu"
+            >
+              <Menu className="size-5" />
+            </button>
+            <div className="min-w-0">
+              <h1 className="text-base lg:text-xl font-extrabold tracking-tight truncate">{currentPage}</h1>
+              <p className="text-[10px] lg:text-xs text-muted-foreground font-medium uppercase tracking-wider mt-0.5 truncate">
+                Plantão: {shift} • {shiftRange}
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <AlertasSino />
             <button
               onClick={() => toast.error("Alerta de emergência disparado à equipe", { duration: 4000 })}
-              className="bg-primary text-primary-foreground px-6 py-3 rounded-md font-bold text-sm tracking-wide shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all flex items-center gap-2"
+              className="bg-primary text-primary-foreground px-3 lg:px-6 py-2.5 lg:py-3 rounded-md font-bold text-xs lg:text-sm tracking-wide shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all flex items-center gap-2"
             >
               <span className="size-2 bg-primary-foreground rounded-full animate-pulse" />
-              EMERGÊNCIA
+              <span className="hidden sm:inline">EMERGÊNCIA</span>
+              <span className="sm:hidden">SOS</span>
             </button>
           </div>
         </header>
 
 
-        <div className="p-8 animate-in-up">{children}</div>
+        <div className="p-4 lg:p-8 animate-in-up">{children}</div>
       </main>
     </div>
   );
