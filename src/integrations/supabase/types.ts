@@ -690,6 +690,45 @@ export type Database = {
           },
         ]
       }
+      medicamentos_base: {
+        Row: {
+          apresentacao: string | null
+          created_at: string
+          criado_por: string | null
+          embalagem: string | null
+          forma_farmaceutica: string | null
+          id: string
+          laboratorio: string | null
+          nome_comercial: string
+          origem: string
+          principio_ativo: string | null
+        }
+        Insert: {
+          apresentacao?: string | null
+          created_at?: string
+          criado_por?: string | null
+          embalagem?: string | null
+          forma_farmaceutica?: string | null
+          id?: string
+          laboratorio?: string | null
+          nome_comercial: string
+          origem?: string
+          principio_ativo?: string | null
+        }
+        Update: {
+          apresentacao?: string | null
+          created_at?: string
+          criado_por?: string | null
+          embalagem?: string | null
+          forma_farmaceutica?: string | null
+          id?: string
+          laboratorio?: string | null
+          nome_comercial?: string
+          origem?: string
+          principio_ativo?: string | null
+        }
+        Relationships: []
+      }
       plano_cuidados: {
         Row: {
           ativo: boolean
@@ -923,6 +962,127 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "recebimentos_fraldas_residente_id_fkey"
+            columns: ["residente_id"]
+            isOneToOne: false
+            referencedRelation: "residentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      receituario_itens: {
+        Row: {
+          apresentacao: string | null
+          created_at: string
+          data_inicio: string | null
+          duracao_tipo: string
+          forma_farmaceutica: string | null
+          id: string
+          laboratorio: string | null
+          nome_medicamento: string
+          numero_dias: number | null
+          ordem: number
+          orientacoes: string | null
+          posologia: string | null
+          principio_ativo: string | null
+          quantidade_dispensar: string | null
+          receituario_id: string
+          se_necessario: boolean
+          turnos: string[]
+          via: string | null
+        }
+        Insert: {
+          apresentacao?: string | null
+          created_at?: string
+          data_inicio?: string | null
+          duracao_tipo?: string
+          forma_farmaceutica?: string | null
+          id?: string
+          laboratorio?: string | null
+          nome_medicamento: string
+          numero_dias?: number | null
+          ordem?: number
+          orientacoes?: string | null
+          posologia?: string | null
+          principio_ativo?: string | null
+          quantidade_dispensar?: string | null
+          receituario_id: string
+          se_necessario?: boolean
+          turnos?: string[]
+          via?: string | null
+        }
+        Update: {
+          apresentacao?: string | null
+          created_at?: string
+          data_inicio?: string | null
+          duracao_tipo?: string
+          forma_farmaceutica?: string | null
+          id?: string
+          laboratorio?: string | null
+          nome_medicamento?: string
+          numero_dias?: number | null
+          ordem?: number
+          orientacoes?: string | null
+          posologia?: string | null
+          principio_ativo?: string | null
+          quantidade_dispensar?: string | null
+          receituario_id?: string
+          se_necessario?: boolean
+          turnos?: string[]
+          via?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receituario_itens_receituario_id_fkey"
+            columns: ["receituario_id"]
+            isOneToOne: false
+            referencedRelation: "receituarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      receituarios: {
+        Row: {
+          created_at: string
+          data_emissao: string
+          id: string
+          medico_conselho: string | null
+          medico_id: string | null
+          medico_nome: string
+          medico_uf: string | null
+          observacoes: string | null
+          residente_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data_emissao?: string
+          id?: string
+          medico_conselho?: string | null
+          medico_id?: string | null
+          medico_nome: string
+          medico_uf?: string | null
+          observacoes?: string | null
+          residente_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data_emissao?: string
+          id?: string
+          medico_conselho?: string | null
+          medico_id?: string | null
+          medico_nome?: string
+          medico_uf?: string | null
+          observacoes?: string | null
+          residente_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receituarios_residente_id_fkey"
             columns: ["residente_id"]
             isOneToOne: false
             referencedRelation: "residentes"
