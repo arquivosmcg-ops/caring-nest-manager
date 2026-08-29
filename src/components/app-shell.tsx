@@ -15,6 +15,7 @@ import {
   UserCog,
   Cake,
   Package,
+  Boxes,
   BadgeCheck,
   DoorOpen,
   FileSignature,
