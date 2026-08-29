@@ -10,7 +10,7 @@ import { Boxes, Plus, Trash2, ChevronDown, ChevronRight, AlertTriangle, PackageC
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { usePerfil } from "@/hooks/use-perfil";
+import { usePerfilAtual } from "@/hooks/use-perfil";
 
 export const Route = createFileRoute("/_authenticated/recebimento-itens")({
   head: () => ({
@@ -170,7 +170,7 @@ function detalheOrigem(r: Registro) {
 
 function RecebimentoItensPage() {
   const qc = useQueryClient();
-  const { perfil } = usePerfil();
+  const { data: perfil } = usePerfilAtual();
 
   const residentes = useQuery({
     queryKey: ["residentes-simple"],
@@ -346,7 +346,7 @@ function RecebimentoItensPage() {
           data_retirada: dataRetirada,
           retirado_por: retiradoPor.trim(),
           entregue_por: user.user?.id ?? null,
-          entregue_por_nome: perfil?.full_name ?? user.user?.email ?? null,
+          entregue_por_nome: perfil?.fullName ?? user.user?.email ?? null,
           motivo,
           motivo_outro_texto: motivo === "outro" ? motivoOutro.trim() : null,
           observacoes: obsRetirada.trim() || null,
@@ -747,7 +747,7 @@ function RecebimentoItensPage() {
             </div>
             <div className="space-y-1.5">
               <Label>Entregue por</Label>
-              <Input value={perfil?.full_name ?? "Usuário logado"} readOnly className="bg-black/[0.03]" />
+              <Input value={perfil?.fullName ?? "Usuário logado"} readOnly className="bg-black/[0.03]" />
             </div>
           </div>
 
