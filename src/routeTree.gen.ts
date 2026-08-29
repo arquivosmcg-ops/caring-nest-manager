@@ -22,6 +22,7 @@ import { Route as AuthenticatedRecebimentoFraldasRouteImport } from './routes/_a
 import { Route as AuthenticatedQuartosRouteImport } from './routes/_authenticated/quartos'
 import { Route as AuthenticatedProntuarioRouteImport } from './routes/_authenticated/prontuario'
 import { Route as AuthenticatedPrescricaoEnfermagemRouteImport } from './routes/_authenticated/prescricao-enfermagem'
+import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated/perfil'
 import { Route as AuthenticatedMedicamentosRouteImport } from './routes/_authenticated/medicamentos'
 import { Route as AuthenticatedIncidentesRouteImport } from './routes/_authenticated/incidentes'
 import { Route as AuthenticatedEvolucaoMultiRouteImport } from './routes/_authenticated/evolucao-multi'
@@ -98,6 +99,11 @@ const AuthenticatedPrescricaoEnfermagemRoute =
     path: '/prescricao-enfermagem',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPerfilRoute = AuthenticatedPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedMedicamentosRoute =
   AuthenticatedMedicamentosRouteImport.update({
     id: '/medicamentos',
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/evolucao-multi': typeof AuthenticatedEvolucaoMultiRoute
   '/incidentes': typeof AuthenticatedIncidentesRoute
   '/medicamentos': typeof AuthenticatedMedicamentosRoute
+  '/perfil': typeof AuthenticatedPerfilRoute
   '/prescricao-enfermagem': typeof AuthenticatedPrescricaoEnfermagemRoute
   '/prontuario': typeof AuthenticatedProntuarioRoute
   '/quartos': typeof AuthenticatedQuartosRoute
@@ -179,6 +186,7 @@ export interface FileRoutesByTo {
   '/evolucao-multi': typeof AuthenticatedEvolucaoMultiRoute
   '/incidentes': typeof AuthenticatedIncidentesRoute
   '/medicamentos': typeof AuthenticatedMedicamentosRoute
+  '/perfil': typeof AuthenticatedPerfilRoute
   '/prescricao-enfermagem': typeof AuthenticatedPrescricaoEnfermagemRoute
   '/prontuario': typeof AuthenticatedProntuarioRoute
   '/quartos': typeof AuthenticatedQuartosRoute
@@ -203,6 +211,7 @@ export interface FileRoutesById {
   '/_authenticated/evolucao-multi': typeof AuthenticatedEvolucaoMultiRoute
   '/_authenticated/incidentes': typeof AuthenticatedIncidentesRoute
   '/_authenticated/medicamentos': typeof AuthenticatedMedicamentosRoute
+  '/_authenticated/perfil': typeof AuthenticatedPerfilRoute
   '/_authenticated/prescricao-enfermagem': typeof AuthenticatedPrescricaoEnfermagemRoute
   '/_authenticated/prontuario': typeof AuthenticatedProntuarioRoute
   '/_authenticated/quartos': typeof AuthenticatedQuartosRoute
@@ -227,6 +236,7 @@ export interface FileRouteTypes {
     | '/evolucao-multi'
     | '/incidentes'
     | '/medicamentos'
+    | '/perfil'
     | '/prescricao-enfermagem'
     | '/prontuario'
     | '/quartos'
@@ -249,6 +259,7 @@ export interface FileRouteTypes {
     | '/evolucao-multi'
     | '/incidentes'
     | '/medicamentos'
+    | '/perfil'
     | '/prescricao-enfermagem'
     | '/prontuario'
     | '/quartos'
@@ -272,6 +283,7 @@ export interface FileRouteTypes {
     | '/_authenticated/evolucao-multi'
     | '/_authenticated/incidentes'
     | '/_authenticated/medicamentos'
+    | '/_authenticated/perfil'
     | '/_authenticated/prescricao-enfermagem'
     | '/_authenticated/prontuario'
     | '/_authenticated/quartos'
@@ -384,6 +396,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPrescricaoEnfermagemRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/perfil': {
+      id: '/_authenticated/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof AuthenticatedPerfilRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/medicamentos': {
       id: '/_authenticated/medicamentos'
       path: '/medicamentos'
@@ -452,6 +471,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEvolucaoMultiRoute: typeof AuthenticatedEvolucaoMultiRoute
   AuthenticatedIncidentesRoute: typeof AuthenticatedIncidentesRoute
   AuthenticatedMedicamentosRoute: typeof AuthenticatedMedicamentosRoute
+  AuthenticatedPerfilRoute: typeof AuthenticatedPerfilRoute
   AuthenticatedPrescricaoEnfermagemRoute: typeof AuthenticatedPrescricaoEnfermagemRoute
   AuthenticatedProntuarioRoute: typeof AuthenticatedProntuarioRoute
   AuthenticatedQuartosRoute: typeof AuthenticatedQuartosRoute
@@ -470,6 +490,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEvolucaoMultiRoute: AuthenticatedEvolucaoMultiRoute,
   AuthenticatedIncidentesRoute: AuthenticatedIncidentesRoute,
   AuthenticatedMedicamentosRoute: AuthenticatedMedicamentosRoute,
+  AuthenticatedPerfilRoute: AuthenticatedPerfilRoute,
   AuthenticatedPrescricaoEnfermagemRoute:
     AuthenticatedPrescricaoEnfermagemRoute,
   AuthenticatedProntuarioRoute: AuthenticatedProntuarioRoute,

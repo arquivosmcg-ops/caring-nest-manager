@@ -197,7 +197,10 @@ export type Database = {
       assinaturas: {
         Row: {
           categoria_profissional: string
+          certificado_ac_emissor: string | null
           certificado_info: Json | null
+          certificado_tipo: string | null
+          certificado_valido_ate: string | null
           conselho_uf: string | null
           created_at: string
           documento_id: string
@@ -208,11 +211,15 @@ export type Database = {
           metodo: string
           nome_profissional: string
           numero_conselho: string | null
+          protocolo_assinatura: string | null
           usuario_id: string
         }
         Insert: {
           categoria_profissional: string
+          certificado_ac_emissor?: string | null
           certificado_info?: Json | null
+          certificado_tipo?: string | null
+          certificado_valido_ate?: string | null
           conselho_uf?: string | null
           created_at?: string
           documento_id: string
@@ -223,11 +230,15 @@ export type Database = {
           metodo?: string
           nome_profissional: string
           numero_conselho?: string | null
+          protocolo_assinatura?: string | null
           usuario_id: string
         }
         Update: {
           categoria_profissional?: string
+          certificado_ac_emissor?: string | null
           certificado_info?: Json | null
+          certificado_tipo?: string | null
+          certificado_valido_ate?: string | null
           conselho_uf?: string | null
           created_at?: string
           documento_id?: string
@@ -238,6 +249,7 @@ export type Database = {
           metodo?: string
           nome_profissional?: string
           numero_conselho?: string | null
+          protocolo_assinatura?: string | null
           usuario_id?: string
         }
         Relationships: []
@@ -308,6 +320,51 @@ export type Database = {
           icone?: string
           id?: string
           nome?: string
+        }
+        Relationships: []
+      }
+      certificados_digitais: {
+        Row: {
+          ac_emissora: string | null
+          created_at: string
+          id: string
+          numero_serie: string | null
+          provedor: string | null
+          provedor_ref: string | null
+          tipo: string
+          titular: string | null
+          updated_at: string
+          usuario_id: string
+          valido_ate: string | null
+          valido_de: string | null
+        }
+        Insert: {
+          ac_emissora?: string | null
+          created_at?: string
+          id?: string
+          numero_serie?: string | null
+          provedor?: string | null
+          provedor_ref?: string | null
+          tipo: string
+          titular?: string | null
+          updated_at?: string
+          usuario_id: string
+          valido_ate?: string | null
+          valido_de?: string | null
+        }
+        Update: {
+          ac_emissora?: string | null
+          created_at?: string
+          id?: string
+          numero_serie?: string | null
+          provedor?: string | null
+          provedor_ref?: string | null
+          tipo?: string
+          titular?: string | null
+          updated_at?: string
+          usuario_id?: string
+          valido_ate?: string | null
+          valido_de?: string | null
         }
         Relationships: []
       }
@@ -1194,17 +1251,30 @@ export type Database = {
         }[]
       }
       redefinir_senha_painel: { Args: { _nova: string }; Returns: boolean }
-      registrar_assinatura: {
-        Args: {
-          _documento_id: string
-          _documento_ref?: Json
-          _documento_tipo: string
-          _hash: string
-          _metodo?: string
-          _pin?: string
-        }
-        Returns: string
-      }
+      registrar_assinatura:
+        | {
+            Args: {
+              _documento_id: string
+              _documento_ref?: Json
+              _documento_tipo: string
+              _hash: string
+              _metodo?: string
+              _pin?: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              _certificado?: Json
+              _documento_id: string
+              _documento_ref?: Json
+              _documento_tipo: string
+              _hash: string
+              _metodo?: string
+              _pin?: string
+            }
+            Returns: string
+          }
       tenho_pin_assinatura: { Args: never; Returns: boolean }
       verificar_senha_painel: { Args: { _senha: string }; Returns: boolean }
     }

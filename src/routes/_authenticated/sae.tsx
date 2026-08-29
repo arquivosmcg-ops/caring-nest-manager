@@ -15,7 +15,7 @@ import {
 import { SAE_SECOES, resumoSecao, type SaeValores, type SaeCampo } from "@/lib/sae-schema";
 import { DitarAudio } from "@/components/ditar-audio";
 import { AssinaturaDialog, CarimboAssinatura, type CredencialAssinatura } from "@/components/assinatura-dialog";
-import { hashDocumento, carimbo, type Assinatura } from "@/lib/assinatura";
+import { hashDocumento, carimbo, linhasAssinatura, type Assinatura } from "@/lib/assinatura";
 
 export const Route = createFileRoute("/_authenticated/sae")({
   head: () => ({
@@ -256,6 +256,7 @@ function SaePage() {
         evolucao: payload.evolucao,
         retifica_id: payload.retifica_id,
       });
+      const evidencia = cred.assinarCertificado ? await cred.assinarCertificado(hash) : undefined;
       const { error: erroAss } = await supabase.rpc("registrar_assinatura", {
         _documento_tipo: "sae",
         _documento_id: (inserido as { id: string }).id,
@@ -263,7 +264,8 @@ function SaePage() {
         _pin: cred.pin ?? undefined,
         _documento_ref: { residente_id: residenteId, data, turno } as never,
         _metodo: cred.metodo,
-      });
+        _certificado: (evidencia ?? undefined) as never,
+      } as never);
       if (erroAss) throw erroAss;
     },
     onSuccess: () => {
@@ -317,9 +319,9 @@ function SaePage() {
       return `<div class="sec"><h2>${secao.titulo}</h2>${itens}</div>`;
     }).join("");
     const rodape = a
-      ? `<div class="ass"><p><b>${carimbo(a)}</b></p>
-         <p>Assinado eletronicamente em ${new Date(a.created_at).toLocaleString("pt-BR")}</p>
-         <p>Documento íntegro — hash: ${a.hash_documento.slice(0, 8)}</p></div>`
+      ? `<div class="ass">${linhasAssinatura(a as never)
+          .map((l, i) => `<p>${i === 0 ? `<b>${l}</b>` : l}</p>`)
+          .join("")}</div>`
       : `<div class="ass"><p>Registro sem assinatura eletrônica.</p></div>`;
     const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"/>
 <title>SAE — ${residente?.nome_completo ?? ""}</title>
