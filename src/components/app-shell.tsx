@@ -16,6 +16,7 @@ import {
   Cake,
   Package,
   BadgeCheck,
+  DoorOpen,
   FileSignature,
   LogOut,
   Menu,
