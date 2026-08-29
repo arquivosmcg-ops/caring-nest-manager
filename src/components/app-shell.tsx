@@ -16,6 +16,7 @@ import {
   Cake,
   Package,
   BadgeCheck,
+  FileSignature,
   LogOut,
   Menu,
 } from "lucide-react";
