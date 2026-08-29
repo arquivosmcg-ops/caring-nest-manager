@@ -15,6 +15,7 @@ import { Route as AguardandoAprovacaoRouteImport } from './routes/aguardando-apr
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiTranscreverRouteImport } from './routes/api/transcrever'
+import { Route as AuthenticatedVisitasRouteImport } from './routes/_authenticated/visitas'
 import { Route as AuthenticatedSinaisVitaisRouteImport } from './routes/_authenticated/sinais-vitais'
 import { Route as AuthenticatedSaeRouteImport } from './routes/_authenticated/sae'
 import { Route as AuthenticatedResidentesRouteImport } from './routes/_authenticated/residentes'
@@ -61,6 +62,11 @@ const ApiTranscreverRoute = ApiTranscreverRouteImport.update({
   id: '/api/transcrever',
   path: '/api/transcrever',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedVisitasRoute = AuthenticatedVisitasRouteImport.update({
+  id: '/visitas',
+  path: '/visitas',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSinaisVitaisRoute =
   AuthenticatedSinaisVitaisRouteImport.update({
@@ -179,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/residentes': typeof AuthenticatedResidentesRoute
   '/sae': typeof AuthenticatedSaeRoute
   '/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
+  '/visitas': typeof AuthenticatedVisitasRoute
   '/api/transcrever': typeof ApiTranscreverRoute
 }
 export interface FileRoutesByTo {
@@ -203,6 +210,7 @@ export interface FileRoutesByTo {
   '/residentes': typeof AuthenticatedResidentesRoute
   '/sae': typeof AuthenticatedSaeRoute
   '/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
+  '/visitas': typeof AuthenticatedVisitasRoute
   '/api/transcrever': typeof ApiTranscreverRoute
 }
 export interface FileRoutesById {
@@ -229,6 +237,7 @@ export interface FileRoutesById {
   '/_authenticated/residentes': typeof AuthenticatedResidentesRoute
   '/_authenticated/sae': typeof AuthenticatedSaeRoute
   '/_authenticated/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
+  '/_authenticated/visitas': typeof AuthenticatedVisitasRoute
   '/api/transcrever': typeof ApiTranscreverRoute
 }
 export interface FileRouteTypes {
@@ -255,6 +264,7 @@ export interface FileRouteTypes {
     | '/residentes'
     | '/sae'
     | '/sinais-vitais'
+    | '/visitas'
     | '/api/transcrever'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -279,6 +289,7 @@ export interface FileRouteTypes {
     | '/residentes'
     | '/sae'
     | '/sinais-vitais'
+    | '/visitas'
     | '/api/transcrever'
   id:
     | '__root__'
@@ -304,6 +315,7 @@ export interface FileRouteTypes {
     | '/_authenticated/residentes'
     | '/_authenticated/sae'
     | '/_authenticated/sinais-vitais'
+    | '/_authenticated/visitas'
     | '/api/transcrever'
   fileRoutesById: FileRoutesById
 }
@@ -359,6 +371,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/transcrever'
       preLoaderRoute: typeof ApiTranscreverRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/visitas': {
+      id: '/_authenticated/visitas'
+      path: '/visitas'
+      fullPath: '/visitas'
+      preLoaderRoute: typeof AuthenticatedVisitasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/sinais-vitais': {
       id: '/_authenticated/sinais-vitais'
@@ -500,6 +519,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedResidentesRoute: typeof AuthenticatedResidentesRoute
   AuthenticatedSaeRoute: typeof AuthenticatedSaeRoute
   AuthenticatedSinaisVitaisRoute: typeof AuthenticatedSinaisVitaisRoute
+  AuthenticatedVisitasRoute: typeof AuthenticatedVisitasRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -521,6 +541,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedResidentesRoute: AuthenticatedResidentesRoute,
   AuthenticatedSaeRoute: AuthenticatedSaeRoute,
   AuthenticatedSinaisVitaisRoute: AuthenticatedSinaisVitaisRoute,
+  AuthenticatedVisitasRoute: AuthenticatedVisitasRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
