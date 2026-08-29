@@ -20,6 +20,7 @@ import { Route as AuthenticatedSinaisVitaisRouteImport } from './routes/_authent
 import { Route as AuthenticatedSaeRouteImport } from './routes/_authenticated/sae'
 import { Route as AuthenticatedResidentesRouteImport } from './routes/_authenticated/residentes'
 import { Route as AuthenticatedReceituarioRouteImport } from './routes/_authenticated/receituario'
+import { Route as AuthenticatedRecebimentoItensRouteImport } from './routes/_authenticated/recebimento-itens'
 import { Route as AuthenticatedRecebimentoFraldasRouteImport } from './routes/_authenticated/recebimento-fraldas'
 import { Route as AuthenticatedQuartosRouteImport } from './routes/_authenticated/quartos'
 import { Route as AuthenticatedProntuarioRouteImport } from './routes/_authenticated/prontuario'
@@ -88,6 +89,12 @@ const AuthenticatedReceituarioRoute =
   AuthenticatedReceituarioRouteImport.update({
     id: '/receituario',
     path: '/receituario',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedRecebimentoItensRoute =
+  AuthenticatedRecebimentoItensRouteImport.update({
+    id: '/recebimento-itens',
+    path: '/recebimento-itens',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedRecebimentoFraldasRoute =
@@ -181,6 +188,7 @@ export interface FileRoutesByFullPath {
   '/prontuario': typeof AuthenticatedProntuarioRoute
   '/quartos': typeof AuthenticatedQuartosRoute
   '/recebimento-fraldas': typeof AuthenticatedRecebimentoFraldasRoute
+  '/recebimento-itens': typeof AuthenticatedRecebimentoItensRoute
   '/receituario': typeof AuthenticatedReceituarioRoute
   '/residentes': typeof AuthenticatedResidentesRoute
   '/sae': typeof AuthenticatedSaeRoute
@@ -206,6 +214,7 @@ export interface FileRoutesByTo {
   '/prontuario': typeof AuthenticatedProntuarioRoute
   '/quartos': typeof AuthenticatedQuartosRoute
   '/recebimento-fraldas': typeof AuthenticatedRecebimentoFraldasRoute
+  '/recebimento-itens': typeof AuthenticatedRecebimentoItensRoute
   '/receituario': typeof AuthenticatedReceituarioRoute
   '/residentes': typeof AuthenticatedResidentesRoute
   '/sae': typeof AuthenticatedSaeRoute
@@ -233,6 +242,7 @@ export interface FileRoutesById {
   '/_authenticated/prontuario': typeof AuthenticatedProntuarioRoute
   '/_authenticated/quartos': typeof AuthenticatedQuartosRoute
   '/_authenticated/recebimento-fraldas': typeof AuthenticatedRecebimentoFraldasRoute
+  '/_authenticated/recebimento-itens': typeof AuthenticatedRecebimentoItensRoute
   '/_authenticated/receituario': typeof AuthenticatedReceituarioRoute
   '/_authenticated/residentes': typeof AuthenticatedResidentesRoute
   '/_authenticated/sae': typeof AuthenticatedSaeRoute
@@ -260,6 +270,7 @@ export interface FileRouteTypes {
     | '/prontuario'
     | '/quartos'
     | '/recebimento-fraldas'
+    | '/recebimento-itens'
     | '/receituario'
     | '/residentes'
     | '/sae'
@@ -285,6 +296,7 @@ export interface FileRouteTypes {
     | '/prontuario'
     | '/quartos'
     | '/recebimento-fraldas'
+    | '/recebimento-itens'
     | '/receituario'
     | '/residentes'
     | '/sae'
@@ -311,6 +323,7 @@ export interface FileRouteTypes {
     | '/_authenticated/prontuario'
     | '/_authenticated/quartos'
     | '/_authenticated/recebimento-fraldas'
+    | '/_authenticated/recebimento-itens'
     | '/_authenticated/receituario'
     | '/_authenticated/residentes'
     | '/_authenticated/sae'
@@ -405,6 +418,13 @@ declare module '@tanstack/react-router' {
       path: '/receituario'
       fullPath: '/receituario'
       preLoaderRoute: typeof AuthenticatedReceituarioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/recebimento-itens': {
+      id: '/_authenticated/recebimento-itens'
+      path: '/recebimento-itens'
+      fullPath: '/recebimento-itens'
+      preLoaderRoute: typeof AuthenticatedRecebimentoItensRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/recebimento-fraldas': {
@@ -515,6 +535,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProntuarioRoute: typeof AuthenticatedProntuarioRoute
   AuthenticatedQuartosRoute: typeof AuthenticatedQuartosRoute
   AuthenticatedRecebimentoFraldasRoute: typeof AuthenticatedRecebimentoFraldasRoute
+  AuthenticatedRecebimentoItensRoute: typeof AuthenticatedRecebimentoItensRoute
   AuthenticatedReceituarioRoute: typeof AuthenticatedReceituarioRoute
   AuthenticatedResidentesRoute: typeof AuthenticatedResidentesRoute
   AuthenticatedSaeRoute: typeof AuthenticatedSaeRoute
@@ -537,6 +558,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProntuarioRoute: AuthenticatedProntuarioRoute,
   AuthenticatedQuartosRoute: AuthenticatedQuartosRoute,
   AuthenticatedRecebimentoFraldasRoute: AuthenticatedRecebimentoFraldasRoute,
+  AuthenticatedRecebimentoItensRoute: AuthenticatedRecebimentoItensRoute,
   AuthenticatedReceituarioRoute: AuthenticatedReceituarioRoute,
   AuthenticatedResidentesRoute: AuthenticatedResidentesRoute,
   AuthenticatedSaeRoute: AuthenticatedSaeRoute,
