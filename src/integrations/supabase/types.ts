@@ -931,60 +931,45 @@ export type Database = {
           data_entrega: string
           forma_entrega: Database["public"]["Enums"]["forma_entrega_fralda"]
           id: string
-          marca: string
           nome_familiar: string | null
           nome_fornecedor: string | null
           observacoes: string | null
           origem_correios:
             | Database["public"]["Enums"]["origem_correios_fralda"]
             | null
-          quantidade_fardos: number
           recebido_por: string
           registrado_por: string | null
           residente_id: string
-          tipo: Database["public"]["Enums"]["tipo_fralda"]
-          total_unidades: number | null
-          unidades_por_fardo: number
         }
         Insert: {
           criado_em?: string
           data_entrega?: string
           forma_entrega: Database["public"]["Enums"]["forma_entrega_fralda"]
           id?: string
-          marca: string
           nome_familiar?: string | null
           nome_fornecedor?: string | null
           observacoes?: string | null
           origem_correios?:
             | Database["public"]["Enums"]["origem_correios_fralda"]
             | null
-          quantidade_fardos?: number
           recebido_por: string
           registrado_por?: string | null
           residente_id: string
-          tipo: Database["public"]["Enums"]["tipo_fralda"]
-          total_unidades?: number | null
-          unidades_por_fardo?: number
         }
         Update: {
           criado_em?: string
           data_entrega?: string
           forma_entrega?: Database["public"]["Enums"]["forma_entrega_fralda"]
           id?: string
-          marca?: string
           nome_familiar?: string | null
           nome_fornecedor?: string | null
           observacoes?: string | null
           origem_correios?:
             | Database["public"]["Enums"]["origem_correios_fralda"]
             | null
-          quantidade_fardos?: number
           recebido_por?: string
           registrado_por?: string | null
           residente_id?: string
-          tipo?: Database["public"]["Enums"]["tipo_fralda"]
-          total_unidades?: number | null
-          unidades_por_fardo?: number
         }
         Relationships: [
           {
@@ -992,6 +977,50 @@ export type Database = {
             columns: ["residente_id"]
             isOneToOne: false
             referencedRelation: "residentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recebimentos_fraldas_itens: {
+        Row: {
+          created_at: string
+          id: string
+          marca: string
+          quantidade_fardos: number
+          recebimento_id: string
+          tipo: Database["public"]["Enums"]["tipo_fralda"]
+          total_unidades: number | null
+          unidades_por_fardo: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          marca: string
+          quantidade_fardos?: number
+          recebimento_id: string
+          tipo: Database["public"]["Enums"]["tipo_fralda"]
+          total_unidades?: number | null
+          unidades_por_fardo?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          marca?: string
+          quantidade_fardos?: number
+          recebimento_id?: string
+          tipo?: Database["public"]["Enums"]["tipo_fralda"]
+          total_unidades?: number | null
+          unidades_por_fardo?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recebimentos_fraldas_itens_recebimento_id_fkey"
+            columns: ["recebimento_id"]
+            isOneToOne: false
+            referencedRelation: "recebimentos_fraldas"
             referencedColumns: ["id"]
           },
         ]
