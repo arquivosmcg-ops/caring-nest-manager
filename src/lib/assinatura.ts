@@ -32,6 +32,9 @@ export type Assinatura = {
   hash_documento: string;
   metodo: string;
   created_at: string;
+  certificado_tipo?: string | null;
+  certificado_ac_emissor?: string | null;
+  protocolo_assinatura?: string | null;
 };
 
 /** Hash SHA-256 (hex) do conteúdo do documento no momento da assinatura. */
@@ -59,9 +62,18 @@ export function carimbo(a: {
 }
 
 export function linhasAssinatura(a: Assinatura) {
-  return [
+  const icp = a.metodo === "icp_a1" || a.metodo === "icp_a3";
+  const linhas = [
     carimbo(a),
-    `Assinado eletronicamente em ${new Date(a.created_at).toLocaleString("pt-BR")}`,
-    `Documento íntegro — hash: ${a.hash_documento.slice(0, 8)}`,
+    icp
+      ? `Assinado digitalmente com certificado ICP-Brasil em ${new Date(a.created_at).toLocaleString("pt-BR")}`
+      : `Assinado eletronicamente em ${new Date(a.created_at).toLocaleString("pt-BR")}`,
   ];
+  if (icp) {
+    linhas.push(
+      `Certificadora: ${a.certificado_ac_emissor ?? "não informada"} — Protocolo: ${a.protocolo_assinatura ?? "—"}`,
+    );
+  }
+  linhas.push(`Documento íntegro — hash: ${a.hash_documento.slice(0, 8)}`);
+  return linhas;
 }

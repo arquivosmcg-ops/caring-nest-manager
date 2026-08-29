@@ -28,8 +28,20 @@ import {
   UFS,
   carimbo,
 } from "@/lib/assinatura";
+import {
+  PROVEDOR_ICP,
+  assinarComA1,
+  statusValidade,
+  type EvidenciaAssinatura,
+} from "@/lib/certificado-icp";
+import { useCertificadoAtual } from "@/hooks/use-certificado";
 
-export type CredencialAssinatura = { metodo: "pin" | "senha"; pin?: string };
+export type CredencialAssinatura = {
+  metodo: "pin" | "senha" | "icp_a1" | "icp_a3";
+  pin?: string;
+  /** Para ICP-Brasil: assina o hash do documento no momento em que ele é conhecido. */
+  assinarCertificado?: (hashDocumento: string) => Promise<EvidenciaAssinatura>;
+};
 
 export function AssinaturaDialog({
   open,
@@ -46,10 +58,12 @@ export function AssinaturaDialog({
 }) {
   const perfil = usePerfilAtual().data;
   const qc = useQueryClient();
-  const [modo, setModo] = useState<"pin" | "senha">("pin");
+  const [modo, setModo] = useState<"pin" | "senha" | "icp">("pin");
   const [pin, setPin] = useState("");
   const [novoPin, setNovoPin] = useState("");
   const [senha, setSenha] = useState("");
+  const [arquivoA1, setArquivoA1] = useState<File | null>(null);
+  const [senhaCert, setSenhaCert] = useState("");
   const [categoria, setCategoria] = useState("");
   const [uf, setUf] = useState("");
   const [salvandoDados, setSalvandoDados] = useState(false);
@@ -64,19 +78,23 @@ export function AssinaturaDialog({
     },
   });
 
+  const certificado = useCertificadoAtual();
+
   useEffect(() => {
     if (!open) {
       setPin("");
       setSenha("");
       setNovoPin("");
+      setArquivoA1(null);
+      setSenhaCert("");
       setEnviando(false);
     } else {
       setCategoria(perfil?.categoriaAssinatura ?? "");
       setUf(perfil?.conselhoUf ?? "");
-      setModo(temPin.data ? "pin" : "senha");
+      setModo(certificado.data ? "icp" : temPin.data ? "pin" : "senha");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, temPin.data]);
+  }, [open, temPin.data, certificado.data]);
 
   const precisaDados = !perfil?.categoriaAssinatura;
 
@@ -107,7 +125,28 @@ export function AssinaturaDialog({
     if (!perfil) return;
     setEnviando(true);
     try {
-      if (modo === "senha") {
+      if (modo === "icp") {
+        const cert = certificado.data;
+        if (!cert) throw new Error("Nenhum certificado digital cadastrado no seu perfil");
+        if (cert.tipo === "A3") {
+          if (!PROVEDOR_ICP.configurado) {
+            throw new Error(
+              "Assinatura A3 exige um provedor ICP-Brasil configurado. Use PIN ou senha por enquanto.",
+            );
+          }
+          throw new Error("Provedor de assinatura A3 indisponível no momento.");
+        }
+        if (!arquivoA1) throw new Error("Selecione o arquivo do certificado (.pfx/.p12)");
+        if (!senhaCert) throw new Error("Informe a senha do certificado");
+        const arquivo = arquivoA1;
+        const segredo = senhaCert;
+        // Valida arquivo + senha antes de gravar o documento.
+        await assinarComA1(arquivo, segredo, "verificacao");
+        await onConfirmar({
+          metodo: "icp_a1",
+          assinarCertificado: (hash) => assinarComA1(arquivo, segredo, hash),
+        });
+      } else if (modo === "senha") {
         const { data: userData } = await supabase.auth.getUser();
         const email = userData.user?.email;
         if (!email) throw new Error("Sessão expirada");
@@ -123,6 +162,7 @@ export function AssinaturaDialog({
       toast.error((e as Error).message);
     } finally {
       setEnviando(false);
+      setSenhaCert("");
     }
   };
 
@@ -201,7 +241,65 @@ export function AssinaturaDialog({
               </p>
             </div>
 
-            {modo === "pin" && temPin.data ? (
+            {modo === "icp" ? (
+              <div className="space-y-3">
+                <div className="rounded-md border border-primary/30 bg-primary/5 p-3 text-xs space-y-1">
+                  <p className="font-semibold flex items-center gap-1">
+                    <ShieldCheck className="size-3.5" /> Certificado ICP-Brasil{" "}
+                    {certificado.data?.tipo}
+                  </p>
+                  <p className="text-muted-foreground">
+                    Certificadora: {certificado.data?.ac_emissora ?? "não informada"}
+                  </p>
+                  <p className="text-muted-foreground">
+                    {statusValidade(certificado.data?.valido_ate).texto}
+                  </p>
+                </div>
+
+                {certificado.data?.tipo === "A1" ? (
+                  <>
+                    <div>
+                      <Label htmlFor="arquivo-a1">Arquivo do certificado (.pfx / .p12)</Label>
+                      <Input
+                        id="arquivo-a1"
+                        type="file"
+                        accept=".pfx,.p12"
+                        onChange={(e) => setArquivoA1(e.target.files?.[0] ?? null)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="senha-cert">Senha do certificado</Label>
+                      <PasswordInput
+                        id="senha-cert"
+                        autoComplete="off"
+                        value={senhaCert}
+                        onChange={(e) => setSenhaCert(e.target.value)}
+                      />
+                      <p className="text-[10px] text-muted-foreground mt-1">
+                        O arquivo e a senha são usados apenas neste dispositivo, no momento da
+                        assinatura, e nunca são armazenados.
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Certificado A3 (token/cartão/nuvem): a assinatura ocorre no provedor externo
+                    ICP-Brasil.{" "}
+                    {PROVEDOR_ICP.configurado
+                      ? `Provedor: ${PROVEDOR_ICP.nome}.`
+                      : "Nenhum provedor está configurado ainda — use PIN ou senha até a integração ser ativada."}
+                  </p>
+                )}
+
+                <button
+                  type="button"
+                  className="text-xs text-primary font-semibold"
+                  onClick={() => setModo(temPin.data ? "pin" : "senha")}
+                >
+                  Assinar sem certificado (PIN ou senha)
+                </button>
+              </div>
+            ) : modo === "pin" && temPin.data ? (
               <div>
                 <Label htmlFor="pin-assinatura">PIN de assinatura</Label>
                 <PasswordInput
@@ -213,13 +311,24 @@ export function AssinaturaDialog({
                   onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
                   placeholder="••••"
                 />
-                <button
-                  type="button"
-                  className="text-xs text-primary font-semibold mt-2"
-                  onClick={() => setModo("senha")}
-                >
-                  Usar a senha da minha conta
-                </button>
+                <div className="flex flex-col items-start gap-1 mt-2">
+                  <button
+                    type="button"
+                    className="text-xs text-primary font-semibold"
+                    onClick={() => setModo("senha")}
+                  >
+                    Usar a senha da minha conta
+                  </button>
+                  {certificado.data && (
+                    <button
+                      type="button"
+                      className="text-xs text-primary font-semibold"
+                      onClick={() => setModo("icp")}
+                    >
+                      Assinar com certificado digital (ICP-Brasil)
+                    </button>
+                  )}
+                </div>
               </div>
             ) : (
               <div>
@@ -230,15 +339,26 @@ export function AssinaturaDialog({
                   value={senha}
                   onChange={(e) => setSenha(e.target.value)}
                 />
-                {temPin.data && (
-                  <button
-                    type="button"
-                    className="text-xs text-primary font-semibold mt-2"
-                    onClick={() => setModo("pin")}
-                  >
-                    Usar PIN
-                  </button>
-                )}
+                <div className="flex flex-col items-start gap-1 mt-2">
+                  {temPin.data && (
+                    <button
+                      type="button"
+                      className="text-xs text-primary font-semibold"
+                      onClick={() => setModo("pin")}
+                    >
+                      Usar PIN
+                    </button>
+                  )}
+                  {certificado.data && (
+                    <button
+                      type="button"
+                      className="text-xs text-primary font-semibold"
+                      onClick={() => setModo("icp")}
+                    >
+                      Assinar com certificado digital (ICP-Brasil)
+                    </button>
+                  )}
+                </div>
               </div>
             )}
 
@@ -278,14 +398,28 @@ export function AssinaturaDialog({
 export function CarimboAssinatura({
   assinatura,
 }: {
-  assinatura: Parameters<typeof carimbo>[0] & { created_at: string; hash_documento: string };
+  assinatura: Parameters<typeof carimbo>[0] & {
+    created_at: string;
+    hash_documento: string;
+    metodo?: string;
+    certificado_ac_emissor?: string | null;
+    protocolo_assinatura?: string | null;
+  };
 }) {
+  const icp = assinatura.metodo === "icp_a1" || assinatura.metodo === "icp_a3";
   return (
     <div className="text-xs leading-tight">
       <p className="font-bold">{carimbo(assinatura)}</p>
       <p className="text-muted-foreground">
-        Assinado eletronicamente em {new Date(assinatura.created_at).toLocaleString("pt-BR")}
+        {icp ? "Assinado digitalmente com certificado ICP-Brasil em " : "Assinado eletronicamente em "}
+        {new Date(assinatura.created_at).toLocaleString("pt-BR")}
       </p>
+      {icp && (
+        <p className="text-muted-foreground">
+          Certificadora: {assinatura.certificado_ac_emissor ?? "não informada"} — Protocolo:{" "}
+          {assinatura.protocolo_assinatura ?? "—"}
+        </p>
+      )}
       <p className="text-muted-foreground">
         Documento íntegro — hash: {assinatura.hash_documento.slice(0, 8)}
       </p>

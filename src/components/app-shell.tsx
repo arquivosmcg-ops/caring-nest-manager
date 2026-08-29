@@ -15,6 +15,7 @@ import {
   UserCog,
   Cake,
   Package,
+  BadgeCheck,
   LogOut,
   Menu,
 } from "lucide-react";
@@ -40,6 +41,7 @@ const navItems = [
   { to: "/incidentes", label: "Incidentes", icon: AlertTriangle, multi: false },
   { to: "/checklists", label: "Checklists", icon: ClipboardCheck, multi: false },
   { to: "/recebimento-fraldas", label: "Recebimento de Fraldas", icon: Package, multi: false },
+  { to: "/perfil", label: "Meu Perfil / Certificado", icon: BadgeCheck, multi: true },
   { to: "/admin-aprovacoes", label: "Área Admin", icon: ShieldCheck, multi: false },
   { to: "/admin-usuarios", label: "Gerenciar Administradores", icon: UserCog, multi: false, adminOnly: true },
 ] as const;
