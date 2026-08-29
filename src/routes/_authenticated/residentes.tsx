@@ -797,7 +797,14 @@ function ResidentesPage() {
                       </div>
                     ) : (
                       <div className="flex items-center gap-1.5 group">
-                        <span className="text-sm font-bold">{r.nome_completo}</span>
+                        <button
+                          type="button"
+                          className="text-sm font-bold text-left underline-offset-2 hover:underline"
+                          onClick={() => setEditingResidente(r)}
+                          title="Abrir cadastro da residente"
+                        >
+                          {r.nome_completo}
+                        </button>
                         <Button
                           size="icon"
                           variant="ghost"
