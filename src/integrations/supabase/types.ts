@@ -430,6 +430,33 @@ export type Database = {
         }
         Relationships: []
       }
+      config_visitas: {
+        Row: {
+          alerta_horas: number
+          id: boolean
+          normas_texto: string
+          termo_ativo: boolean
+          triagem_ativa: boolean
+          updated_at: string
+        }
+        Insert: {
+          alerta_horas?: number
+          id?: boolean
+          normas_texto?: string
+          termo_ativo?: boolean
+          triagem_ativa?: boolean
+          updated_at?: string
+        }
+        Update: {
+          alerta_horas?: number
+          id?: boolean
+          normas_texto?: string
+          termo_ativo?: boolean
+          triagem_ativa?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       diagnosticos_enfermagem: {
         Row: {
           ano: number
@@ -1375,6 +1402,131 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      visitantes: {
+        Row: {
+          created_at: string
+          documento: string | null
+          grau_parentesco_padrao: string | null
+          id: string
+          nome: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          documento?: string | null
+          grau_parentesco_padrao?: string | null
+          id?: string
+          nome: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          documento?: string | null
+          grau_parentesco_padrao?: string | null
+          id?: string
+          nome?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      visitas: {
+        Row: {
+          assinatura_visitante: string | null
+          ciente_normas: boolean
+          created_at: string
+          data: string
+          grau_parentesco: string | null
+          horario_entrada: string
+          horario_saida: string | null
+          id: string
+          observacoes: string | null
+          recebido_por: string | null
+          recebido_por_nome: string | null
+          sintomas_gripais: boolean | null
+          temperatura: number | null
+          updated_at: string
+          visitante_id: string
+        }
+        Insert: {
+          assinatura_visitante?: string | null
+          ciente_normas?: boolean
+          created_at?: string
+          data?: string
+          grau_parentesco?: string | null
+          horario_entrada?: string
+          horario_saida?: string | null
+          id?: string
+          observacoes?: string | null
+          recebido_por?: string | null
+          recebido_por_nome?: string | null
+          sintomas_gripais?: boolean | null
+          temperatura?: number | null
+          updated_at?: string
+          visitante_id: string
+        }
+        Update: {
+          assinatura_visitante?: string | null
+          ciente_normas?: boolean
+          created_at?: string
+          data?: string
+          grau_parentesco?: string | null
+          horario_entrada?: string
+          horario_saida?: string | null
+          id?: string
+          observacoes?: string | null
+          recebido_por?: string | null
+          recebido_por_nome?: string | null
+          sintomas_gripais?: boolean | null
+          temperatura?: number | null
+          updated_at?: string
+          visitante_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visitas_visitante_id_fkey"
+            columns: ["visitante_id"]
+            isOneToOne: false
+            referencedRelation: "visitantes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      visitas_residentes: {
+        Row: {
+          created_at: string
+          id: string
+          residente_id: string
+          visita_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          residente_id: string
+          visita_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          residente_id?: string
+          visita_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visitas_residentes_residente_id_fkey"
+            columns: ["residente_id"]
+            isOneToOne: false
+            referencedRelation: "residentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visitas_residentes_visita_id_fkey"
+            columns: ["visita_id"]
+            isOneToOne: false
+            referencedRelation: "visitas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
