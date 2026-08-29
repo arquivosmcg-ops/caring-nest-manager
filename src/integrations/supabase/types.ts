@@ -1094,46 +1094,46 @@ export type Database = {
         Row: {
           categoria: Database["public"]["Enums"]["categoria_item_recebido"]
           created_at: string
-          data_devolucao_real: string | null
-          data_prevista_devolucao: string | null
+          data_prevista_retirada: string | null
+          data_retirada: string | null
           descricao: string
-          devolvido_para: string | null
           id: string
           numero_serie: string | null
           quantidade: number
           recebimento_id: string
-          requer_devolucao: boolean
-          status: Database["public"]["Enums"]["status_devolucao_item"] | null
+          retirada_id: string | null
+          status_posse: Database["public"]["Enums"]["status_posse_item"]
+          tipo_posse: Database["public"]["Enums"]["tipo_posse_item"]
           updated_at: string
         }
         Insert: {
           categoria?: Database["public"]["Enums"]["categoria_item_recebido"]
           created_at?: string
-          data_devolucao_real?: string | null
-          data_prevista_devolucao?: string | null
+          data_prevista_retirada?: string | null
+          data_retirada?: string | null
           descricao: string
-          devolvido_para?: string | null
           id?: string
           numero_serie?: string | null
           quantidade?: number
           recebimento_id: string
-          requer_devolucao?: boolean
-          status?: Database["public"]["Enums"]["status_devolucao_item"] | null
+          retirada_id?: string | null
+          status_posse?: Database["public"]["Enums"]["status_posse_item"]
+          tipo_posse?: Database["public"]["Enums"]["tipo_posse_item"]
           updated_at?: string
         }
         Update: {
           categoria?: Database["public"]["Enums"]["categoria_item_recebido"]
           created_at?: string
-          data_devolucao_real?: string | null
-          data_prevista_devolucao?: string | null
+          data_prevista_retirada?: string | null
+          data_retirada?: string | null
           descricao?: string
-          devolvido_para?: string | null
           id?: string
           numero_serie?: string | null
           quantidade?: number
           recebimento_id?: string
-          requer_devolucao?: boolean
-          status?: Database["public"]["Enums"]["status_devolucao_item"] | null
+          retirada_id?: string | null
+          status_posse?: Database["public"]["Enums"]["status_posse_item"]
+          tipo_posse?: Database["public"]["Enums"]["tipo_posse_item"]
           updated_at?: string
         }
         Relationships: [
@@ -1142,6 +1142,13 @@ export type Database = {
             columns: ["recebimento_id"]
             isOneToOne: false
             referencedRelation: "recebimentos_itens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recebimentos_itens_detalhe_retirada_id_fkey"
+            columns: ["retirada_id"]
+            isOneToOne: false
+            referencedRelation: "retiradas_itens"
             referencedColumns: ["id"]
           },
         ]
@@ -1415,6 +1422,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      retiradas_itens: {
+        Row: {
+          criado_em: string
+          data_retirada: string
+          entregue_por: string | null
+          entregue_por_nome: string | null
+          id: string
+          motivo: Database["public"]["Enums"]["motivo_retirada_item"]
+          motivo_outro_texto: string | null
+          observacoes: string | null
+          retirado_por: string
+          updated_at: string
+        }
+        Insert: {
+          criado_em?: string
+          data_retirada?: string
+          entregue_por?: string | null
+          entregue_por_nome?: string | null
+          id?: string
+          motivo: Database["public"]["Enums"]["motivo_retirada_item"]
+          motivo_outro_texto?: string | null
+          observacoes?: string | null
+          retirado_por: string
+          updated_at?: string
+        }
+        Update: {
+          criado_em?: string
+          data_retirada?: string
+          entregue_por?: string | null
+          entregue_por_nome?: string | null
+          id?: string
+          motivo?: Database["public"]["Enums"]["motivo_retirada_item"]
+          motivo_outro_texto?: string | null
+          observacoes?: string | null
+          retirado_por?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       sae_registros: {
         Row: {
@@ -1755,6 +1801,12 @@ export type Database = {
         | "outro"
       forma_entrega_fralda: "familiar" | "fornecedor" | "correios"
       incident_severity: "leve" | "moderado" | "grave"
+      motivo_retirada_item:
+        | "fim_contrato"
+        | "convenio_solicitou"
+        | "troca_equipamento"
+        | "obito_saida"
+        | "outro"
       origem_correios_fralda: "governo" | "outros"
       origem_recebimento_item:
         | "convenio"
@@ -1766,7 +1818,13 @@ export type Database = {
       room_status: "ocupado" | "vago" | "manutencao"
       shift: "manha" | "tarde" | "noite"
       status_devolucao_item: "em_uso" | "devolvido"
+      status_posse_item: "em_uso" | "retirado"
       tipo_fralda: "tradicional" | "calcinha_pant" | "absorvente"
+      tipo_posse_item:
+        | "aluguel"
+        | "emprestimo"
+        | "consignacao"
+        | "proprio_doacao"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1910,6 +1968,13 @@ export const Constants = {
       ],
       forma_entrega_fralda: ["familiar", "fornecedor", "correios"],
       incident_severity: ["leve", "moderado", "grave"],
+      motivo_retirada_item: [
+        "fim_contrato",
+        "convenio_solicitou",
+        "troca_equipamento",
+        "obito_saida",
+        "outro",
+      ],
       origem_correios_fralda: ["governo", "outros"],
       origem_recebimento_item: [
         "convenio",
@@ -1922,7 +1987,14 @@ export const Constants = {
       room_status: ["ocupado", "vago", "manutencao"],
       shift: ["manha", "tarde", "noite"],
       status_devolucao_item: ["em_uso", "devolvido"],
+      status_posse_item: ["em_uso", "retirado"],
       tipo_fralda: ["tradicional", "calcinha_pant", "absorvente"],
+      tipo_posse_item: [
+        "aluguel",
+        "emprestimo",
+        "consignacao",
+        "proprio_doacao",
+      ],
     },
   },
 } as const
