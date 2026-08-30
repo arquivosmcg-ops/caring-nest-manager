@@ -21,6 +21,9 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { GRAUS_PARENTESCO } from "@/lib/visitas";
+import { maskCelular } from "@/lib/phone";
+
 
 function ResidenteAvatar({ path, nome }: { path: string | null; nome: string }) {
   const [url, setUrl] = useState<string | null>(null);
@@ -71,6 +74,45 @@ export const Route = createFileRoute("/_authenticated/residentes")({
   component: ResidentesPage,
 });
 
+type OrigemProcedencia = "residencia" | "outra_instituicao";
+type EstadoCivil = "solteiro" | "casado" | "viuvo" | "divorciado" | "uniao_estavel";
+type MotivoRescisao = "obito" | "transferencia" | "volta_residencia";
+
+const ORIGENS: { key: OrigemProcedencia; label: string }[] = [
+  { key: "residencia", label: "Residência (própria/familiar)" },
+  { key: "outra_instituicao", label: "Outra instituição" },
+];
+const ESTADOS_CIVIS: { key: EstadoCivil; label: string }[] = [
+  { key: "solteiro", label: "Solteiro(a)" },
+  { key: "casado", label: "Casado(a)" },
+  { key: "viuvo", label: "Viúvo(a)" },
+  { key: "divorciado", label: "Divorciado(a)" },
+  { key: "uniao_estavel", label: "União estável" },
+];
+const MOTIVOS_RESCISAO: { key: MotivoRescisao; label: string }[] = [
+  { key: "obito", label: "Óbito" },
+  { key: "transferencia", label: "Transferência para outra instituição" },
+  { key: "volta_residencia", label: "Volta à residência (familiar/própria)" },
+];
+const PARENTESCOS = [...GRAUS_PARENTESCO] as string[];
+
+function Chip({ ativo, onClick, children }: { ativo: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "px-3 py-1.5 rounded-full border text-xs font-bold transition-colors",
+        ativo
+          ? "border-primary bg-primary/10 text-primary"
+          : "border-border hover:border-primary/50 hover:bg-black/[0.02]",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
 type Residente = {
   id: string;
   nome_completo: string;
@@ -97,6 +139,20 @@ type Residente = {
   endereco_bairro: string | null;
   endereco_cidade: string | null;
   endereco_estado: string | null;
+  origem_procedencia: OrigemProcedencia | null;
+  origem_procedencia_instituicao: string | null;
+  estado_civil: EstadoCivil | null;
+  numero_filhos_vivos: number | null;
+  altura_cm: number | null;
+  peso_kg: number | null;
+  responsavel_principal_nome: string | null;
+  responsavel_principal_parentesco: string | null;
+  responsavel_principal_parentesco_outro: string | null;
+  responsavel_principal_telefone: string | null;
+  data_rescisao_contrato: string | null;
+  motivo_rescisao: MotivoRescisao | null;
+  instituicao_destino: string | null;
+  observacoes_rescisao: string | null;
   quartos: { numero: string } | null;
 };
 
@@ -129,7 +185,22 @@ type ResidenteFormValues = {
   endereco_bairro: string | null;
   endereco_cidade: string | null;
   endereco_estado: string | null;
+  origem_procedencia: OrigemProcedencia | null;
+  origem_procedencia_instituicao: string | null;
+  estado_civil: EstadoCivil | null;
+  numero_filhos_vivos: number | null;
+  altura_cm: number | null;
+  peso_kg: number | null;
+  responsavel_principal_nome: string | null;
+  responsavel_principal_parentesco: string | null;
+  responsavel_principal_parentesco_outro: string | null;
+  responsavel_principal_telefone: string | null;
+  data_rescisao_contrato: string | null;
+  motivo_rescisao: MotivoRescisao | null;
+  instituicao_destino: string | null;
+  observacoes_rescisao: string | null;
 };
+
 
 
 
@@ -149,10 +220,17 @@ function ResidenteForm({
   submitLabel: string;
 }) {
   const [selectedQuarto, setSelectedQuarto] = useState<string | null>(residente?.quarto_id ?? null);
+  const [origem, setOrigem] = useState<OrigemProcedencia | null>(residente?.origem_procedencia ?? null);
+  const [estadoCivil, setEstadoCivil] = useState<EstadoCivil | null>(residente?.estado_civil ?? null);
+  const [parentesco, setParentesco] = useState<string | null>(residente?.responsavel_principal_parentesco ?? null);
+  const [telefone, setTelefone] = useState(residente?.responsavel_principal_telefone ?? "");
+  const [dataRescisao, setDataRescisao] = useState(residente?.data_rescisao_contrato ?? "");
+  const [motivoRescisao, setMotivoRescisao] = useState<MotivoRescisao | null>(residente?.motivo_rescisao ?? null);
   const [fotoFile, setFotoFile] = useState<File | null>(null);
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
   const [existingFotoUrl, setExistingFotoUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   useEffect(() => {
     let cancelled = false;
@@ -190,6 +268,14 @@ function ResidenteForm({
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
+    if (dataRescisao && !motivoRescisao) {
+      toast.error("Informe o motivo da rescisão");
+      return;
+    }
+    const num = (k: string) => {
+      const v = (fd.get(k) as string) || "";
+      return v.trim() === "" ? null : Number(v);
+    };
     onSubmit({
       nome_completo: fd.get("nome_completo") as string,
       data_nascimento: (fd.get("data_nascimento") as string) || null,
@@ -211,8 +297,26 @@ function ResidenteForm({
       endereco_bairro: (fd.get("endereco_bairro") as string) || null,
       endereco_cidade: (fd.get("endereco_cidade") as string) || null,
       endereco_estado: (fd.get("endereco_estado") as string) || null,
+      origem_procedencia: origem,
+      origem_procedencia_instituicao:
+        origem === "outra_instituicao" ? (fd.get("origem_procedencia_instituicao") as string) || null : null,
+      estado_civil: estadoCivil,
+      numero_filhos_vivos: num("numero_filhos_vivos"),
+      altura_cm: num("altura_cm"),
+      peso_kg: num("peso_kg"),
+      responsavel_principal_nome: (fd.get("responsavel_principal_nome") as string) || null,
+      responsavel_principal_parentesco: parentesco,
+      responsavel_principal_parentesco_outro:
+        parentesco === "Outro" ? (fd.get("responsavel_principal_parentesco_outro") as string) || null : null,
+      responsavel_principal_telefone: telefone.trim() || null,
+      data_rescisao_contrato: dataRescisao || null,
+      motivo_rescisao: dataRescisao ? motivoRescisao : null,
+      instituicao_destino:
+        dataRescisao && motivoRescisao === "transferencia" ? (fd.get("instituicao_destino") as string) || null : null,
+      observacoes_rescisao: dataRescisao ? (fd.get("observacoes_rescisao") as string) || null : null,
     }, fotoFile);
   };
+
 
 
   const displayPreview = fotoPreview || existingFotoUrl;
@@ -333,6 +437,128 @@ function ResidenteForm({
         <Label>Convênio</Label>
         <Input name="convenio" defaultValue={residente?.convenio ?? ""} />
       </div>
+
+      <fieldset className="col-span-2 border border-border rounded-md p-4 space-y-3">
+        <legend className="px-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Perfil social e antropometria</legend>
+        <div>
+          <Label>Origem de procedência</Label>
+          <div className="mt-1.5 flex flex-wrap gap-2">
+            {ORIGENS.map((o) => (
+              <Chip key={o.key} ativo={origem === o.key} onClick={() => setOrigem(origem === o.key ? null : o.key)}>
+                {o.label}
+              </Chip>
+            ))}
+          </div>
+        </div>
+        {origem === "outra_instituicao" && (
+          <div>
+            <Label>Nome da instituição de origem</Label>
+            <Input name="origem_procedencia_instituicao" defaultValue={residente?.origem_procedencia_instituicao ?? ""} />
+          </div>
+        )}
+        <div>
+          <Label>Estado civil</Label>
+          <div className="mt-1.5 flex flex-wrap gap-2">
+            {ESTADOS_CIVIS.map((o) => (
+              <Chip key={o.key} ativo={estadoCivil === o.key} onClick={() => setEstadoCivil(estadoCivil === o.key ? null : o.key)}>
+                {o.label}
+              </Chip>
+            ))}
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <Label>Filhos vivos</Label>
+            <Input name="numero_filhos_vivos" type="number" min={0} defaultValue={residente?.numero_filhos_vivos ?? ""} />
+          </div>
+          <div>
+            <Label>Altura (cm)</Label>
+            <Input name="altura_cm" type="number" step="0.1" min={0} defaultValue={residente?.altura_cm ?? ""} />
+          </div>
+          <div>
+            <Label>Peso (kg)</Label>
+            <Input name="peso_kg" type="number" step="0.1" min={0} defaultValue={residente?.peso_kg ?? ""} />
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset className="col-span-2 border border-border rounded-md p-4 space-y-3">
+        <legend className="px-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Responsável principal</legend>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label>Nome do responsável</Label>
+            <Input name="responsavel_principal_nome" defaultValue={residente?.responsavel_principal_nome ?? ""} />
+          </div>
+          <div>
+            <Label>Telefone de contato</Label>
+            <Input
+              name="responsavel_principal_telefone"
+              value={telefone}
+              onChange={(e) => setTelefone(maskCelular(e.target.value))}
+              placeholder="(00) 00000-0000"
+            />
+          </div>
+        </div>
+        <div>
+          <Label>Parentesco/relação</Label>
+          <div className="mt-1.5 flex flex-wrap gap-2">
+            {PARENTESCOS.map((p) => (
+              <Chip key={p} ativo={parentesco === p} onClick={() => setParentesco(parentesco === p ? null : p)}>
+                {p}
+              </Chip>
+            ))}
+          </div>
+        </div>
+        {parentesco === "Outro" && (
+          <div>
+            <Label>Especifique a relação</Label>
+            <Input
+              name="responsavel_principal_parentesco_outro"
+              defaultValue={residente?.responsavel_principal_parentesco_outro ?? ""}
+            />
+          </div>
+        )}
+      </fieldset>
+
+      <fieldset className="col-span-2 border border-border rounded-md p-4 space-y-3">
+        <legend className="px-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Rescisão de contrato</legend>
+        <p className="text-[11px] text-muted-foreground">
+          Preencha apenas quando o residente deixar a instituição. Ao salvar com data de rescisão, o cadastro passa a
+          <b> inativo</b> e a vaga do quarto é liberada — todo o histórico é preservado.
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label>Data de rescisão</Label>
+            <Input type="date" value={dataRescisao} onChange={(e) => setDataRescisao(e.target.value)} />
+          </div>
+        </div>
+        {dataRescisao && (
+          <>
+            <div>
+              <Label>Motivo da rescisão *</Label>
+              <div className="mt-1.5 flex flex-wrap gap-2">
+                {MOTIVOS_RESCISAO.map((m) => (
+                  <Chip key={m.key} ativo={motivoRescisao === m.key} onClick={() => setMotivoRescisao(m.key)}>
+                    {m.label}
+                  </Chip>
+                ))}
+              </div>
+            </div>
+            {motivoRescisao === "transferencia" && (
+              <div>
+                <Label>Nome da instituição de destino</Label>
+                <Input name="instituicao_destino" defaultValue={residente?.instituicao_destino ?? ""} />
+              </div>
+            )}
+            <div>
+              <Label>Observações da rescisão</Label>
+              <TextareaDitavel name="observacoes_rescisao" rows={2} defaultValue={residente?.observacoes_rescisao ?? ""} />
+            </div>
+          </>
+        )}
+      </fieldset>
+
+
 
       <fieldset className="col-span-2 border border-border rounded-md p-4 space-y-3">
         <legend className="px-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Endereço</legend>

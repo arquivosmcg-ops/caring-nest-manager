@@ -1331,6 +1331,7 @@ export type Database = {
       residentes: {
         Row: {
           alergias: string | null
+          altura_cm: number | null
           ativo: boolean
           contato_emergencia_nome: string | null
           contato_emergencia_telefone: string | null
@@ -1340,6 +1341,7 @@ export type Database = {
           created_at: string
           data_admissao: string | null
           data_nascimento: string | null
+          data_rescisao_contrato: string | null
           dieta: string | null
           endereco_bairro: string | null
           endereco_cep: string | null
@@ -1348,17 +1350,30 @@ export type Database = {
           endereco_estado: string | null
           endereco_logradouro: string | null
           endereco_numero: string | null
+          estado_civil: string | null
           foto_url: string | null
           historico_medico: string | null
           id: string
+          instituicao_destino: string | null
+          motivo_rescisao: string | null
           nome_completo: string
+          numero_filhos_vivos: number | null
           observacoes: string | null
+          observacoes_rescisao: string | null
+          origem_procedencia: string | null
+          origem_procedencia_instituicao: string | null
+          peso_kg: number | null
           quarto_id: string | null
+          responsavel_principal_nome: string | null
+          responsavel_principal_parentesco: string | null
+          responsavel_principal_parentesco_outro: string | null
+          responsavel_principal_telefone: string | null
           rg: string | null
           status: Database["public"]["Enums"]["resident_status"]
         }
         Insert: {
           alergias?: string | null
+          altura_cm?: number | null
           ativo?: boolean
           contato_emergencia_nome?: string | null
           contato_emergencia_telefone?: string | null
@@ -1368,6 +1383,7 @@ export type Database = {
           created_at?: string
           data_admissao?: string | null
           data_nascimento?: string | null
+          data_rescisao_contrato?: string | null
           dieta?: string | null
           endereco_bairro?: string | null
           endereco_cep?: string | null
@@ -1376,17 +1392,30 @@ export type Database = {
           endereco_estado?: string | null
           endereco_logradouro?: string | null
           endereco_numero?: string | null
+          estado_civil?: string | null
           foto_url?: string | null
           historico_medico?: string | null
           id?: string
+          instituicao_destino?: string | null
+          motivo_rescisao?: string | null
           nome_completo: string
+          numero_filhos_vivos?: number | null
           observacoes?: string | null
+          observacoes_rescisao?: string | null
+          origem_procedencia?: string | null
+          origem_procedencia_instituicao?: string | null
+          peso_kg?: number | null
           quarto_id?: string | null
+          responsavel_principal_nome?: string | null
+          responsavel_principal_parentesco?: string | null
+          responsavel_principal_parentesco_outro?: string | null
+          responsavel_principal_telefone?: string | null
           rg?: string | null
           status?: Database["public"]["Enums"]["resident_status"]
         }
         Update: {
           alergias?: string | null
+          altura_cm?: number | null
           ativo?: boolean
           contato_emergencia_nome?: string | null
           contato_emergencia_telefone?: string | null
@@ -1396,6 +1425,7 @@ export type Database = {
           created_at?: string
           data_admissao?: string | null
           data_nascimento?: string | null
+          data_rescisao_contrato?: string | null
           dieta?: string | null
           endereco_bairro?: string | null
           endereco_cep?: string | null
@@ -1404,12 +1434,24 @@ export type Database = {
           endereco_estado?: string | null
           endereco_logradouro?: string | null
           endereco_numero?: string | null
+          estado_civil?: string | null
           foto_url?: string | null
           historico_medico?: string | null
           id?: string
+          instituicao_destino?: string | null
+          motivo_rescisao?: string | null
           nome_completo?: string
+          numero_filhos_vivos?: number | null
           observacoes?: string | null
+          observacoes_rescisao?: string | null
+          origem_procedencia?: string | null
+          origem_procedencia_instituicao?: string | null
+          peso_kg?: number | null
           quarto_id?: string | null
+          responsavel_principal_nome?: string | null
+          responsavel_principal_parentesco?: string | null
+          responsavel_principal_parentesco_outro?: string | null
+          responsavel_principal_telefone?: string | null
           rg?: string | null
           status?: Database["public"]["Enums"]["resident_status"]
         }

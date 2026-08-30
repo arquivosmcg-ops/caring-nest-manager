@@ -33,19 +33,19 @@ const esc = (v: unknown) =>
 
 function ProntuarioPage() {
   const [selecionado, setSelecionado] = useState<string | null>(null);
+  const [mostrarInativos, setMostrarInativos] = useState(false);
 
   const residentes = useQuery({
-    queryKey: ["residentes-prontuario"],
+    queryKey: ["residentes-prontuario", mostrarInativos],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("residentes")
-        .select("id, nome_completo")
-        .eq("ativo", true)
-        .order("nome_completo");
+      let q = supabase.from("residentes").select("id, nome_completo, ativo");
+      if (!mostrarInativos) q = q.eq("ativo", true);
+      const { data, error } = await q.order("nome_completo");
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as { id: string; nome_completo: string; ativo: boolean }[];
     },
   });
+
 
   const prontuario = useQuery({
     queryKey: ["prontuario", selecionado],
@@ -169,6 +169,15 @@ ${d.checklists.length === 0 ? "<div>Nenhum item.</div>" : `<table>
     <div className="grid lg:grid-cols-[260px_1fr] gap-6">
       <aside className="bg-surface border border-border rounded-lg p-3 h-fit max-h-[70vh] overflow-y-auto">
         <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2 pb-2">Residentes</p>
+        <label className="flex items-center gap-2 px-2 pb-2 text-[11px] text-muted-foreground cursor-pointer">
+          <input
+            type="checkbox"
+            checked={mostrarInativos}
+            onChange={(e) => setMostrarInativos(e.target.checked)}
+            className="size-3.5 accent-current"
+          />
+          Mostrar inativos (ex-residentes)
+        </label>
         {residentes.data?.map((res) => (
           <button
             key={res.id}
@@ -178,7 +187,10 @@ ${d.checklists.length === 0 ? "<div>Nenhum item.</div>" : `<table>
               selecionado === res.id ? "bg-foreground text-background font-bold" : "hover:bg-black/5"
             )}
           >
-            <span className="truncate">{res.nome_completo}</span>
+            <span className="truncate">
+              {res.nome_completo}
+              {!res.ativo && <span className="ml-1 text-[9px] font-bold uppercase opacity-70">(inativo)</span>}
+            </span>
             {alertasDo(res.id).length > 0 && (
               <BellRing className="size-3.5 shrink-0 text-primary animate-pulse" />
             )}
@@ -187,6 +199,7 @@ ${d.checklists.length === 0 ? "<div>Nenhum item.</div>" : `<table>
         {residentes.data?.length === 0 && (
           <p className="text-xs text-muted-foreground px-2">Nenhum residente ativo.</p>
         )}
+
       </aside>
 
       <section className="space-y-6">
