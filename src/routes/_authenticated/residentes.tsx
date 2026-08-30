@@ -220,10 +220,17 @@ function ResidenteForm({
   submitLabel: string;
 }) {
   const [selectedQuarto, setSelectedQuarto] = useState<string | null>(residente?.quarto_id ?? null);
+  const [origem, setOrigem] = useState<OrigemProcedencia | null>(residente?.origem_procedencia ?? null);
+  const [estadoCivil, setEstadoCivil] = useState<EstadoCivil | null>(residente?.estado_civil ?? null);
+  const [parentesco, setParentesco] = useState<string | null>(residente?.responsavel_principal_parentesco ?? null);
+  const [telefone, setTelefone] = useState(residente?.responsavel_principal_telefone ?? "");
+  const [dataRescisao, setDataRescisao] = useState(residente?.data_rescisao_contrato ?? "");
+  const [motivoRescisao, setMotivoRescisao] = useState<MotivoRescisao | null>(residente?.motivo_rescisao ?? null);
   const [fotoFile, setFotoFile] = useState<File | null>(null);
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
   const [existingFotoUrl, setExistingFotoUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   useEffect(() => {
     let cancelled = false;
