@@ -71,6 +71,45 @@ export const Route = createFileRoute("/_authenticated/residentes")({
   component: ResidentesPage,
 });
 
+type OrigemProcedencia = "residencia" | "outra_instituicao";
+type EstadoCivil = "solteiro" | "casado" | "viuvo" | "divorciado" | "uniao_estavel";
+type MotivoRescisao = "obito" | "transferencia" | "volta_residencia";
+
+const ORIGENS: { key: OrigemProcedencia; label: string }[] = [
+  { key: "residencia", label: "Residência (própria/familiar)" },
+  { key: "outra_instituicao", label: "Outra instituição" },
+];
+const ESTADOS_CIVIS: { key: EstadoCivil; label: string }[] = [
+  { key: "solteiro", label: "Solteiro(a)" },
+  { key: "casado", label: "Casado(a)" },
+  { key: "viuvo", label: "Viúvo(a)" },
+  { key: "divorciado", label: "Divorciado(a)" },
+  { key: "uniao_estavel", label: "União estável" },
+];
+const MOTIVOS_RESCISAO: { key: MotivoRescisao; label: string }[] = [
+  { key: "obito", label: "Óbito" },
+  { key: "transferencia", label: "Transferência para outra instituição" },
+  { key: "volta_residencia", label: "Volta à residência (familiar/própria)" },
+];
+const PARENTESCOS = [...GRAUS_PARENTESCO] as string[];
+
+function Chip({ ativo, onClick, children }: { ativo: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "px-3 py-1.5 rounded-full border text-xs font-bold transition-colors",
+        ativo
+          ? "border-primary bg-primary/10 text-primary"
+          : "border-border hover:border-primary/50 hover:bg-black/[0.02]",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
 type Residente = {
   id: string;
   nome_completo: string;
@@ -97,6 +136,20 @@ type Residente = {
   endereco_bairro: string | null;
   endereco_cidade: string | null;
   endereco_estado: string | null;
+  origem_procedencia: OrigemProcedencia | null;
+  origem_procedencia_instituicao: string | null;
+  estado_civil: EstadoCivil | null;
+  numero_filhos_vivos: number | null;
+  altura_cm: number | null;
+  peso_kg: number | null;
+  responsavel_principal_nome: string | null;
+  responsavel_principal_parentesco: string | null;
+  responsavel_principal_parentesco_outro: string | null;
+  responsavel_principal_telefone: string | null;
+  data_rescisao_contrato: string | null;
+  motivo_rescisao: MotivoRescisao | null;
+  instituicao_destino: string | null;
+  observacoes_rescisao: string | null;
   quartos: { numero: string } | null;
 };
 
@@ -129,7 +182,22 @@ type ResidenteFormValues = {
   endereco_bairro: string | null;
   endereco_cidade: string | null;
   endereco_estado: string | null;
+  origem_procedencia: OrigemProcedencia | null;
+  origem_procedencia_instituicao: string | null;
+  estado_civil: EstadoCivil | null;
+  numero_filhos_vivos: number | null;
+  altura_cm: number | null;
+  peso_kg: number | null;
+  responsavel_principal_nome: string | null;
+  responsavel_principal_parentesco: string | null;
+  responsavel_principal_parentesco_outro: string | null;
+  responsavel_principal_telefone: string | null;
+  data_rescisao_contrato: string | null;
+  motivo_rescisao: MotivoRescisao | null;
+  instituicao_destino: string | null;
+  observacoes_rescisao: string | null;
 };
+
 
 
 
