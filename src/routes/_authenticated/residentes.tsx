@@ -439,6 +439,128 @@ function ResidenteForm({
       </div>
 
       <fieldset className="col-span-2 border border-border rounded-md p-4 space-y-3">
+        <legend className="px-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Perfil social e antropometria</legend>
+        <div>
+          <Label>Origem de procedência</Label>
+          <div className="mt-1.5 flex flex-wrap gap-2">
+            {ORIGENS.map((o) => (
+              <Chip key={o.key} ativo={origem === o.key} onClick={() => setOrigem(origem === o.key ? null : o.key)}>
+                {o.label}
+              </Chip>
+            ))}
+          </div>
+        </div>
+        {origem === "outra_instituicao" && (
+          <div>
+            <Label>Nome da instituição de origem</Label>
+            <Input name="origem_procedencia_instituicao" defaultValue={residente?.origem_procedencia_instituicao ?? ""} />
+          </div>
+        )}
+        <div>
+          <Label>Estado civil</Label>
+          <div className="mt-1.5 flex flex-wrap gap-2">
+            {ESTADOS_CIVIS.map((o) => (
+              <Chip key={o.key} ativo={estadoCivil === o.key} onClick={() => setEstadoCivil(estadoCivil === o.key ? null : o.key)}>
+                {o.label}
+              </Chip>
+            ))}
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <Label>Filhos vivos</Label>
+            <Input name="numero_filhos_vivos" type="number" min={0} defaultValue={residente?.numero_filhos_vivos ?? ""} />
+          </div>
+          <div>
+            <Label>Altura (cm)</Label>
+            <Input name="altura_cm" type="number" step="0.1" min={0} defaultValue={residente?.altura_cm ?? ""} />
+          </div>
+          <div>
+            <Label>Peso (kg)</Label>
+            <Input name="peso_kg" type="number" step="0.1" min={0} defaultValue={residente?.peso_kg ?? ""} />
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset className="col-span-2 border border-border rounded-md p-4 space-y-3">
+        <legend className="px-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Responsável principal</legend>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label>Nome do responsável</Label>
+            <Input name="responsavel_principal_nome" defaultValue={residente?.responsavel_principal_nome ?? ""} />
+          </div>
+          <div>
+            <Label>Telefone de contato</Label>
+            <Input
+              name="responsavel_principal_telefone"
+              value={telefone}
+              onChange={(e) => setTelefone(maskCelular(e.target.value))}
+              placeholder="(00) 00000-0000"
+            />
+          </div>
+        </div>
+        <div>
+          <Label>Parentesco/relação</Label>
+          <div className="mt-1.5 flex flex-wrap gap-2">
+            {PARENTESCOS.map((p) => (
+              <Chip key={p} ativo={parentesco === p} onClick={() => setParentesco(parentesco === p ? null : p)}>
+                {p}
+              </Chip>
+            ))}
+          </div>
+        </div>
+        {parentesco === "Outro" && (
+          <div>
+            <Label>Especifique a relação</Label>
+            <Input
+              name="responsavel_principal_parentesco_outro"
+              defaultValue={residente?.responsavel_principal_parentesco_outro ?? ""}
+            />
+          </div>
+        )}
+      </fieldset>
+
+      <fieldset className="col-span-2 border border-border rounded-md p-4 space-y-3">
+        <legend className="px-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Rescisão de contrato</legend>
+        <p className="text-[11px] text-muted-foreground">
+          Preencha apenas quando o residente deixar a instituição. Ao salvar com data de rescisão, o cadastro passa a
+          <b> inativo</b> e a vaga do quarto é liberada — todo o histórico é preservado.
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label>Data de rescisão</Label>
+            <Input type="date" value={dataRescisao} onChange={(e) => setDataRescisao(e.target.value)} />
+          </div>
+        </div>
+        {dataRescisao && (
+          <>
+            <div>
+              <Label>Motivo da rescisão *</Label>
+              <div className="mt-1.5 flex flex-wrap gap-2">
+                {MOTIVOS_RESCISAO.map((m) => (
+                  <Chip key={m.key} ativo={motivoRescisao === m.key} onClick={() => setMotivoRescisao(m.key)}>
+                    {m.label}
+                  </Chip>
+                ))}
+              </div>
+            </div>
+            {motivoRescisao === "transferencia" && (
+              <div>
+                <Label>Nome da instituição de destino</Label>
+                <Input name="instituicao_destino" defaultValue={residente?.instituicao_destino ?? ""} />
+              </div>
+            )}
+            <div>
+              <Label>Observações da rescisão</Label>
+              <TextareaDitavel name="observacoes_rescisao" rows={2} defaultValue={residente?.observacoes_rescisao ?? ""} />
+            </div>
+          </>
+        )}
+      </fieldset>
+
+
+
+      <fieldset className="col-span-2 border border-border rounded-md p-4 space-y-3">
         <legend className="px-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Endereço</legend>
         <div className="grid grid-cols-4 gap-3">
           <div className="col-span-1">
