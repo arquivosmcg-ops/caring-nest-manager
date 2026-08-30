@@ -33,19 +33,19 @@ const esc = (v: unknown) =>
 
 function ProntuarioPage() {
   const [selecionado, setSelecionado] = useState<string | null>(null);
+  const [mostrarInativos, setMostrarInativos] = useState(false);
 
   const residentes = useQuery({
-    queryKey: ["residentes-prontuario"],
+    queryKey: ["residentes-prontuario", mostrarInativos],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("residentes")
-        .select("id, nome_completo")
-        .eq("ativo", true)
-        .order("nome_completo");
+      let q = supabase.from("residentes").select("id, nome_completo, ativo");
+      if (!mostrarInativos) q = q.eq("ativo", true);
+      const { data, error } = await q.order("nome_completo");
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as { id: string; nome_completo: string; ativo: boolean }[];
     },
   });
+
 
   const prontuario = useQuery({
     queryKey: ["prontuario", selecionado],
