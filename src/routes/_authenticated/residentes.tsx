@@ -21,6 +21,9 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { GRAUS_PARENTESCO } from "@/lib/visitas";
+import { maskCelular } from "@/lib/phone";
+
 
 function ResidenteAvatar({ path, nome }: { path: string | null; nome: string }) {
   const [url, setUrl] = useState<string | null>(null);
