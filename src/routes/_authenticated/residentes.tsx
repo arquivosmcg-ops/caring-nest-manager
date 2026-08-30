@@ -268,6 +268,14 @@ function ResidenteForm({
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
+    if (dataRescisao && !motivoRescisao) {
+      toast.error("Informe o motivo da rescisão");
+      return;
+    }
+    const num = (k: string) => {
+      const v = (fd.get(k) as string) || "";
+      return v.trim() === "" ? null : Number(v);
+    };
     onSubmit({
       nome_completo: fd.get("nome_completo") as string,
       data_nascimento: (fd.get("data_nascimento") as string) || null,
@@ -289,8 +297,26 @@ function ResidenteForm({
       endereco_bairro: (fd.get("endereco_bairro") as string) || null,
       endereco_cidade: (fd.get("endereco_cidade") as string) || null,
       endereco_estado: (fd.get("endereco_estado") as string) || null,
+      origem_procedencia: origem,
+      origem_procedencia_instituicao:
+        origem === "outra_instituicao" ? (fd.get("origem_procedencia_instituicao") as string) || null : null,
+      estado_civil: estadoCivil,
+      numero_filhos_vivos: num("numero_filhos_vivos"),
+      altura_cm: num("altura_cm"),
+      peso_kg: num("peso_kg"),
+      responsavel_principal_nome: (fd.get("responsavel_principal_nome") as string) || null,
+      responsavel_principal_parentesco: parentesco,
+      responsavel_principal_parentesco_outro:
+        parentesco === "Outro" ? (fd.get("responsavel_principal_parentesco_outro") as string) || null : null,
+      responsavel_principal_telefone: telefone.trim() || null,
+      data_rescisao_contrato: dataRescisao || null,
+      motivo_rescisao: dataRescisao ? motivoRescisao : null,
+      instituicao_destino:
+        dataRescisao && motivoRescisao === "transferencia" ? (fd.get("instituicao_destino") as string) || null : null,
+      observacoes_rescisao: dataRescisao ? (fd.get("observacoes_rescisao") as string) || null : null,
     }, fotoFile);
   };
+
 
 
   const displayPreview = fotoPreview || existingFotoUrl;
