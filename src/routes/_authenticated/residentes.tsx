@@ -853,6 +853,42 @@ function ResidentesPage() {
   </section>
 
   <section>
+    <h2>Perfil social</h2>
+    <div class="grid">
+      <div class="field"><span class="k">Procedência:</span><span>${esc(
+        r.origem_procedencia === "residencia"
+          ? "Residência (própria/familiar)"
+          : r.origem_procedencia === "outra_instituicao"
+            ? `Outra instituição${r.origem_procedencia_instituicao ? ` — ${r.origem_procedencia_instituicao}` : ""}`
+            : null,
+      )}</span></div>
+      <div class="field"><span class="k">Estado civil:</span><span>${esc(
+        ESTADOS_CIVIS.find((x) => x.key === r.estado_civil)?.label ?? null,
+      )}</span></div>
+      <div class="field"><span class="k">Filhos vivos:</span><span>${r.numero_filhos_vivos ?? "—"}</span></div>
+      <div class="field"><span class="k">Altura/Peso:</span><span>${r.altura_cm ? `${r.altura_cm} cm` : "—"} / ${r.peso_kg ? `${r.peso_kg} kg` : "—"}</span></div>
+      <div class="field"><span class="k">Responsável:</span><span>${esc(r.responsavel_principal_nome)}${
+        r.responsavel_principal_parentesco
+          ? ` (${esc(r.responsavel_principal_parentesco === "Outro" && r.responsavel_principal_parentesco_outro ? r.responsavel_principal_parentesco_outro : r.responsavel_principal_parentesco)})`
+          : ""
+      }</span></div>
+      <div class="field"><span class="k">Telefone:</span><span>${esc(r.responsavel_principal_telefone)}</span></div>
+    </div>
+  </section>
+
+  ${r.data_rescisao_contrato ? `<section>
+    <h2>Rescisão de contrato</h2>
+    <div class="grid">
+      <div class="field"><span class="k">Data:</span><span>${new Date(r.data_rescisao_contrato + "T00:00:00").toLocaleDateString("pt-BR")}</span></div>
+      <div class="field"><span class="k">Motivo:</span><span>${esc(MOTIVOS_RESCISAO.find((x) => x.key === r.motivo_rescisao)?.label ?? null)}</span></div>
+      ${r.instituicao_destino ? `<div class="field"><span class="k">Destino:</span><span>${esc(r.instituicao_destino)}</span></div>` : ""}
+    </div>
+    <div class="block">${nl2br(r.observacoes_rescisao)}</div>
+  </section>` : ""}
+
+
+
+  <section>
     <h2>Saúde</h2>
     <div class="grid">
       <div class="field"><span class="k">Alergias:</span><span>${esc(r.alergias)}</span></div>
