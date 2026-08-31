@@ -30,11 +30,20 @@ type Tipo = "tradicional" | "calcinha_pant" | "absorvente";
 
 type ItemDb = {
   id: string;
+  produto: string | null;
   marca: string;
   tipo: Tipo;
   quantidade_fardos: number;
   unidades_por_fardo: number;
   total_unidades: number;
+};
+
+type ProdutoBase = {
+  id: string;
+  nome_produto: string;
+  unidades_padrao_por_pacote: number;
+  marca_sugerida: string | null;
+  tipo_sugerido: Tipo;
 };
 
 type Registro = {
