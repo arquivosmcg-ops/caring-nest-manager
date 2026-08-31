@@ -1065,13 +1065,23 @@ function ResidentesPage() {
                 </td>
                 <td className="px-4 py-4 text-sm font-mono">{r.quartos?.numero ?? "—"}</td>
                 <td className="px-4 py-4">
-                  <span className={cn(
-                    "px-2 py-0.5 text-[10px] font-bold rounded-sm",
-                    r.status === "estavel" && "bg-green-100 text-green-700",
-                    r.status === "observacao" && "bg-orange-100 text-orange-700",
-                    r.status === "critico" && "bg-primary/10 text-primary",
-                  )}>{r.status.toUpperCase()}</span>
+                  {r.ativo ? (
+                    <span className={cn(
+                      "px-2 py-0.5 text-[10px] font-bold rounded-sm",
+                      r.status === "estavel" && "bg-green-100 text-green-700",
+                      r.status === "observacao" && "bg-orange-100 text-orange-700",
+                      r.status === "critico" && "bg-primary/10 text-primary",
+                    )}>{r.status.toUpperCase()}</span>
+                  ) : (
+                    <span
+                      className="px-2 py-0.5 text-[10px] font-bold rounded-sm bg-slate-200 text-slate-600"
+                      title={r.data_rescisao_contrato ? `Rescisão em ${new Date(r.data_rescisao_contrato + "T00:00:00").toLocaleDateString("pt-BR")}` : undefined}
+                    >
+                      INATIVO
+                    </span>
+                  )}
                 </td>
+
                 <td className="px-4 py-4 text-xs text-muted-foreground">{r.alergias || "—"}</td>
                 <td className="px-4 py-4 text-xs">
                   {r.contatos ? (
