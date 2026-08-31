@@ -618,8 +618,9 @@ function ResidentesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingNome, setEditingNome] = useState("");
   const [deleting, setDeleting] = useState<Residente | null>(null);
+  const [mostrarInativos, setMostrarInativos] = useState(false);
 
-  const residentes = useQuery({
+  const todosResidentes = useQuery({
     queryKey: ["residentes"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -630,6 +631,14 @@ function ResidentesPage() {
       return (data ?? []) as unknown as Residente[];
     },
   });
+
+  const residentes = {
+    ...todosResidentes,
+    data: mostrarInativos
+      ? todosResidentes.data
+      : todosResidentes.data?.filter((r) => r.ativo),
+  };
+
 
   const quartos = useQuery({
     queryKey: ["quartos-livres"],
