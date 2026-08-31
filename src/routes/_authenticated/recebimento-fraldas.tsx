@@ -62,11 +62,15 @@ type Registro = {
 
 type ItemForm = {
   uid: string;
+  produtoSel: string; // nome do produto da lista ou "__outros__"
+  produtoOutro: string;
   marca: string;
   tipo: Tipo;
   fardos: string;
   unidades: string;
 };
+
+const OUTROS = "__outros__";
 
 const FORMAS: { v: Forma; label: string }[] = [
   { v: "familiar", label: "Trazido por familiar" },
