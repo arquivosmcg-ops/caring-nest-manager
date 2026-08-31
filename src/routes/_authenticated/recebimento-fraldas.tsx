@@ -30,11 +30,20 @@ type Tipo = "tradicional" | "calcinha_pant" | "absorvente";
 
 type ItemDb = {
   id: string;
+  produto: string | null;
   marca: string;
   tipo: Tipo;
   quantidade_fardos: number;
   unidades_por_fardo: number;
   total_unidades: number;
+};
+
+type ProdutoBase = {
+  id: string;
+  nome_produto: string;
+  unidades_padrao_por_pacote: number;
+  marca_sugerida: string | null;
+  tipo_sugerido: Tipo;
 };
 
 type Registro = {
@@ -53,11 +62,15 @@ type Registro = {
 
 type ItemForm = {
   uid: string;
+  produtoSel: string; // nome do produto da lista ou "__outros__"
+  produtoOutro: string;
   marca: string;
   tipo: Tipo;
   fardos: string;
   unidades: string;
 };
+
+const OUTROS = "__outros__";
 
 const FORMAS: { v: Forma; label: string }[] = [
   { v: "familiar", label: "Trazido por familiar" },
@@ -91,6 +104,8 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
 const hoje = () => new Date().toISOString().slice(0, 10);
 const novoItem = (): ItemForm => ({
   uid: crypto.randomUUID(),
+  produtoSel: "",
+  produtoOutro: "",
   marca: "",
   tipo: "tradicional",
   fardos: "",

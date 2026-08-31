@@ -844,6 +844,42 @@ export type Database = {
           },
         ]
       }
+      produtos_fraldas: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          id: string
+          marca_sugerida: string | null
+          nome_produto: string
+          ordem: number
+          tipo_sugerido: Database["public"]["Enums"]["tipo_fralda"]
+          unidades_padrao_por_pacote: number
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          marca_sugerida?: string | null
+          nome_produto: string
+          ordem?: number
+          tipo_sugerido?: Database["public"]["Enums"]["tipo_fralda"]
+          unidades_padrao_por_pacote: number
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          marca_sugerida?: string | null
+          nome_produto?: string
+          ordem?: number
+          tipo_sugerido?: Database["public"]["Enums"]["tipo_fralda"]
+          unidades_padrao_por_pacote?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           aprovado: boolean
@@ -986,6 +1022,7 @@ export type Database = {
           created_at: string
           id: string
           marca: string
+          produto: string | null
           quantidade_fardos: number
           recebimento_id: string
           tipo: Database["public"]["Enums"]["tipo_fralda"]
@@ -997,6 +1034,7 @@ export type Database = {
           created_at?: string
           id?: string
           marca: string
+          produto?: string | null
           quantidade_fardos?: number
           recebimento_id: string
           tipo: Database["public"]["Enums"]["tipo_fralda"]
@@ -1008,6 +1046,7 @@ export type Database = {
           created_at?: string
           id?: string
           marca?: string
+          produto?: string | null
           quantidade_fardos?: number
           recebimento_id?: string
           tipo?: Database["public"]["Enums"]["tipo_fralda"]
