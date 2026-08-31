@@ -618,8 +618,9 @@ function ResidentesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingNome, setEditingNome] = useState("");
   const [deleting, setDeleting] = useState<Residente | null>(null);
+  const [mostrarInativos, setMostrarInativos] = useState(false);
 
-  const residentes = useQuery({
+  const todosResidentes = useQuery({
     queryKey: ["residentes"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -630,6 +631,14 @@ function ResidentesPage() {
       return (data ?? []) as unknown as Residente[];
     },
   });
+
+  const residentes = {
+    ...todosResidentes,
+    data: mostrarInativos
+      ? todosResidentes.data
+      : todosResidentes.data?.filter((r) => r.ativo),
+  };
+
 
   const quartos = useQuery({
     queryKey: ["quartos-livres"],
@@ -844,6 +853,42 @@ function ResidentesPage() {
   </section>
 
   <section>
+    <h2>Perfil social</h2>
+    <div class="grid">
+      <div class="field"><span class="k">Procedência:</span><span>${esc(
+        r.origem_procedencia === "residencia"
+          ? "Residência (própria/familiar)"
+          : r.origem_procedencia === "outra_instituicao"
+            ? `Outra instituição${r.origem_procedencia_instituicao ? ` — ${r.origem_procedencia_instituicao}` : ""}`
+            : null,
+      )}</span></div>
+      <div class="field"><span class="k">Estado civil:</span><span>${esc(
+        ESTADOS_CIVIS.find((x) => x.key === r.estado_civil)?.label ?? null,
+      )}</span></div>
+      <div class="field"><span class="k">Filhos vivos:</span><span>${r.numero_filhos_vivos ?? "—"}</span></div>
+      <div class="field"><span class="k">Altura/Peso:</span><span>${r.altura_cm ? `${r.altura_cm} cm` : "—"} / ${r.peso_kg ? `${r.peso_kg} kg` : "—"}</span></div>
+      <div class="field"><span class="k">Responsável:</span><span>${esc(r.responsavel_principal_nome)}${
+        r.responsavel_principal_parentesco
+          ? ` (${esc(r.responsavel_principal_parentesco === "Outro" && r.responsavel_principal_parentesco_outro ? r.responsavel_principal_parentesco_outro : r.responsavel_principal_parentesco)})`
+          : ""
+      }</span></div>
+      <div class="field"><span class="k">Telefone:</span><span>${esc(r.responsavel_principal_telefone)}</span></div>
+    </div>
+  </section>
+
+  ${r.data_rescisao_contrato ? `<section>
+    <h2>Rescisão de contrato</h2>
+    <div class="grid">
+      <div class="field"><span class="k">Data:</span><span>${new Date(r.data_rescisao_contrato + "T00:00:00").toLocaleDateString("pt-BR")}</span></div>
+      <div class="field"><span class="k">Motivo:</span><span>${esc(MOTIVOS_RESCISAO.find((x) => x.key === r.motivo_rescisao)?.label ?? null)}</span></div>
+      ${r.instituicao_destino ? `<div class="field"><span class="k">Destino:</span><span>${esc(r.instituicao_destino)}</span></div>` : ""}
+    </div>
+    <div class="block">${nl2br(r.observacoes_rescisao)}</div>
+  </section>` : ""}
+
+
+
+  <section>
     <h2>Saúde</h2>
     <div class="grid">
       <div class="field"><span class="k">Alergias:</span><span>${esc(r.alergias)}</span></div>
@@ -924,9 +969,19 @@ function ResidentesPage() {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-muted-foreground">
-            {residentes.data?.length ?? 0} residente(s) no sistema
+            {residentes.data?.length ?? 0} residente(s) {mostrarInativos ? "listados" : "ativos"}
           </p>
+          <label className="mt-1 flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
+            <input
+              type="checkbox"
+              checked={mostrarInativos}
+              onChange={(e) => setMostrarInativos(e.target.checked)}
+              className="size-3.5 accent-current"
+            />
+            Mostrar inativos (ex-residentes)
+          </label>
         </div>
+
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -1046,13 +1101,23 @@ function ResidentesPage() {
                 </td>
                 <td className="px-4 py-4 text-sm font-mono">{r.quartos?.numero ?? "—"}</td>
                 <td className="px-4 py-4">
-                  <span className={cn(
-                    "px-2 py-0.5 text-[10px] font-bold rounded-sm",
-                    r.status === "estavel" && "bg-green-100 text-green-700",
-                    r.status === "observacao" && "bg-orange-100 text-orange-700",
-                    r.status === "critico" && "bg-primary/10 text-primary",
-                  )}>{r.status.toUpperCase()}</span>
+                  {r.ativo ? (
+                    <span className={cn(
+                      "px-2 py-0.5 text-[10px] font-bold rounded-sm",
+                      r.status === "estavel" && "bg-green-100 text-green-700",
+                      r.status === "observacao" && "bg-orange-100 text-orange-700",
+                      r.status === "critico" && "bg-primary/10 text-primary",
+                    )}>{r.status.toUpperCase()}</span>
+                  ) : (
+                    <span
+                      className="px-2 py-0.5 text-[10px] font-bold rounded-sm bg-slate-200 text-slate-600"
+                      title={r.data_rescisao_contrato ? `Rescisão em ${new Date(r.data_rescisao_contrato + "T00:00:00").toLocaleDateString("pt-BR")}` : undefined}
+                    >
+                      INATIVO
+                    </span>
+                  )}
                 </td>
+
                 <td className="px-4 py-4 text-xs text-muted-foreground">{r.alergias || "—"}</td>
                 <td className="px-4 py-4 text-xs">
                   {r.contatos ? (
