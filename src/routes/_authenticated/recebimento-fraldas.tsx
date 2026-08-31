@@ -104,6 +104,8 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
 const hoje = () => new Date().toISOString().slice(0, 10);
 const novoItem = (): ItemForm => ({
   uid: crypto.randomUUID(),
+  produtoSel: "",
+  produtoOutro: "",
   marca: "",
   tipo: "tradicional",
   fardos: "",
