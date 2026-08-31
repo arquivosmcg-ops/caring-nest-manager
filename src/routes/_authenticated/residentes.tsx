@@ -933,9 +933,19 @@ function ResidentesPage() {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-muted-foreground">
-            {residentes.data?.length ?? 0} residente(s) no sistema
+            {residentes.data?.length ?? 0} residente(s) {mostrarInativos ? "listados" : "ativos"}
           </p>
+          <label className="mt-1 flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
+            <input
+              type="checkbox"
+              checked={mostrarInativos}
+              onChange={(e) => setMostrarInativos(e.target.checked)}
+              className="size-3.5 accent-current"
+            />
+            Mostrar inativos (ex-residentes)
+          </label>
         </div>
+
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
