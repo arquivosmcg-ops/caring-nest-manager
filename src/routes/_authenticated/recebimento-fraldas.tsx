@@ -434,7 +434,7 @@ function RecebimentoFraldasPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor={`fardos-${item.uid}`}>Quantidade de fardos</Label>
+                  <Label htmlFor={`fardos-${item.uid}`}>Quantidade de pacotes/fardos</Label>
                   <Input
                     id={`fardos-${item.uid}`}
                     type="number"
@@ -444,7 +444,7 @@ function RecebimentoFraldasPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor={`unidades-${item.uid}`}>Unidades por fardo</Label>
+                  <Label htmlFor={`unidades-${item.uid}`}>Unidades por pacote/fardo</Label>
                   <Input
                     id={`unidades-${item.uid}`}
                     type="number"
@@ -613,7 +613,7 @@ function RecebimentoFraldasPage() {
                     <table className="w-full text-left border-collapse text-sm">
                       <thead className="bg-black/[0.02] border-b border-border">
                         <tr>
-                          {["Marca", "Tipo", "Fardos", "Un./fardo", "Total"].map((h) => (
+                          {["Produto", "Marca", "Tipo", "Pacotes", "Un./pacote", "Total"].map((h) => (
                             <th key={h} className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">
                               {h}
                             </th>
@@ -623,6 +623,7 @@ function RecebimentoFraldasPage() {
                       <tbody className="divide-y divide-border">
                         {its.map((i) => (
                           <tr key={i.id}>
+                            <td className="px-3 py-2">{i.produto ?? "—"}</td>
                             <td className="px-3 py-2">{i.marca}</td>
                             <td className="px-3 py-2">{TIPOS.find((t) => t.v === i.tipo)?.label}</td>
                             <td className="px-3 py-2 font-mono">{i.quantidade_fardos}</td>
