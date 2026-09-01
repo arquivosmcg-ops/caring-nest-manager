@@ -517,8 +517,14 @@ function RecebimentoFraldasPage() {
       <section className="space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <h2 className="font-extrabold text-lg">Histórico de recebimentos</h2>
-          <div className="bg-foreground text-background px-4 py-2 rounded-md text-sm font-extrabold">
-            Total no período: {totalPeriodo.toLocaleString("pt-BR")} unidades
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Chip active={!modoAgrupado} onClick={() => setModoAgrupado(false)}>Lista</Chip>
+              <Chip active={modoAgrupado} onClick={() => setModoAgrupado(true)}>Agrupar por tipo</Chip>
+            </div>
+            <div className="bg-foreground text-background px-4 py-2 rounded-md text-sm font-extrabold">
+              Total no período: {totalPeriodo.toLocaleString("pt-BR")} unidades
+            </div>
           </div>
         </div>
 
