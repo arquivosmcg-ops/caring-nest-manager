@@ -580,83 +580,30 @@ function RecebimentoFraldasPage() {
             </p>
           )}
 
-          {filtrados.map((r) => {
-            const aberto = !!abertos[r.id];
-            const its = r.recebimentos_fraldas_itens ?? [];
-            return (
-              <div key={r.id} className="bg-surface border border-border rounded-lg overflow-hidden">
-                <div className="flex items-start gap-3 p-4">
-                  <button
-                    type="button"
-                    onClick={() => setAbertos((p) => ({ ...p, [r.id]: !aberto }))}
-                    className="mt-0.5 text-muted-foreground hover:text-foreground"
-                    aria-label={aberto ? "Recolher itens" : "Expandir itens"}
-                  >
-                    {aberto ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
-                  </button>
+          {!modoAgrupado &&
+            filtrados.map((r) => (
+              <RegistroCard key={r.id} r={r} abertos={abertos} setAbertos={setAbertos} totalRegistro={totalRegistro} detalheForma={detalheForma} onRemover={(id) => remover.mutate(id)} />
+            ))}
 
-                  <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-4 gap-3">
-                    <div>
-                      <p className="font-mono text-sm">
-                        {new Date(`${r.data_entrega}T12:00:00`).toLocaleDateString("pt-BR")}
-                      </p>
-                      <p className="font-bold">{r.residentes?.nome_completo ?? "—"}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">{FORMAS.find((f) => f.v === r.forma_entrega)?.label}</p>
-                      <p className="text-[11px] text-muted-foreground">{detalheForma(r)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm">{its.length} {its.length === 1 ? "item" : "itens"}</p>
-                      <p className="text-[11px] text-muted-foreground">Recebido por {r.recebido_por}</p>
-                    </div>
-                    <div className="md:text-right">
-                      <p className="font-mono font-extrabold">{totalRegistro(r).toLocaleString("pt-BR")} un.</p>
-                      {r.observacoes && (
-                        <p className="text-[11px] text-muted-foreground italic">{r.observacoes}</p>
-                      )}
-                    </div>
+          {modoAgrupado &&
+            grupos.map((g) => (
+              <div key={g.forma} className="border border-border rounded-lg overflow-hidden">
+                <div className="bg-foreground text-background px-4 py-3 flex items-center justify-between">
+                  <div>
+                    <p className="font-extrabold text-sm">{g.label}</p>
+                    <p className="text-[11px] opacity-80">{g.registros.length} {g.registros.length === 1 ? "registro" : "registros"}</p>
                   </div>
-
-                  <button
-                    onClick={() => remover.mutate(r.id)}
-                    className="text-muted-foreground hover:text-primary p-1"
-                    title="Excluir registro"
-                  >
-                    <Trash2 className="size-4" />
-                  </button>
+                  <div className="text-right">
+                    <p className="font-mono font-extrabold">{totalGrupo(g.registros).toLocaleString("pt-BR")} un.</p>
+                  </div>
                 </div>
-
-                {aberto && (
-                  <div className="border-t border-border overflow-x-auto">
-                    <table className="w-full text-left border-collapse text-sm">
-                      <thead className="bg-black/[0.02] border-b border-border">
-                        <tr>
-                          {["Produto", "Marca", "Tipo", "Pacotes", "Un./pacote", "Total"].map((h) => (
-                            <th key={h} className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">
-                              {h}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border">
-                        {its.map((i) => (
-                          <tr key={i.id}>
-                            <td className="px-3 py-2">{i.produto ?? "—"}</td>
-                            <td className="px-3 py-2">{i.marca}</td>
-                            <td className="px-3 py-2">{TIPOS.find((t) => t.v === i.tipo)?.label}</td>
-                            <td className="px-3 py-2 font-mono">{i.quantidade_fardos}</td>
-                            <td className="px-3 py-2 font-mono">{i.unidades_por_fardo}</td>
-                            <td className="px-3 py-2 font-mono font-bold">{i.total_unidades}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                <div className="bg-surface p-3 space-y-3">
+                  {g.registros.map((r) => (
+                    <RegistroCard key={r.id} r={r} abertos={abertos} setAbertos={setAbertos} totalRegistro={totalRegistro} detalheForma={detalheForma} onRemover={(id) => remover.mutate(id)} />
+                  ))}
+                </div>
               </div>
-            );
-          })}
+            ))}
         </div>
       </section>
     </div>
