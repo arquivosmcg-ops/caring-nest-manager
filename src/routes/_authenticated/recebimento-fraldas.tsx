@@ -279,6 +279,7 @@ function RecebimentoFraldasPage() {
   const [fMarca, setFMarca] = useState("");
   const [fTipo, setFTipo] = useState("todos");
   const [abertos, setAbertos] = useState<Record<string, boolean>>({});
+  const [modoAgrupado, setModoAgrupado] = useState(false);
 
   const filtrados = useMemo(() => {
     return (registros.data ?? []).filter((r) => {
@@ -293,9 +294,21 @@ function RecebimentoFraldasPage() {
     });
   }, [registros.data, fResidente, fDe, fAte, fForma, fMarca, fTipo]);
 
+  const grupos = useMemo(() => {
+    const map = new Map<Forma, Registro[]>();
+    FORMAS.forEach((f) => map.set(f.v, []));
+    filtrados.forEach((r) => {
+      map.get(r.forma_entrega)?.push(r);
+    });
+    return FORMAS.map((f) => ({ forma: f.v, label: f.label, registros: map.get(f.v) ?? [] })).filter(
+      (g) => g.registros.length > 0,
+    );
+  }, [filtrados]);
+
   const totalRegistro = (r: Registro) =>
     (r.recebimentos_fraldas_itens ?? []).reduce((s, i) => s + (i.total_unidades ?? 0), 0);
   const totalPeriodo = filtrados.reduce((s, r) => s + totalRegistro(r), 0);
+  const totalGrupo = (lista: Registro[]) => lista.reduce((s, r) => s + totalRegistro(r), 0);
 
   const detalheForma = (r: Registro) =>
     r.forma_entrega === "familiar"
