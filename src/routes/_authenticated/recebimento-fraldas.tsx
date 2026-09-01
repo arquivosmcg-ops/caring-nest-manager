@@ -242,6 +242,7 @@ function RecebimentoFraldasPage() {
       const { error: errItens } = await supabase.from("recebimentos_fraldas_itens" as never).insert(
         itens.map((i) => ({
           recebimento_id: recebimentoId,
+          produto: nomeProduto(i),
           marca: i.marca.trim(),
           tipo: i.tipo,
           quantidade_fardos: Number(i.fardos) || 0,
