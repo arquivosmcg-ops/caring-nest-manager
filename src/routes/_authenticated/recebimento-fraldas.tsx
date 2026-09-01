@@ -167,6 +167,23 @@ function RecebimentoFraldasPage() {
   const setItem = (uid: string, patch: Partial<ItemForm>) =>
     setItens((prev) => prev.map((i) => (i.uid === uid ? { ...i, ...patch } : i)));
 
+  const nomeProduto = (i: ItemForm) => (i.produtoSel === OUTROS ? i.produtoOutro.trim() : i.produtoSel.trim());
+
+  const escolherProduto = (uid: string, nome: string) => {
+    if (nome === OUTROS) {
+      setItem(uid, { produtoSel: OUTROS, produtoOutro: "", unidades: "" });
+      return;
+    }
+    const p = produtos.data?.find((x) => x.nome_produto === nome);
+    setItem(uid, {
+      produtoSel: nome,
+      produtoOutro: "",
+      unidades: p ? String(p.unidades_padrao_por_pacote) : "",
+      marca: p?.marca_sugerida ?? "",
+      tipo: p?.tipo_sugerido ?? "tradicional",
+    });
+  };
+
   const totalItem = (i: ItemForm) => (Number(i.fardos) || 0) * (Number(i.unidades) || 0);
   const totalGeral = itens.reduce((s, i) => s + totalItem(i), 0);
 
