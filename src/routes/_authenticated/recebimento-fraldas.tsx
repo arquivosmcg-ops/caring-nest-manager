@@ -140,6 +140,19 @@ function RecebimentoFraldasPage() {
     },
   });
 
+  const produtos = useQuery({
+    queryKey: ["produtos-fraldas"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("produtos_fraldas" as never)
+        .select("id, nome_produto, unidades_padrao_por_pacote, marca_sugerida, tipo_sugerido")
+        .eq("ativo", true)
+        .order("ordem");
+      if (error) throw error;
+      return (data ?? []) as unknown as ProdutoBase[];
+    },
+  });
+
   // ---- formulário (cabeçalho) ----
   const [residenteId, setResidenteId] = useState("");
   const [dataEntrega, setDataEntrega] = useState(hoje());
