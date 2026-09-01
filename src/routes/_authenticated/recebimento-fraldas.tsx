@@ -215,6 +215,7 @@ function RecebimentoFraldasPage() {
       if (forma === "fornecedor" && !nomeFornecedor.trim()) throw new Error("Informe o nome do fornecedor");
       if (itens.length === 0) throw new Error("Adicione ao menos um item");
       itens.forEach((i, idx) => {
+        if (!nomeProduto(i)) throw new Error(`Selecione ou informe o produto do item ${idx + 1}`);
         if (!i.marca.trim()) throw new Error(`Informe a marca do item ${idx + 1}`);
         if (totalItem(i) <= 0) throw new Error(`Informe fardos e unidades do item ${idx + 1}`);
       });
