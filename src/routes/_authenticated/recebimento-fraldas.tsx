@@ -288,7 +288,7 @@ function RecebimentoFraldasPage() {
       if (fForma !== "todas" && r.forma_entrega !== fForma) return false;
       const its = r.recebimentos_fraldas_itens ?? [];
       if (fTipo !== "todos" && !its.some((i) => i.tipo === fTipo)) return false;
-      if (fMarca && !its.some((i) => i.marca.toLowerCase().includes(fMarca.toLowerCase()))) return false;
+      if (fMarca && !its.some((i) => `${i.marca} ${i.produto ?? ""}`.toLowerCase().includes(fMarca.toLowerCase()))) return false;
       return true;
     });
   }, [registros.data, fResidente, fDe, fAte, fForma, fMarca, fTipo]);
