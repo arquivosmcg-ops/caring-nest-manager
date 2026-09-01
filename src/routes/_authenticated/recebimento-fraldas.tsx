@@ -396,6 +396,32 @@ function RecebimentoFraldasPage() {
                 )}
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label>Produto</Label>
+                  <Select value={item.produtoSel} onValueChange={(v) => escolherProduto(item.uid, v)}>
+                    <SelectTrigger><SelectValue placeholder="Selecione o produto" /></SelectTrigger>
+                    <SelectContent>
+                      {produtos.data?.map((p) => (
+                        <SelectItem key={p.id} value={p.nome_produto}>{p.nome_produto}</SelectItem>
+                      ))}
+                      <SelectItem value={OUTROS}>Outros…</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {item.produtoSel === OUTROS && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor={`produto-outro-${item.uid}`}>Nome do produto</Label>
+                    <Input
+                      id={`produto-outro-${item.uid}`}
+                      value={item.produtoOutro}
+                      onChange={(e) => setItem(item.uid, { produtoOutro: e.target.value })}
+                      placeholder="Digite o nome do produto"
+                    />
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="space-y-1.5">
                   <Label htmlFor={`marca-${item.uid}`}>Marca</Label>
