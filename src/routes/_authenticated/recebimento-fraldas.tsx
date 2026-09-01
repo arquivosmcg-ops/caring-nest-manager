@@ -140,6 +140,19 @@ function RecebimentoFraldasPage() {
     },
   });
 
+  const produtos = useQuery({
+    queryKey: ["produtos-fraldas"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("produtos_fraldas" as never)
+        .select("id, nome_produto, unidades_padrao_por_pacote, marca_sugerida, tipo_sugerido")
+        .eq("ativo", true)
+        .order("ordem");
+      if (error) throw error;
+      return (data ?? []) as unknown as ProdutoBase[];
+    },
+  });
+
   // ---- formulário (cabeçalho) ----
   const [residenteId, setResidenteId] = useState("");
   const [dataEntrega, setDataEntrega] = useState(hoje());
@@ -153,6 +166,23 @@ function RecebimentoFraldasPage() {
 
   const setItem = (uid: string, patch: Partial<ItemForm>) =>
     setItens((prev) => prev.map((i) => (i.uid === uid ? { ...i, ...patch } : i)));
+
+  const nomeProduto = (i: ItemForm) => (i.produtoSel === OUTROS ? i.produtoOutro.trim() : i.produtoSel.trim());
+
+  const escolherProduto = (uid: string, nome: string) => {
+    if (nome === OUTROS) {
+      setItem(uid, { produtoSel: OUTROS, produtoOutro: "", unidades: "" });
+      return;
+    }
+    const p = produtos.data?.find((x) => x.nome_produto === nome);
+    setItem(uid, {
+      produtoSel: nome,
+      produtoOutro: "",
+      unidades: p ? String(p.unidades_padrao_por_pacote) : "",
+      marca: p?.marca_sugerida ?? "",
+      tipo: p?.tipo_sugerido ?? "tradicional",
+    });
+  };
 
   const totalItem = (i: ItemForm) => (Number(i.fardos) || 0) * (Number(i.unidades) || 0);
   const totalGeral = itens.reduce((s, i) => s + totalItem(i), 0);
@@ -185,6 +215,7 @@ function RecebimentoFraldasPage() {
       if (forma === "fornecedor" && !nomeFornecedor.trim()) throw new Error("Informe o nome do fornecedor");
       if (itens.length === 0) throw new Error("Adicione ao menos um item");
       itens.forEach((i, idx) => {
+        if (!nomeProduto(i)) throw new Error(`Selecione ou informe o produto do item ${idx + 1}`);
         if (!i.marca.trim()) throw new Error(`Informe a marca do item ${idx + 1}`);
         if (totalItem(i) <= 0) throw new Error(`Informe fardos e unidades do item ${idx + 1}`);
       });
@@ -211,6 +242,7 @@ function RecebimentoFraldasPage() {
       const { error: errItens } = await supabase.from("recebimentos_fraldas_itens" as never).insert(
         itens.map((i) => ({
           recebimento_id: recebimentoId,
+          produto: nomeProduto(i),
           marca: i.marca.trim(),
           tipo: i.tipo,
           quantidade_fardos: Number(i.fardos) || 0,
@@ -256,7 +288,7 @@ function RecebimentoFraldasPage() {
       if (fForma !== "todas" && r.forma_entrega !== fForma) return false;
       const its = r.recebimentos_fraldas_itens ?? [];
       if (fTipo !== "todos" && !its.some((i) => i.tipo === fTipo)) return false;
-      if (fMarca && !its.some((i) => i.marca.toLowerCase().includes(fMarca.toLowerCase()))) return false;
+      if (fMarca && !its.some((i) => `${i.marca} ${i.produto ?? ""}`.toLowerCase().includes(fMarca.toLowerCase()))) return false;
       return true;
     });
   }, [registros.data, fResidente, fDe, fAte, fForma, fMarca, fTipo]);
@@ -364,6 +396,32 @@ function RecebimentoFraldasPage() {
                 )}
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label>Produto</Label>
+                  <Select value={item.produtoSel} onValueChange={(v) => escolherProduto(item.uid, v)}>
+                    <SelectTrigger><SelectValue placeholder="Selecione o produto" /></SelectTrigger>
+                    <SelectContent>
+                      {produtos.data?.map((p) => (
+                        <SelectItem key={p.id} value={p.nome_produto}>{p.nome_produto}</SelectItem>
+                      ))}
+                      <SelectItem value={OUTROS}>Outros…</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {item.produtoSel === OUTROS && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor={`produto-outro-${item.uid}`}>Nome do produto</Label>
+                    <Input
+                      id={`produto-outro-${item.uid}`}
+                      value={item.produtoOutro}
+                      onChange={(e) => setItem(item.uid, { produtoOutro: e.target.value })}
+                      placeholder="Digite o nome do produto"
+                    />
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="space-y-1.5">
                   <Label htmlFor={`marca-${item.uid}`}>Marca</Label>
@@ -376,7 +434,7 @@ function RecebimentoFraldasPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor={`fardos-${item.uid}`}>Quantidade de fardos</Label>
+                  <Label htmlFor={`fardos-${item.uid}`}>Quantidade de pacotes/fardos</Label>
                   <Input
                     id={`fardos-${item.uid}`}
                     type="number"
@@ -386,7 +444,7 @@ function RecebimentoFraldasPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor={`unidades-${item.uid}`}>Unidades por fardo</Label>
+                  <Label htmlFor={`unidades-${item.uid}`}>Unidades por pacote/fardo</Label>
                   <Input
                     id={`unidades-${item.uid}`}
                     type="number"
@@ -555,7 +613,7 @@ function RecebimentoFraldasPage() {
                     <table className="w-full text-left border-collapse text-sm">
                       <thead className="bg-black/[0.02] border-b border-border">
                         <tr>
-                          {["Marca", "Tipo", "Fardos", "Un./fardo", "Total"].map((h) => (
+                          {["Produto", "Marca", "Tipo", "Pacotes", "Un./pacote", "Total"].map((h) => (
                             <th key={h} className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">
                               {h}
                             </th>
@@ -565,6 +623,7 @@ function RecebimentoFraldasPage() {
                       <tbody className="divide-y divide-border">
                         {its.map((i) => (
                           <tr key={i.id}>
+                            <td className="px-3 py-2">{i.produto ?? "—"}</td>
                             <td className="px-3 py-2">{i.marca}</td>
                             <td className="px-3 py-2">{TIPOS.find((t) => t.v === i.tipo)?.label}</td>
                             <td className="px-3 py-2 font-mono">{i.quantidade_fardos}</td>
