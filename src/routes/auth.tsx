@@ -261,6 +261,18 @@ function AuthPage() {
                     placeholder="(11) 91234-5678"
                   />
                 </div>
+                <div>
+                  <Label htmlFor="na_escala">Fará parte da escala de trabalho? *</Label>
+                  <Select value={naEscala} onValueChange={setNaEscala}>
+                    <SelectTrigger id="na_escala">
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sim">Sim, entra na escala de plantões</SelectItem>
+                      <SelectItem value="nao">Não participa da escala</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Button type="submit" disabled={loading} className="w-full">
                   {loading ? "Criando..." : "Criar conta"}
                 </Button>
