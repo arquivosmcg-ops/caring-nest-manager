@@ -34,6 +34,7 @@ function AuthPage() {
   const [registro, setRegistro] = useState("");
   const [funcao, setFuncao] = useState("");
   const [celular, setCelular] = useState("");
+  const [naEscala, setNaEscala] = useState("sim");
   const [loading, setLoading] = useState(false);
   const [recuperando, setRecuperando] = useState(false);
 
