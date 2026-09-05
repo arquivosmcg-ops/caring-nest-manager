@@ -43,6 +43,7 @@ const navItems = [
   { to: "/medicamentos", label: "Prescrição Médica", icon: Pill, multi: false },
   { to: "/receituario", label: "Receituário Médico", icon: FileSignature, multi: false },
   { to: "/sinais-vitais", label: "Sinais Vitais", icon: Activity, multi: false },
+  { to: "/escala", label: "Escala de Trabalho", icon: CalendarDays, multi: false },
   { to: "/incidentes", label: "Incidentes", icon: AlertTriangle, multi: false },
   { to: "/checklists", label: "Checklists", icon: ClipboardCheck, multi: false },
   { to: "/recebimento-fraldas", label: "Recebimento de Fraldas", icon: Package, multi: true },
