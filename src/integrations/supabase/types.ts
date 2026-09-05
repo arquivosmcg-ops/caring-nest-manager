@@ -1059,6 +1059,7 @@ export type Database = {
           full_name: string
           funcao: string | null
           id: string
+          na_escala: boolean
           pin_hash: string | null
           registro_profissional: string | null
           status_aprovacao: string
@@ -1075,6 +1076,7 @@ export type Database = {
           full_name?: string
           funcao?: string | null
           id: string
+          na_escala?: boolean
           pin_hash?: string | null
           registro_profissional?: string | null
           status_aprovacao?: string
@@ -1091,6 +1093,7 @@ export type Database = {
           full_name?: string
           funcao?: string | null
           id?: string
+          na_escala?: boolean
           pin_hash?: string | null
           registro_profissional?: string | null
           status_aprovacao?: string
@@ -2000,6 +2003,7 @@ export type Database = {
           full_name: string
           funcao: string
           id: string
+          na_escala: boolean
           registro_profissional: string
           roles: string[]
           status_aprovacao: string
