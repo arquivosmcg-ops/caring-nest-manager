@@ -96,6 +96,7 @@ function AuthPage() {
           funcao,
           registro_profissional: registro,
           celular,
+          na_escala: naEscala === "sim",
         },
       },
     });
