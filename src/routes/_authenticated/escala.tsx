@@ -884,7 +884,7 @@ hr { border: 0; border-top: 1px dashed #bbb; margin: 1px 0; }
                 <Label>Observações</Label>
                 <TextareaDitavel
                   value={dialogTurno.observacoes}
-                  onChange={(v) => setDialogTurno({ ...dialogTurno, observacoes: v })}
+                  onChange={(e) => setDialogTurno({ ...dialogTurno, observacoes: e.target.value })}
                   placeholder="Observações do plantão"
                 />
               </div>
