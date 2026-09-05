@@ -155,9 +155,8 @@ function EscalaPage() {
     queryFn: async () => {
       const { data, error } = await supabase.rpc("listar_profissionais");
       if (error) throw error;
-      const excluidos = ["aparecida rodrigues", "maria clarete gonçalves"];
       return (data ?? [])
-        .filter((p) => !excluidos.includes((p.full_name ?? "").trim().toLowerCase()))
+        .filter((p) => (p as { na_escala?: boolean }).na_escala !== false)
         .map((p) => ({
           id: p.id,
           full_name: p.full_name,
