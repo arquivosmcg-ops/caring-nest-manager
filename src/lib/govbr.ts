@@ -66,7 +66,7 @@ export async function assinarComGovBr(
     .slice(0, 32)
     .toUpperCase();
   return {
-    tipo: "GOVBR" as never,
+    tipo: "GOVBR",
     ac_emissora: `gov.br — conta nível ${nivel}`,
     titular,
     numero_serie: `CPF ${formatarCpf(cpfLimpo)}`,
