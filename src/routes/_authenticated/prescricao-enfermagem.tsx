@@ -423,10 +423,12 @@ function PrescricaoEnfermagemPage() {
             .map((a) => {
               const ref = (a.documento_ref ?? {}) as { data?: string; turno?: string };
               const icp = a.metodo === "icp_a1" || a.metodo === "icp_a3";
-              const cert = icp
-                ? ` • Certificadora: ${esc(a.certificado_ac_emissor ?? "não informada")} — Protocolo: ${esc(a.protocolo_assinatura ?? "—")}`
-                : "";
-              return `<div>${esc(carimbo(a))} — ${ref.data ? new Date(ref.data + "T00:00:00").toLocaleDateString("pt-BR") : "—"} ${ref.turno ? esc(TURNO_LABEL[ref.turno as Turno]) : ""} • ${icp ? "assinado digitalmente com certificado ICP-Brasil" : "assinado"} em ${new Date(a.created_at).toLocaleString("pt-BR")}${cert} • documento íntegro — hash: ${esc(a.hash_documento.slice(0, 8))}</div>`;
+              const gov = a.metodo === "govbr";
+              const cert =
+                icp || gov
+                  ? ` • ${gov ? "Emissor" : "Certificadora"}: ${esc(a.certificado_ac_emissor ?? "não informada")} — Protocolo: ${esc(a.protocolo_assinatura ?? "—")}`
+                  : "";
+              return `<div>${esc(carimbo(a))} — ${ref.data ? new Date(ref.data + "T00:00:00").toLocaleDateString("pt-BR") : "—"} ${ref.turno ? esc(TURNO_LABEL[ref.turno as Turno]) : ""} • ${icp ? "assinado digitalmente com certificado ICP-Brasil" : gov ? "assinado eletronicamente com a conta gov.br" : "assinado"} em ${new Date(a.created_at).toLocaleString("pt-BR")}${cert} • documento íntegro — hash: ${esc(a.hash_documento.slice(0, 8))}</div>`;
             })
             .join("")
         : "<div>Nenhuma assinatura eletrônica registrada neste mês.</div>"
