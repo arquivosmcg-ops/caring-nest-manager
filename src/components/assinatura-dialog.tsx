@@ -35,9 +35,10 @@ import {
   type EvidenciaAssinatura,
 } from "@/lib/certificado-icp";
 import { useCertificadoAtual } from "@/hooks/use-certificado";
+import { PROVEDOR_GOVBR, assinarComGovBr } from "@/lib/govbr";
 
 export type CredencialAssinatura = {
-  metodo: "pin" | "senha" | "icp_a1" | "icp_a3";
+  metodo: "pin" | "senha" | "icp_a1" | "icp_a3" | "govbr";
   pin?: string;
   /** Para ICP-Brasil: assina o hash do documento no momento em que ele é conhecido. */
   assinarCertificado?: (hashDocumento: string) => Promise<EvidenciaAssinatura>;
@@ -58,7 +59,7 @@ export function AssinaturaDialog({
 }) {
   const perfil = usePerfilAtual().data;
   const qc = useQueryClient();
-  const [modo, setModo] = useState<"pin" | "senha" | "icp">("pin");
+  const [modo, setModo] = useState<"pin" | "senha" | "icp" | "govbr">("pin");
   const [pin, setPin] = useState("");
   const [novoPin, setNovoPin] = useState("");
   const [senha, setSenha] = useState("");
@@ -91,7 +92,15 @@ export function AssinaturaDialog({
     } else {
       setCategoria(perfil?.categoriaAssinatura ?? "");
       setUf(perfil?.conselhoUf ?? "");
-      setModo(certificado.data ? "icp" : temPin.data ? "pin" : "senha");
+      setModo(
+        certificado.data
+          ? certificado.data.tipo === "GOVBR"
+            ? "govbr"
+            : "icp"
+          : temPin.data
+            ? "pin"
+            : "senha",
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, temPin.data, certificado.data]);
@@ -125,7 +134,25 @@ export function AssinaturaDialog({
     if (!perfil) return;
     setEnviando(true);
     try {
-      if (modo === "icp") {
+      if (modo === "govbr") {
+        const cert = certificado.data;
+        if (!cert || cert.tipo !== "GOVBR") {
+          throw new Error("Vincule a sua conta gov.br no Meu Perfil antes de assinar.");
+        }
+        const { data: userData } = await supabase.auth.getUser();
+        const email = userData.user?.email;
+        if (!email) throw new Error("Sessão expirada");
+        if (!senha) throw new Error("Confirme a sua identidade com a senha da conta");
+        const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
+        if (error) throw new Error("Senha incorreta");
+        const cpf = (cert.numero_serie ?? "").replace(/\D/g, "");
+        const nivel = (cert.ac_emissora ?? "").includes("ouro") ? "ouro" : "prata";
+        await onConfirmar({
+          metodo: "govbr",
+          assinarCertificado: (hash) =>
+            assinarComGovBr(cpf, nivel, cert.titular ?? perfil.fullName, hash),
+        });
+      } else if (modo === "icp") {
         const cert = certificado.data;
         if (!cert) throw new Error("Nenhum certificado digital cadastrado no seu perfil");
         if (cert.tipo === "A3") {
@@ -241,7 +268,43 @@ export function AssinaturaDialog({
               </p>
             </div>
 
-            {modo === "icp" ? (
+            {modo === "govbr" ? (
+              <div className="space-y-3">
+                <div className="rounded-md border border-primary/30 bg-primary/5 p-3 text-xs space-y-1">
+                  <p className="font-semibold flex items-center gap-1">
+                    <ShieldCheck className="size-3.5" /> Assinatura gov.br
+                  </p>
+                  <p className="text-muted-foreground">
+                    Conta: {certificado.data?.numero_serie ?? "CPF não informado"}
+                  </p>
+                  <p className="text-muted-foreground">
+                    {certificado.data?.ac_emissora ?? "conta gov.br"}
+                  </p>
+                  {!PROVEDOR_GOVBR.configurado && (
+                    <p className="text-muted-foreground">
+                      Assinatura eletrônica com registro de protocolo. A integração oficial do
+                      Assinador ITI é ativada quando as credenciais forem cadastradas.
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="senha-govbr">Confirme com a senha da sua conta</Label>
+                  <PasswordInput
+                    id="senha-govbr"
+                    autoComplete="current-password"
+                    value={senha}
+                    onChange={(e) => setSenha(e.target.value)}
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="text-xs text-primary font-semibold"
+                  onClick={() => setModo(temPin.data ? "pin" : "senha")}
+                >
+                  Assinar sem gov.br (PIN ou senha)
+                </button>
+              </div>
+            ) : modo === "icp" ? (
               <div className="space-y-3">
                 <div className="rounded-md border border-primary/30 bg-primary/5 p-3 text-xs space-y-1">
                   <p className="font-semibold flex items-center gap-1">
@@ -319,13 +382,22 @@ export function AssinaturaDialog({
                   >
                     Usar a senha da minha conta
                   </button>
-                  {certificado.data && (
+                  {certificado.data && certificado.data.tipo !== "GOVBR" && (
                     <button
                       type="button"
                       className="text-xs text-primary font-semibold"
                       onClick={() => setModo("icp")}
                     >
                       Assinar com certificado digital (ICP-Brasil)
+                    </button>
+                  )}
+                  {certificado.data?.tipo === "GOVBR" && (
+                    <button
+                      type="button"
+                      className="text-xs text-primary font-semibold"
+                      onClick={() => setModo("govbr")}
+                    >
+                      Assinar com a conta gov.br
                     </button>
                   )}
                 </div>
@@ -349,13 +421,22 @@ export function AssinaturaDialog({
                       Usar PIN
                     </button>
                   )}
-                  {certificado.data && (
+                  {certificado.data && certificado.data.tipo !== "GOVBR" && (
                     <button
                       type="button"
                       className="text-xs text-primary font-semibold"
                       onClick={() => setModo("icp")}
                     >
                       Assinar com certificado digital (ICP-Brasil)
+                    </button>
+                  )}
+                  {certificado.data?.tipo === "GOVBR" && (
+                    <button
+                      type="button"
+                      className="text-xs text-primary font-semibold"
+                      onClick={() => setModo("govbr")}
+                    >
+                      Assinar com a conta gov.br
                     </button>
                   )}
                 </div>

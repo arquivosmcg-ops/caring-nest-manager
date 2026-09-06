@@ -28,6 +28,7 @@ import {
   type TipoCertificado,
 } from "@/lib/certificado-icp";
 import { CATEGORIA_ASSINATURA_LABEL } from "@/lib/assinatura";
+import { NIVEIS_GOVBR, PROVEDOR_GOVBR, cpfValido, formatarCpf } from "@/lib/govbr";
 
 export const Route = createFileRoute("/_authenticated/perfil")({
   component: PerfilPage,
@@ -62,6 +63,8 @@ function PerfilPage() {
   const [acManual, setAcManual] = useState("");
   const [validadeManual, setValidadeManual] = useState("");
   const [lendo, setLendo] = useState(false);
+  const [cpfGov, setCpfGov] = useState("");
+  const [nivelGov, setNivelGov] = useState<string>("prata");
 
   const lerArquivo = async () => {
     if (!arquivo) return toast.error("Selecione o arquivo .pfx ou .p12");
@@ -88,6 +91,18 @@ function PerfilPage() {
       const registro =
         tipo === "A1"
           ? lidos
+          : tipo === "GOVBR"
+          ? (() => {
+              if (!cpfValido(cpfGov)) throw new Error("Informe um CPF válido da conta gov.br");
+              return {
+                tipo: "GOVBR" as const,
+                titular: perfil?.fullName ?? null,
+                ac_emissora: `gov.br — conta nível ${nivelGov}`,
+                numero_serie: `CPF ${formatarCpf(cpfGov)}`,
+                valido_de: null,
+                valido_ate: null,
+              };
+            })()
           : {
               tipo: "A3" as const,
               titular: perfil?.fullName ?? null,
@@ -107,7 +122,8 @@ function PerfilPage() {
           numero_serie: registro.numero_serie,
           valido_de: registro.valido_de,
           valido_ate: registro.valido_ate,
-          provedor: tipo === "A3" ? PROVEDOR_ICP.nome : null,
+          provedor:
+            tipo === "A3" ? PROVEDOR_ICP.nome : tipo === "GOVBR" ? PROVEDOR_GOVBR.nome : null,
         } as never,
         { onConflict: "usuario_id" } as never,
       );
@@ -215,6 +231,7 @@ function PerfilPage() {
                   <SelectContent>
                     <SelectItem value="A1">A1 — arquivo digital (.pfx / .p12)</SelectItem>
                     <SelectItem value="A3">A3 — token, cartão físico ou nuvem</SelectItem>
+                    <SelectItem value="GOVBR">gov.br — assinatura com a conta gov.br</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -265,6 +282,44 @@ function PerfilPage() {
                       </p>
                     </div>
                   )}
+                </>
+              ) : tipo === "GOVBR" ? (
+                <>
+                  <p className="text-xs text-muted-foreground">
+                    A assinatura gov.br usa a sua conta gov.br (nível prata ou ouro). Informe o CPF
+                    da conta: a cada assinatura o sistema pede a confirmação da sua identidade e
+                    registra o protocolo junto do documento.
+                    {PROVEDOR_GOVBR.configurado
+                      ? " Integração oficial do Assinador ITI ativa."
+                      : " A integração oficial do Assinador ITI (validade ICP-Brasil plena) é ativada assim que as credenciais do ITI forem cadastradas."}
+                  </p>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <Label htmlFor="cpf-govbr">CPF da conta gov.br</Label>
+                      <Input
+                        id="cpf-govbr"
+                        inputMode="numeric"
+                        placeholder="000.000.000-00"
+                        value={cpfGov}
+                        onChange={(e) => setCpfGov(formatarCpf(e.target.value))}
+                      />
+                    </div>
+                    <div>
+                      <Label>Nível da conta</Label>
+                      <Select value={nivelGov} onValueChange={setNivelGov}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {NIVEIS_GOVBR.map((n) => (
+                            <SelectItem key={n.valor} value={n.valor}>
+                              {n.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </>
               ) : (
                 <>

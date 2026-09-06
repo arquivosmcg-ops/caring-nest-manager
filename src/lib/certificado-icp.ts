@@ -9,7 +9,7 @@
  *   assinatura ICP-Brasil, plugado em `PROVEDOR_ICP` quando as credenciais existirem.
  */
 
-export type TipoCertificado = "A1" | "A3";
+export type TipoCertificado = "A1" | "A3" | "GOVBR";
 
 export type MetadadosCertificado = {
   tipo: TipoCertificado;

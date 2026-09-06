@@ -63,15 +63,19 @@ export function carimbo(a: {
 
 export function linhasAssinatura(a: Assinatura) {
   const icp = a.metodo === "icp_a1" || a.metodo === "icp_a3";
+  const govbr = a.metodo === "govbr";
+  const quando = new Date(a.created_at).toLocaleString("pt-BR");
   const linhas = [
     carimbo(a),
     icp
-      ? `Assinado digitalmente com certificado ICP-Brasil em ${new Date(a.created_at).toLocaleString("pt-BR")}`
-      : `Assinado eletronicamente em ${new Date(a.created_at).toLocaleString("pt-BR")}`,
+      ? `Assinado digitalmente com certificado ICP-Brasil em ${quando}`
+      : govbr
+        ? `Assinado eletronicamente com a conta gov.br em ${quando}`
+        : `Assinado eletronicamente em ${quando}`,
   ];
-  if (icp) {
+  if (icp || govbr) {
     linhas.push(
-      `Certificadora: ${a.certificado_ac_emissor ?? "não informada"} — Protocolo: ${a.protocolo_assinatura ?? "—"}`,
+      `${govbr ? "Emissor" : "Certificadora"}: ${a.certificado_ac_emissor ?? "não informada"} — Protocolo: ${a.protocolo_assinatura ?? "—"}`,
     );
   }
   linhas.push(`Documento íntegro — hash: ${a.hash_documento.slice(0, 8)}`);
