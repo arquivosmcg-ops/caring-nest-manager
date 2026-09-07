@@ -309,6 +309,17 @@ export function EvolucaoMultiprofissional({
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const handleSalvar = () => {
+    if (!residenteId) return toast.error("Selecione uma residente");
+    if (!categoria) return toast.error("Selecione a categoria profissional");
+    if (texto.trim().length < 5) return toast.error("Escreva a evolução");
+    if (emitirAlerta && mensagemAlerta.trim().length < 3)
+      return toast.error("Escreva a mensagem resumida do alerta");
+    if (editandoId) return salvar.mutate(undefined);
+    setAssinaturaAberta(true);
+  };
+
+
   const cabecalhoHtml = () => {
     const r = residente ?? {};
     const linha = (k: string, v: unknown) =>
