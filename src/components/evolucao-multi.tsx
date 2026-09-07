@@ -20,7 +20,14 @@ import { cn } from "@/lib/utils";
 import { usePerfilAtual } from "@/hooks/use-perfil";
 import { registrarAuditoria } from "@/lib/auditoria";
 import { iconeDaCategoria, idadeEmAnos, numeroProntuario } from "@/lib/multiprofissional";
+import {
+  AssinaturaDialog,
+  CarimboAssinatura,
+  type CredencialAssinatura,
+} from "@/components/assinatura-dialog";
+import { hashDocumento, linhasAssinatura, type Assinatura } from "@/lib/assinatura";
 import logoAsset from "@/assets/logo_instituto_maior.png.asset.json";
+
 
 type Evolucao = {
   id: string;
