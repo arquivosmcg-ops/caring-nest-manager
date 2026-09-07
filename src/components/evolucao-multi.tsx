@@ -516,16 +516,17 @@ footer { margin-top:24px; font-size:9px; color:#666; border-top:1px solid #ccc; 
             )}
           </div>
           <p className="text-[11px] text-muted-foreground">
-            Assinatura digital: <strong>{perfil?.fullName}</strong>
-            {categoria ? ` · ${nomeCategoria(categoria)}` : ""}
-            {conselho ? ` · ${conselho}` : ""}
+            {editandoId
+              ? "A edição mantém o registro original em auditoria."
+              : "Ao salvar, será pedida a confirmação de identidade (PIN, senha, certificado ICP-Brasil ou conta gov.br)."}
           </p>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => { setAberto(false); limparForm(); }}>Cancelar</Button>
-            <Button onClick={() => salvar.mutate()} disabled={salvar.isPending}>
-              {salvar.isPending ? "Salvando…" : "Salvar evolução"}
+            <Button onClick={handleSalvar} disabled={salvar.isPending}>
+              {salvar.isPending ? "Salvando…" : editandoId ? "Salvar alterações" : "Assinar e salvar"}
             </Button>
           </div>
+
         </div>
       )}
 
