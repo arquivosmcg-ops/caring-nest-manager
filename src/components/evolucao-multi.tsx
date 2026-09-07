@@ -591,18 +591,35 @@ footer { margin-top:24px; font-size:9px; color:#666; border-top:1px solid #ccc; 
                       ))}
                     </div>
                   )}
-                  <p className="mt-3 pt-2 border-t border-border text-[11px] text-muted-foreground">
-                    Assinado digitalmente por {e.assinatura ?? e.autor_nome}
-                  </p>
+                  <div className="mt-3 pt-2 border-t border-border">
+                    {assinaturaDe(e.id) ? (
+                      <CarimboAssinatura assinatura={assinaturaDe(e.id)! as never} />
+                    ) : (
+                      <p className="text-[11px] text-muted-foreground">
+                        Assinado por {e.assinatura ?? e.autor_nome}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </li>
             );
           })}
         </ol>
       )}
+
+      <AssinaturaDialog
+        open={assinaturaAberta}
+        onOpenChange={setAssinaturaAberta}
+        titulo="Assinar evolução multiprofissional"
+        descricao="Confirme sua identidade (PIN, senha, certificado ICP-Brasil ou conta gov.br) para assinar a evolução."
+        onConfirmar={async (cred) => {
+          await salvar.mutateAsync(cred);
+        }}
+      />
     </div>
   );
 }
+
 
 export function AlertaResidenteBadge({ ativo }: { ativo: boolean }) {
   if (!ativo) return null;
