@@ -488,19 +488,26 @@ export function CarimboAssinatura({
   };
 }) {
   const icp = assinatura.metodo === "icp_a1" || assinatura.metodo === "icp_a3";
+  const govbr = assinatura.metodo === "govbr";
   return (
     <div className="text-xs leading-tight">
       <p className="font-bold">{carimbo(assinatura)}</p>
       <p className="text-muted-foreground">
-        {icp ? "Assinado digitalmente com certificado ICP-Brasil em " : "Assinado eletronicamente em "}
+        {icp
+          ? "Assinado digitalmente com certificado ICP-Brasil em "
+          : govbr
+            ? "Assinado eletronicamente com a conta gov.br em "
+            : "Assinado eletronicamente em "}
         {new Date(assinatura.created_at).toLocaleString("pt-BR")}
       </p>
-      {icp && (
+      {(icp || govbr) && (
         <p className="text-muted-foreground">
-          Certificadora: {assinatura.certificado_ac_emissor ?? "não informada"} — Protocolo:{" "}
+          {govbr ? "Emissor" : "Certificadora"}:{" "}
+          {assinatura.certificado_ac_emissor ?? "não informada"} — Protocolo:{" "}
           {assinatura.protocolo_assinatura ?? "—"}
         </p>
       )}
+
       <p className="text-muted-foreground">
         Documento íntegro — hash: {assinatura.hash_documento.slice(0, 8)}
       </p>

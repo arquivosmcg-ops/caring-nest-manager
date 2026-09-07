@@ -20,7 +20,14 @@ import { cn } from "@/lib/utils";
 import { usePerfilAtual } from "@/hooks/use-perfil";
 import { registrarAuditoria } from "@/lib/auditoria";
 import { iconeDaCategoria, idadeEmAnos, numeroProntuario } from "@/lib/multiprofissional";
+import {
+  AssinaturaDialog,
+  CarimboAssinatura,
+  type CredencialAssinatura,
+} from "@/components/assinatura-dialog";
+import { hashDocumento, linhasAssinatura, type Assinatura } from "@/lib/assinatura";
 import logoAsset from "@/assets/logo_instituto_maior.png.asset.json";
+
 
 type Evolucao = {
   id: string;
@@ -59,6 +66,8 @@ export function EvolucaoMultiprofissional({
   const [emitirAlerta, setEmitirAlerta] = useState(false);
   const [mensagemAlerta, setMensagemAlerta] = useState("");
   const [arquivos, setArquivos] = useState<File[]>([]);
+  const [assinaturaAberta, setAssinaturaAberta] = useState(false);
+
 
   const [fCategoria, setFCategoria] = useState("todas");
   const [fProfissional, setFProfissional] = useState("todos");
@@ -106,6 +115,26 @@ export function EvolucaoMultiprofissional({
       return (data ?? []) as unknown as Evolucao[];
     },
   });
+
+  const assinaturas = useQuery({
+    queryKey: ["assinaturas-evolucao", residenteId, evolucoes.data?.length],
+    enabled: !!evolucoes.data?.length,
+    queryFn: async () => {
+      const ids = (evolucoes.data ?? []).map((e) => e.id);
+      const { data, error } = await supabase
+        .from("assinaturas")
+        .select("*")
+        .eq("documento_tipo", "evolucao_multi")
+        .in("documento_id", ids)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as unknown as Assinatura[];
+    },
+  });
+
+  const assinaturaDe = (id: string) =>
+    (assinaturas.data ?? []).find((a) => a.documento_id === id) ?? null;
+
 
   const nomeCategoria = (chave: string) =>
     categorias.data?.find((c) => c.chave === chave)?.nome ?? chave;
@@ -166,7 +195,8 @@ export function EvolucaoMultiprofissional({
   };
 
   const salvar = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (cred?: CredencialAssinatura) => {
+
       if (!residenteId) throw new Error("Selecione uma residente");
       if (!categoria) throw new Error("Selecione a categoria profissional");
       if (texto.trim().length < 5) throw new Error("Escreva a evolução");
@@ -225,6 +255,30 @@ export function EvolucaoMultiprofissional({
         residenteId,
       });
 
+      if (cred) {
+        const hash = await hashDocumento({
+          residente_id: residenteId,
+          categoria,
+          texto,
+          conselho_numero: conselho || null,
+          anexos,
+        });
+        const evidencia = cred.assinarCertificado
+          ? await cred.assinarCertificado(hash)
+          : undefined;
+        const { error: erroAss } = await supabase.rpc("registrar_assinatura", {
+          _documento_tipo: "evolucao_multi",
+          _documento_id: data.id,
+          _hash: hash,
+          _pin: cred.pin ?? undefined,
+          _documento_ref: { residente_id: residenteId, categoria } as never,
+          _metodo: cred.metodo,
+          _certificado: (evidencia ?? undefined) as never,
+        } as never);
+        if (erroAss) throw erroAss;
+      }
+
+
       if (emitirAlerta) {
         const { error: errAlerta } = await supabase.from("alertas_clinicos").insert({
           residente_id: residenteId,
@@ -250,10 +304,23 @@ export function EvolucaoMultiprofissional({
       setAberto(false);
       limparForm();
       qc.invalidateQueries({ queryKey: ["evolucoes-multi", residenteId] });
+      qc.invalidateQueries({ queryKey: ["assinaturas-evolucao"] });
       qc.invalidateQueries({ queryKey: ["alertas-clinicos"] });
+
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const handleSalvar = () => {
+    if (!residenteId) return toast.error("Selecione uma residente");
+    if (!categoria) return toast.error("Selecione a categoria profissional");
+    if (texto.trim().length < 5) return toast.error("Escreva a evolução");
+    if (emitirAlerta && mensagemAlerta.trim().length < 3)
+      return toast.error("Escreva a mensagem resumida do alerta");
+    if (editandoId) return salvar.mutate(undefined);
+    setAssinaturaAberta(true);
+  };
+
 
   const cabecalhoHtml = () => {
     const r = residente ?? {};
@@ -300,15 +367,20 @@ footer { margin-top:24px; font-size:9px; color:#666; border-top:1px solid #ccc; 
     w.document.close();
   };
 
-  const blocoEvolucao = (e: Evolucao) => `<div class="evo">
+  const blocoEvolucao = (e: Evolucao) => {
+    const a = assinaturaDe(e.id);
+    const rodape = a
+      ? linhasAssinatura(a).map((l, i) => (i === 0 ? `<b>${esc(l)}</b>` : esc(l))).join("<br/>")
+      : `${esc(e.autor_nome)}<br/>${esc(nomeCategoria(e.categoria))}${
+          e.conselho_numero ? ` · Conselho: ${esc(e.conselho_numero)}` : ""
+        }<br/>${fmtData(e.created_at)} · ${fmtHora(e.created_at)}`;
+    return `<div class="evo">
   <div class="meta">${fmtData(e.created_at)} às ${fmtHora(e.created_at)} · ${esc(nomeCategoria(e.categoria))}</div>
   <div class="texto">${esc(e.texto)}</div>
-  <div class="assin">
-    ${esc(e.autor_nome)}<br/>
-    ${esc(nomeCategoria(e.categoria))}${e.conselho_numero ? ` · Conselho: ${esc(e.conselho_numero)}` : ""}<br/>
-    ${fmtData(e.created_at)} · ${fmtHora(e.created_at)}
-  </div>
+  <div class="assin">${rodape}</div>
 </div>`;
+  };
+
 
   const imprimirUma = async (e: Evolucao) => {
     abrirJanela(cabecalhoHtml() + blocoEvolucao(e), `Evolução — ${residente?.["nome_completo"] ?? ""}`);
@@ -457,16 +529,17 @@ footer { margin-top:24px; font-size:9px; color:#666; border-top:1px solid #ccc; 
             )}
           </div>
           <p className="text-[11px] text-muted-foreground">
-            Assinatura digital: <strong>{perfil?.fullName}</strong>
-            {categoria ? ` · ${nomeCategoria(categoria)}` : ""}
-            {conselho ? ` · ${conselho}` : ""}
+            {editandoId
+              ? "A edição mantém o registro original em auditoria."
+              : "Ao salvar, será pedida a confirmação de identidade (PIN, senha, certificado ICP-Brasil ou conta gov.br)."}
           </p>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => { setAberto(false); limparForm(); }}>Cancelar</Button>
-            <Button onClick={() => salvar.mutate()} disabled={salvar.isPending}>
-              {salvar.isPending ? "Salvando…" : "Salvar evolução"}
+            <Button onClick={handleSalvar} disabled={salvar.isPending}>
+              {salvar.isPending ? "Salvando…" : editandoId ? "Salvar alterações" : "Assinar e salvar"}
             </Button>
           </div>
+
         </div>
       )}
 
@@ -520,18 +593,35 @@ footer { margin-top:24px; font-size:9px; color:#666; border-top:1px solid #ccc; 
                       ))}
                     </div>
                   )}
-                  <p className="mt-3 pt-2 border-t border-border text-[11px] text-muted-foreground">
-                    Assinado digitalmente por {e.assinatura ?? e.autor_nome}
-                  </p>
+                  <div className="mt-3 pt-2 border-t border-border">
+                    {assinaturaDe(e.id) ? (
+                      <CarimboAssinatura assinatura={assinaturaDe(e.id)! as never} />
+                    ) : (
+                      <p className="text-[11px] text-muted-foreground">
+                        Assinado por {e.assinatura ?? e.autor_nome}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </li>
             );
           })}
         </ol>
       )}
+
+      <AssinaturaDialog
+        open={assinaturaAberta}
+        onOpenChange={setAssinaturaAberta}
+        titulo="Assinar evolução multiprofissional"
+        descricao="Confirme sua identidade (PIN, senha, certificado ICP-Brasil ou conta gov.br) para assinar a evolução."
+        onConfirmar={async (cred) => {
+          await salvar.mutateAsync(cred);
+        }}
+      />
     </div>
   );
 }
+
 
 export function AlertaResidenteBadge({ ativo }: { ativo: boolean }) {
   if (!ativo) return null;
