@@ -116,6 +116,26 @@ export function EvolucaoMultiprofissional({
     },
   });
 
+  const assinaturas = useQuery({
+    queryKey: ["assinaturas-evolucao", residenteId, evolucoes.data?.length],
+    enabled: !!evolucoes.data?.length,
+    queryFn: async () => {
+      const ids = (evolucoes.data ?? []).map((e) => e.id);
+      const { data, error } = await supabase
+        .from("assinaturas")
+        .select("*")
+        .eq("documento_tipo", "evolucao_multi")
+        .in("documento_id", ids)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as unknown as Assinatura[];
+    },
+  });
+
+  const assinaturaDe = (id: string) =>
+    (assinaturas.data ?? []).find((a) => a.documento_id === id) ?? null;
+
+
   const nomeCategoria = (chave: string) =>
     categorias.data?.find((c) => c.chave === chave)?.nome ?? chave;
   const iconeCategoria = (chave: string) =>
