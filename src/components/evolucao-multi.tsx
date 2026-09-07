@@ -304,7 +304,9 @@ export function EvolucaoMultiprofissional({
       setAberto(false);
       limparForm();
       qc.invalidateQueries({ queryKey: ["evolucoes-multi", residenteId] });
+      qc.invalidateQueries({ queryKey: ["assinaturas-evolucao"] });
       qc.invalidateQueries({ queryKey: ["alertas-clinicos"] });
+
     },
     onError: (e: Error) => toast.error(e.message),
   });
