@@ -354,15 +354,20 @@ footer { margin-top:24px; font-size:9px; color:#666; border-top:1px solid #ccc; 
     w.document.close();
   };
 
-  const blocoEvolucao = (e: Evolucao) => `<div class="evo">
+  const blocoEvolucao = (e: Evolucao) => {
+    const a = assinaturaDe(e.id);
+    const rodape = a
+      ? linhasAssinatura(a).map((l, i) => (i === 0 ? `<b>${esc(l)}</b>` : esc(l))).join("<br/>")
+      : `${esc(e.autor_nome)}<br/>${esc(nomeCategoria(e.categoria))}${
+          e.conselho_numero ? ` · Conselho: ${esc(e.conselho_numero)}` : ""
+        }<br/>${fmtData(e.created_at)} · ${fmtHora(e.created_at)}`;
+    return `<div class="evo">
   <div class="meta">${fmtData(e.created_at)} às ${fmtHora(e.created_at)} · ${esc(nomeCategoria(e.categoria))}</div>
   <div class="texto">${esc(e.texto)}</div>
-  <div class="assin">
-    ${esc(e.autor_nome)}<br/>
-    ${esc(nomeCategoria(e.categoria))}${e.conselho_numero ? ` · Conselho: ${esc(e.conselho_numero)}` : ""}<br/>
-    ${fmtData(e.created_at)} · ${fmtHora(e.created_at)}
-  </div>
+  <div class="assin">${rodape}</div>
 </div>`;
+  };
+
 
   const imprimirUma = async (e: Evolucao) => {
     abrirJanela(cabecalhoHtml() + blocoEvolucao(e), `Evolução — ${residente?.["nome_completo"] ?? ""}`);
