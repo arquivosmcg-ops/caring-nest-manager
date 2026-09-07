@@ -66,6 +66,8 @@ export function EvolucaoMultiprofissional({
   const [emitirAlerta, setEmitirAlerta] = useState(false);
   const [mensagemAlerta, setMensagemAlerta] = useState("");
   const [arquivos, setArquivos] = useState<File[]>([]);
+  const [assinaturaAberta, setAssinaturaAberta] = useState(false);
+
 
   const [fCategoria, setFCategoria] = useState("todas");
   const [fProfissional, setFProfissional] = useState("todos");
