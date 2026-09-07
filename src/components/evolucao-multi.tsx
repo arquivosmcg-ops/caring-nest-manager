@@ -255,6 +255,30 @@ export function EvolucaoMultiprofissional({
         residenteId,
       });
 
+      if (cred) {
+        const hash = await hashDocumento({
+          residente_id: residenteId,
+          categoria,
+          texto,
+          conselho_numero: conselho || null,
+          anexos,
+        });
+        const evidencia = cred.assinarCertificado
+          ? await cred.assinarCertificado(hash)
+          : undefined;
+        const { error: erroAss } = await supabase.rpc("registrar_assinatura", {
+          _documento_tipo: "evolucao_multi",
+          _documento_id: data.id,
+          _hash: hash,
+          _pin: cred.pin ?? undefined,
+          _documento_ref: { residente_id: residenteId, categoria } as never,
+          _metodo: cred.metodo,
+          _certificado: (evidencia ?? undefined) as never,
+        } as never);
+        if (erroAss) throw erroAss;
+      }
+
+
       if (emitirAlerta) {
         const { error: errAlerta } = await supabase.from("alertas_clinicos").insert({
           residente_id: residenteId,
