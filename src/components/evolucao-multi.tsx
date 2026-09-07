@@ -195,7 +195,8 @@ export function EvolucaoMultiprofissional({
   };
 
   const salvar = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (cred?: CredencialAssinatura) => {
+
       if (!residenteId) throw new Error("Selecione uma residente");
       if (!categoria) throw new Error("Selecione a categoria profissional");
       if (texto.trim().length < 5) throw new Error("Escreva a evolução");
