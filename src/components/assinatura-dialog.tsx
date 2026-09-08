@@ -90,7 +90,9 @@ export function AssinaturaDialog({
       setNovoPin("");
       setArquivoA1(null);
       setSenhaCert("");
+      setErroGovbr(null);
       setEnviando(false);
+
     } else {
       setCategoria(perfil?.categoriaAssinatura ?? "");
       setUf(perfil?.conselhoUf ?? "");
