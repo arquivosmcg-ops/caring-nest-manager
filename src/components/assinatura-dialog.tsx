@@ -300,6 +300,31 @@ export function AssinaturaDialog({
                     </p>
                   )}
                 </div>
+                {erroGovbr && (
+                  <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-xs space-y-2">
+                    <p className="font-semibold text-destructive">
+                      A assinatura gov.br não foi concluída
+                    </p>
+                    <p className="text-muted-foreground">{erroGovbr}</p>
+                    <p className="text-muted-foreground">
+                      Você pode tentar novamente ou assinar por{" "}
+                      {temPin.data ? "PIN" : "senha da conta"} — o documento fica registrado do
+                      mesmo modo, com data, autor e hash de integridade.
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setErroGovbr(null);
+                        setSenha("");
+                        setModo(temPin.data ? "pin" : "senha");
+                      }}
+                    >
+                      Assinar com {temPin.data ? "PIN" : "senha"}
+                    </Button>
+                  </div>
+                )}
                 <div>
                   <Label htmlFor="senha-govbr">Confirme com a senha da sua conta</Label>
                   <PasswordInput
@@ -312,10 +337,14 @@ export function AssinaturaDialog({
                 <button
                   type="button"
                   className="text-xs text-primary font-semibold"
-                  onClick={() => setModo(temPin.data ? "pin" : "senha")}
+                  onClick={() => {
+                    setErroGovbr(null);
+                    setModo(temPin.data ? "pin" : "senha");
+                  }}
                 >
                   Assinar sem gov.br (PIN ou senha)
                 </button>
+
               </div>
             ) : modo === "icp" ? (
               <div className="space-y-3">
