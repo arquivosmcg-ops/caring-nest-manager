@@ -68,7 +68,9 @@ export function AssinaturaDialog({
   const [categoria, setCategoria] = useState("");
   const [uf, setUf] = useState("");
   const [salvandoDados, setSalvandoDados] = useState(false);
+  const [erroGovbr, setErroGovbr] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+
 
   const temPin = useQuery({
     queryKey: ["tenho-pin-assinatura"],
@@ -88,7 +90,9 @@ export function AssinaturaDialog({
       setNovoPin("");
       setArquivoA1(null);
       setSenhaCert("");
+      setErroGovbr(null);
       setEnviando(false);
+
     } else {
       setCategoria(perfil?.categoriaAssinatura ?? "");
       setUf(perfil?.conselhoUf ?? "");
@@ -135,24 +139,35 @@ export function AssinaturaDialog({
     setEnviando(true);
     try {
       if (modo === "govbr") {
-        const cert = certificado.data;
-        if (!cert || cert.tipo !== "GOVBR") {
-          throw new Error("Vincule a sua conta gov.br no Meu Perfil antes de assinar.");
+        try {
+          const cert = certificado.data;
+          if (!cert || cert.tipo !== "GOVBR") {
+            throw new Error("Vincule a sua conta gov.br no Meu Perfil antes de assinar.");
+          }
+          const { data: userData } = await supabase.auth.getUser();
+          const email = userData.user?.email;
+          if (!email) throw new Error("Sessão expirada. Entre novamente para assinar.");
+          if (!senha) throw new Error("Confirme a sua identidade com a senha da conta.");
+          const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
+          if (error) throw new Error("Senha incorreta. A validação gov.br não foi concluída.");
+          const cpf = (cert.numero_serie ?? "").replace(/\D/g, "");
+          if (cpf.length !== 11) {
+            throw new Error("O CPF da conta gov.br está incompleto no seu perfil.");
+          }
+          const nivel = (cert.ac_emissora ?? "").includes("ouro") ? "ouro" : "prata";
+          setErroGovbr(null);
+          await onConfirmar({
+            metodo: "govbr",
+            assinarCertificado: (hash) =>
+              assinarComGovBr(cpf, nivel, cert.titular ?? perfil.fullName, hash),
+          });
+        } catch (e) {
+          const msg = (e as Error).message || "Não foi possível validar a assinatura gov.br.";
+          setErroGovbr(msg);
+          throw new Error(msg);
         }
-        const { data: userData } = await supabase.auth.getUser();
-        const email = userData.user?.email;
-        if (!email) throw new Error("Sessão expirada");
-        if (!senha) throw new Error("Confirme a sua identidade com a senha da conta");
-        const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
-        if (error) throw new Error("Senha incorreta");
-        const cpf = (cert.numero_serie ?? "").replace(/\D/g, "");
-        const nivel = (cert.ac_emissora ?? "").includes("ouro") ? "ouro" : "prata";
-        await onConfirmar({
-          metodo: "govbr",
-          assinarCertificado: (hash) =>
-            assinarComGovBr(cpf, nivel, cert.titular ?? perfil.fullName, hash),
-        });
       } else if (modo === "icp") {
+
         const cert = certificado.data;
         if (!cert) throw new Error("Nenhum certificado digital cadastrado no seu perfil");
         if (cert.tipo === "A3") {
@@ -287,6 +302,31 @@ export function AssinaturaDialog({
                     </p>
                   )}
                 </div>
+                {erroGovbr && (
+                  <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-xs space-y-2">
+                    <p className="font-semibold text-destructive">
+                      A assinatura gov.br não foi concluída
+                    </p>
+                    <p className="text-muted-foreground">{erroGovbr}</p>
+                    <p className="text-muted-foreground">
+                      Você pode tentar novamente ou assinar por{" "}
+                      {temPin.data ? "PIN" : "senha da conta"} — o documento fica registrado do
+                      mesmo modo, com data, autor e hash de integridade.
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setErroGovbr(null);
+                        setSenha("");
+                        setModo(temPin.data ? "pin" : "senha");
+                      }}
+                    >
+                      Assinar com {temPin.data ? "PIN" : "senha"}
+                    </Button>
+                  </div>
+                )}
                 <div>
                   <Label htmlFor="senha-govbr">Confirme com a senha da sua conta</Label>
                   <PasswordInput
@@ -299,10 +339,14 @@ export function AssinaturaDialog({
                 <button
                   type="button"
                   className="text-xs text-primary font-semibold"
-                  onClick={() => setModo(temPin.data ? "pin" : "senha")}
+                  onClick={() => {
+                    setErroGovbr(null);
+                    setModo(temPin.data ? "pin" : "senha");
+                  }}
                 >
                   Assinar sem gov.br (PIN ou senha)
                 </button>
+
               </div>
             ) : modo === "icp" ? (
               <div className="space-y-3">

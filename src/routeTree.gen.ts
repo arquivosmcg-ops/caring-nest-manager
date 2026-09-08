@@ -32,6 +32,7 @@ import { Route as AuthenticatedEvolucaoMultiRouteImport } from './routes/_authen
 import { Route as AuthenticatedEscalaRouteImport } from './routes/_authenticated/escala'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedChecklistsRouteImport } from './routes/_authenticated/checklists'
+import { Route as AuthenticatedAuditoriaAssinaturasRouteImport } from './routes/_authenticated/auditoria-assinaturas'
 import { Route as AuthenticatedAniversariantesRouteImport } from './routes/_authenticated/aniversariantes'
 import { Route as AuthenticatedAdminUsuariosRouteImport } from './routes/_authenticated/admin-usuarios'
 import { Route as AuthenticatedAdminAprovacoesRouteImport } from './routes/_authenticated/admin-aprovacoes'
@@ -157,6 +158,12 @@ const AuthenticatedChecklistsRoute = AuthenticatedChecklistsRouteImport.update({
   path: '/checklists',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAuditoriaAssinaturasRoute =
+  AuthenticatedAuditoriaAssinaturasRouteImport.update({
+    id: '/auditoria-assinaturas',
+    path: '/auditoria-assinaturas',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAniversariantesRoute =
   AuthenticatedAniversariantesRouteImport.update({
     id: '/aniversariantes',
@@ -184,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/admin-aprovacoes': typeof AuthenticatedAdminAprovacoesRoute
   '/admin-usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/aniversariantes': typeof AuthenticatedAniversariantesRoute
+  '/auditoria-assinaturas': typeof AuthenticatedAuditoriaAssinaturasRoute
   '/checklists': typeof AuthenticatedChecklistsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/escala': typeof AuthenticatedEscalaRoute
@@ -211,6 +219,7 @@ export interface FileRoutesByTo {
   '/admin-aprovacoes': typeof AuthenticatedAdminAprovacoesRoute
   '/admin-usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/aniversariantes': typeof AuthenticatedAniversariantesRoute
+  '/auditoria-assinaturas': typeof AuthenticatedAuditoriaAssinaturasRoute
   '/checklists': typeof AuthenticatedChecklistsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/escala': typeof AuthenticatedEscalaRoute
@@ -240,6 +249,7 @@ export interface FileRoutesById {
   '/_authenticated/admin-aprovacoes': typeof AuthenticatedAdminAprovacoesRoute
   '/_authenticated/admin-usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/_authenticated/aniversariantes': typeof AuthenticatedAniversariantesRoute
+  '/_authenticated/auditoria-assinaturas': typeof AuthenticatedAuditoriaAssinaturasRoute
   '/_authenticated/checklists': typeof AuthenticatedChecklistsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/escala': typeof AuthenticatedEscalaRoute
@@ -269,6 +279,7 @@ export interface FileRouteTypes {
     | '/admin-aprovacoes'
     | '/admin-usuarios'
     | '/aniversariantes'
+    | '/auditoria-assinaturas'
     | '/checklists'
     | '/dashboard'
     | '/escala'
@@ -296,6 +307,7 @@ export interface FileRouteTypes {
     | '/admin-aprovacoes'
     | '/admin-usuarios'
     | '/aniversariantes'
+    | '/auditoria-assinaturas'
     | '/checklists'
     | '/dashboard'
     | '/escala'
@@ -324,6 +336,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin-aprovacoes'
     | '/_authenticated/admin-usuarios'
     | '/_authenticated/aniversariantes'
+    | '/_authenticated/auditoria-assinaturas'
     | '/_authenticated/checklists'
     | '/_authenticated/dashboard'
     | '/_authenticated/escala'
@@ -516,6 +529,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChecklistsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/auditoria-assinaturas': {
+      id: '/_authenticated/auditoria-assinaturas'
+      path: '/auditoria-assinaturas'
+      fullPath: '/auditoria-assinaturas'
+      preLoaderRoute: typeof AuthenticatedAuditoriaAssinaturasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/aniversariantes': {
       id: '/_authenticated/aniversariantes'
       path: '/aniversariantes'
@@ -544,6 +564,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminAprovacoesRoute: typeof AuthenticatedAdminAprovacoesRoute
   AuthenticatedAdminUsuariosRoute: typeof AuthenticatedAdminUsuariosRoute
   AuthenticatedAniversariantesRoute: typeof AuthenticatedAniversariantesRoute
+  AuthenticatedAuditoriaAssinaturasRoute: typeof AuthenticatedAuditoriaAssinaturasRoute
   AuthenticatedChecklistsRoute: typeof AuthenticatedChecklistsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEscalaRoute: typeof AuthenticatedEscalaRoute
@@ -567,6 +588,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminAprovacoesRoute: AuthenticatedAdminAprovacoesRoute,
   AuthenticatedAdminUsuariosRoute: AuthenticatedAdminUsuariosRoute,
   AuthenticatedAniversariantesRoute: AuthenticatedAniversariantesRoute,
+  AuthenticatedAuditoriaAssinaturasRoute:
+    AuthenticatedAuditoriaAssinaturasRoute,
   AuthenticatedChecklistsRoute: AuthenticatedChecklistsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEscalaRoute: AuthenticatedEscalaRoute,
