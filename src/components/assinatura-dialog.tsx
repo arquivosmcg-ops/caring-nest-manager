@@ -68,7 +68,9 @@ export function AssinaturaDialog({
   const [categoria, setCategoria] = useState("");
   const [uf, setUf] = useState("");
   const [salvandoDados, setSalvandoDados] = useState(false);
+  const [erroGovbr, setErroGovbr] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+
 
   const temPin = useQuery({
     queryKey: ["tenho-pin-assinatura"],
