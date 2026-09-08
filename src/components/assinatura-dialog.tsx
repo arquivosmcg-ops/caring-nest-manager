@@ -135,24 +135,35 @@ export function AssinaturaDialog({
     setEnviando(true);
     try {
       if (modo === "govbr") {
-        const cert = certificado.data;
-        if (!cert || cert.tipo !== "GOVBR") {
-          throw new Error("Vincule a sua conta gov.br no Meu Perfil antes de assinar.");
+        try {
+          const cert = certificado.data;
+          if (!cert || cert.tipo !== "GOVBR") {
+            throw new Error("Vincule a sua conta gov.br no Meu Perfil antes de assinar.");
+          }
+          const { data: userData } = await supabase.auth.getUser();
+          const email = userData.user?.email;
+          if (!email) throw new Error("Sessão expirada. Entre novamente para assinar.");
+          if (!senha) throw new Error("Confirme a sua identidade com a senha da conta.");
+          const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
+          if (error) throw new Error("Senha incorreta. A validação gov.br não foi concluída.");
+          const cpf = (cert.numero_serie ?? "").replace(/\D/g, "");
+          if (cpf.length !== 11) {
+            throw new Error("O CPF da conta gov.br está incompleto no seu perfil.");
+          }
+          const nivel = (cert.ac_emissora ?? "").includes("ouro") ? "ouro" : "prata";
+          setErroGovbr(null);
+          await onConfirmar({
+            metodo: "govbr",
+            assinarCertificado: (hash) =>
+              assinarComGovBr(cpf, nivel, cert.titular ?? perfil.fullName, hash),
+          });
+        } catch (e) {
+          const msg = (e as Error).message || "Não foi possível validar a assinatura gov.br.";
+          setErroGovbr(msg);
+          throw new Error(msg);
         }
-        const { data: userData } = await supabase.auth.getUser();
-        const email = userData.user?.email;
-        if (!email) throw new Error("Sessão expirada");
-        if (!senha) throw new Error("Confirme a sua identidade com a senha da conta");
-        const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
-        if (error) throw new Error("Senha incorreta");
-        const cpf = (cert.numero_serie ?? "").replace(/\D/g, "");
-        const nivel = (cert.ac_emissora ?? "").includes("ouro") ? "ouro" : "prata";
-        await onConfirmar({
-          metodo: "govbr",
-          assinarCertificado: (hash) =>
-            assinarComGovBr(cpf, nivel, cert.titular ?? perfil.fullName, hash),
-        });
       } else if (modo === "icp") {
+
         const cert = certificado.data;
         if (!cert) throw new Error("Nenhum certificado digital cadastrado no seu perfil");
         if (cert.tipo === "A3") {
