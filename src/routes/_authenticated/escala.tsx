@@ -614,6 +614,9 @@ hr { border: 0; border-top: 1px dashed #bbb; margin: 1px 0; }
               <Button variant="outline" size="sm" onClick={imprimir}>
                 <Printer className="size-4 mr-1" /> Imprimir / PDF
               </Button>
+              <Button variant="outline" size="sm" onClick={exportarExcel}>
+                <FileSpreadsheet className="size-4 mr-1" /> Exportar Excel
+              </Button>
               {podeEditar && (
                 <>
                   <Button variant="outline" size="sm" onClick={() => duplicarPeriodo.mutate()} disabled={duplicarPeriodo.isPending}>
