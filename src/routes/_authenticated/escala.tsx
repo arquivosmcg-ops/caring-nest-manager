@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { TextareaDitavel } from "@/components/ditar-audio";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, CalendarDays, Copy, Plus, Printer, Repeat, Trash2 } from "lucide-react";
+import { AlertTriangle, CalendarDays, Copy, FileSpreadsheet, Plus, Printer, Repeat, Trash2 } from "lucide-react";
 import {
   type Afastamento,
   type EscalaConfig,
