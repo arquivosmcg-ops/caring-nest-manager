@@ -477,6 +477,64 @@ function EscalaPage() {
     setArrastando(null);
   }
 
+  /* ---------------- exportação Excel ---------------- */
+  async function exportarExcel() {
+    const XLSX = await import("xlsx");
+    const registros = [...visiveis]
+      .sort((a, b) => (a.data === b.data ? a.hora_inicio.localeCompare(b.hora_inicio) : a.data.localeCompare(b.data)))
+      .map((t) => {
+        const dt = parseISO(t.data);
+        return {
+          Data: dataCurta(t.data),
+          "Dia da semana": DIAS_SEMANA[dt.getDay()],
+          Colaborador: t.colaborador_nome ?? "",
+          Cargo: t.cargo ?? "",
+          Setor: nomeSetor(t.setor),
+          Turno: nomeTurno(t.turno),
+          Início: t.hora_inicio.slice(0, 5),
+          Fim: t.hora_fim.slice(0, 5),
+          Horas: duracaoHoras(t.hora_inicio, t.hora_fim),
+          "Tipo de escala": TIPOS_ESCALA.find((x) => x.chave === t.tipo_escala)?.nome ?? t.tipo_escala,
+          Status: nomeStatus(t.status),
+          Observações: t.observacoes ?? "",
+        };
+      });
+
+    if (!registros.length) {
+      toast.error("Não há turnos no período para exportar");
+      return;
+    }
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(registros);
+    ws["!cols"] = [
+      { wch: 11 }, { wch: 14 }, { wch: 30 }, { wch: 18 }, { wch: 18 },
+      { wch: 12 }, { wch: 8 }, { wch: 8 }, { wch: 7 }, { wch: 16 },
+      { wch: 12 }, { wch: 30 },
+    ];
+    XLSX.utils.book_append_sheet(wb, ws, "Escala");
+
+    // aba resumo por colaborador
+    const resumo = linhas
+      .map((l) => {
+        const meus = visiveis.filter((t) => t.colaborador_id === l.id);
+        return {
+          Colaborador: l.nome,
+          Plantões: meus.length,
+          "Total de horas": meus.reduce((s, t) => s + duracaoHoras(t.hora_inicio, t.hora_fim), 0),
+        };
+      })
+      .filter((r) => r.Plantões > 0);
+    if (resumo.length) {
+      const ws2 = XLSX.utils.json_to_sheet(resumo);
+      ws2["!cols"] = [{ wch: 30 }, { wch: 10 }, { wch: 16 }];
+      XLSX.utils.book_append_sheet(wb, ws2, "Resumo");
+    }
+
+    XLSX.writeFile(wb, `escala-${de}-a-${ate}.xlsx`);
+    toast.success("Planilha da escala gerada");
+  }
+
   /* ---------------- impressão ---------------- */
   function imprimir() {
     const linhasHtml = linhas
