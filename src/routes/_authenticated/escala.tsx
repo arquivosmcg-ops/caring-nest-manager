@@ -228,7 +228,10 @@ function EscalaPage() {
     return todosTurnos.filter((t) => {
       if (!podeEditar && t.colaborador_id !== perfil?.userId) return false;
       if (t.data < de || t.data > ate) return false;
-      if (fSetor !== "todos" && t.setor !== fSetor) return false;
+      if (categoria === "outros") {
+        if (t.setor === "enfermagem" || t.setor === "cuidados_diretos") return false;
+        if (fSetor !== "todos" && t.setor !== fSetor) return false;
+      } else if (t.setor !== categoria) return false;
       if (fTurno !== "todos" && t.turno !== fTurno) return false;
       if (fStatus !== "todos" && t.status !== fStatus) return false;
       if (busca.trim() && !(t.colaborador_nome ?? "").toLowerCase().includes(busca.trim().toLowerCase()))
