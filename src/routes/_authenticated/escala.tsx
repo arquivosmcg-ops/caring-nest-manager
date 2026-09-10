@@ -123,6 +123,15 @@ function EscalaPage() {
   const podeEditar = !!perfil && (perfil.isAdmin || perfil.roles.includes("gerente"));
 
   const [aba, setAba] = useState<"escala" | "afastamentos" | "historico">("escala");
+  const [categoria, setCategoria] = useState<"enfermagem" | "cuidados_diretos" | "outros">(
+    "enfermagem",
+  );
+  const nomeCategoria =
+    categoria === "enfermagem"
+      ? "Enfermagem"
+      : categoria === "cuidados_diretos"
+        ? "Cuidadoras"
+        : "Outros setores";
   const [visao, setVisao] = useState<"semanal" | "quinzenal" | "mensal">("semanal");
   const [ancora, setAncora] = useState(iso(new Date()));
   const [busca, setBusca] = useState("");
@@ -219,14 +228,17 @@ function EscalaPage() {
     return todosTurnos.filter((t) => {
       if (!podeEditar && t.colaborador_id !== perfil?.userId) return false;
       if (t.data < de || t.data > ate) return false;
-      if (fSetor !== "todos" && t.setor !== fSetor) return false;
+      if (categoria === "outros") {
+        if (t.setor === "enfermagem" || t.setor === "cuidados_diretos") return false;
+        if (fSetor !== "todos" && t.setor !== fSetor) return false;
+      } else if (t.setor !== categoria) return false;
       if (fTurno !== "todos" && t.turno !== fTurno) return false;
       if (fStatus !== "todos" && t.status !== fStatus) return false;
       if (busca.trim() && !(t.colaborador_nome ?? "").toLowerCase().includes(busca.trim().toLowerCase()))
         return false;
       return true;
     });
-  }, [todosTurnos, podeEditar, perfil?.userId, de, ate, fSetor, fTurno, fStatus, busca]);
+  }, [todosTurnos, podeEditar, perfil?.userId, de, ate, categoria, fSetor, fTurno, fStatus, busca]);
 
   const linhas = useMemo(() => {
     const map = new Map<string, string>();
@@ -454,6 +466,7 @@ function EscalaPage() {
     if (!podeEditar) return;
     setDialogTurno({
       ...VAZIO,
+      setor: categoria === "outros" ? (fSetor !== "todos" ? fSetor : "cozinha") : categoria,
       colaborador_id: colaboradorId ?? "",
       data: data ?? ancora,
       repetirSemanas: 1,
@@ -512,7 +525,7 @@ function EscalaPage() {
       { wch: 12 }, { wch: 8 }, { wch: 8 }, { wch: 7 }, { wch: 16 },
       { wch: 12 }, { wch: 30 },
     ];
-    XLSX.utils.book_append_sheet(wb, ws, "Escala");
+    XLSX.utils.book_append_sheet(wb, ws, nomeCategoria.slice(0, 28));
 
     // aba resumo por colaborador
     const resumo = linhas
@@ -531,7 +544,7 @@ function EscalaPage() {
       XLSX.utils.book_append_sheet(wb, ws2, "Resumo");
     }
 
-    XLSX.writeFile(wb, `escala-${de}-a-${ate}.xlsx`);
+    XLSX.writeFile(wb, `escala-${nomeCategoria.toLowerCase().replace(/\s+/g, "-")}-${de}-a-${ate}.xlsx`);
     toast.success("Planilha da escala gerada");
   }
 
@@ -559,7 +572,7 @@ function EscalaPage() {
     const w = window.open("", "_blank", "width=1200,height=800");
     if (!w) return;
     w.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"/>
-<title>Escala de Trabalho</title><style>
+<title>Escala de Trabalho — ${nomeCategoria}</title><style>
 @page { size: A4 landscape; margin: 10mm; }
 body { font-family: system-ui, sans-serif; color: #111; }
 h1 { font-size: 16pt; margin: 0 0 2mm; }
@@ -569,7 +582,7 @@ th, td { border: 1px solid #999; padding: 2px 3px; text-align: center; vertical-
 th.nome { text-align: left; width: 40mm; font-size: 8pt; }
 hr { border: 0; border-top: 1px dashed #bbb; margin: 1px 0; }
 </style></head><body>
-<h1>Escala de Trabalho — Residencial São Camilo</h1>
+<h1>Escala de Trabalho — ${nomeCategoria} — Residencial São Camilo</h1>
 <p class="sub">Período: ${dataCurta(de)} a ${dataCurta(ate)} — emitido em ${new Date().toLocaleString("pt-BR")}</p>
 <table><thead><tr><th class="nome">Colaborador</th>${head}</tr></thead><tbody>${linhasHtml}</tbody></table>
 </body></html>`);
@@ -594,6 +607,21 @@ hr { border: 0; border-top: 1px dashed #bbb; margin: 1px 0; }
 
       {aba === "escala" && (
         <>
+          <div className="flex flex-wrap items-center gap-2 border-b border-border pb-3">
+            <Chip active={categoria === "enfermagem"} onClick={() => setCategoria("enfermagem")}>
+              Escala de Enfermagem
+            </Chip>
+            <Chip
+              active={categoria === "cuidados_diretos"}
+              onClick={() => setCategoria("cuidados_diretos")}
+            >
+              Escala de Cuidadoras
+            </Chip>
+            <Chip active={categoria === "outros"} onClick={() => setCategoria("outros")}>
+              Outros setores
+            </Chip>
+          </div>
+
           <div className="flex flex-wrap items-center gap-2">
             <Chip active={visao === "semanal"} onClick={() => setVisao("semanal")}>Semanal</Chip>
             <Chip active={visao === "quinzenal"} onClick={() => setVisao("quinzenal")}>Quinzenal</Chip>
@@ -635,16 +663,22 @@ hr { border: 0; border-top: 1px dashed #bbb; margin: 1px 0; }
               <Label>Buscar colaborador</Label>
               <Input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Nome…" />
             </div>
-            <div className="space-y-1.5">
-              <Label>Setor</Label>
-              <Select value={fSetor} onValueChange={setFSetor}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  {SETORES.map((s) => <SelectItem key={s.chave} value={s.chave}>{s.nome}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            {categoria === "outros" ? (
+              <div className="space-y-1.5">
+                <Label>Setor</Label>
+                <Select value={fSetor} onValueChange={setFSetor}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    {SETORES.filter(
+                      (s) => s.chave !== "enfermagem" && s.chave !== "cuidados_diretos",
+                    ).map((s) => (
+                      <SelectItem key={s.chave} value={s.chave}>{s.nome}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : null}
             <div className="space-y-1.5">
               <Label>Turno</Label>
               <Select value={fTurno} onValueChange={setFTurno}>
