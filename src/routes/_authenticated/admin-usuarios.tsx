@@ -204,6 +204,27 @@ function AdminUsuarios() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const alterarEscala = useMutation({
+    mutationFn: async ({ userId, participa }: { userId: string; participa: boolean }) => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ na_escala: participa })
+        .eq("id", userId);
+      if (error) throw error;
+    },
+    onSuccess: (_d, v) => {
+      toast.success(
+        v.participa
+          ? "Profissional passa a constar na escala de trabalho"
+          : "Profissional retirado da escala de trabalho",
+      );
+      qc.invalidateQueries({ queryKey: ["profissionais-admin"] });
+      qc.invalidateQueries({ queryKey: ["profissionais-implantacao"] });
+      qc.invalidateQueries({ queryKey: ["escala-colaboradores"] });
+    },
+    onError: (e: Error) => toast.error(e.message || "Não foi possível alterar a escala"),
+  });
+
   const lista = useMemo(() => {
     let l = profissionais ?? [];
     const q = busca.trim().toLowerCase();
