@@ -237,7 +237,25 @@ function Implantacao() {
                           <Badge variant="secondary">Pendente</Badge>
                         )}
                       </td>
-                      <td className="p-3">{p.na_escala === false ? "Não participa" : "Sim"}</td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-2">
+                          <span>{p.na_escala === false ? "Não participa" : "Sim"}</span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="print:hidden"
+                            disabled={alterarEscala.isPending}
+                            onClick={() =>
+                              alterarEscala.mutate({
+                                userId: p.id,
+                                participa: p.na_escala === false,
+                              })
+                            }
+                          >
+                            {p.na_escala === false ? "Incluir" : "Retirar"}
+                          </Button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                   {lista.length === 0 ? (
