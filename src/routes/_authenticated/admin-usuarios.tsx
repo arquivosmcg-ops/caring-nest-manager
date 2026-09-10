@@ -371,6 +371,34 @@ function AdminUsuarios() {
                             ))}
                           </div>
                         </td>
+                        <td className="p-3">
+                          <div className="flex items-center gap-2">
+                            <Badge variant={p.na_escala === false ? "secondary" : "outline"}>
+                              {p.na_escala === false ? "Fora da escala" : "Na escala"}
+                            </Badge>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              disabled={alterarEscala.isPending}
+                              onClick={() =>
+                                alterarEscala.mutate({
+                                  userId: p.id,
+                                  participa: p.na_escala === false,
+                                })
+                              }
+                            >
+                              {p.na_escala === false ? (
+                                <>
+                                  <CalendarPlus className="size-4" /> Incluir
+                                </>
+                              ) : (
+                                <>
+                                  <CalendarX className="size-4" /> Retirar
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </td>
                         <td className="p-3 text-muted-foreground">{dataBr(p.created_at)}</td>
                         <td className="p-3 text-right">
                           <div className="flex justify-end gap-2">
