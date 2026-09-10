@@ -607,6 +607,21 @@ hr { border: 0; border-top: 1px dashed #bbb; margin: 1px 0; }
 
       {aba === "escala" && (
         <>
+          <div className="flex flex-wrap items-center gap-2 border-b border-border pb-3">
+            <Chip active={categoria === "enfermagem"} onClick={() => setCategoria("enfermagem")}>
+              Escala de Enfermagem
+            </Chip>
+            <Chip
+              active={categoria === "cuidados_diretos"}
+              onClick={() => setCategoria("cuidados_diretos")}
+            >
+              Escala de Cuidadoras
+            </Chip>
+            <Chip active={categoria === "outros"} onClick={() => setCategoria("outros")}>
+              Outros setores
+            </Chip>
+          </div>
+
           <div className="flex flex-wrap items-center gap-2">
             <Chip active={visao === "semanal"} onClick={() => setVisao("semanal")}>Semanal</Chip>
             <Chip active={visao === "quinzenal"} onClick={() => setVisao("quinzenal")}>Quinzenal</Chip>
