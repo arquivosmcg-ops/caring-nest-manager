@@ -123,6 +123,15 @@ function EscalaPage() {
   const podeEditar = !!perfil && (perfil.isAdmin || perfil.roles.includes("gerente"));
 
   const [aba, setAba] = useState<"escala" | "afastamentos" | "historico">("escala");
+  const [categoria, setCategoria] = useState<"enfermagem" | "cuidados_diretos" | "outros">(
+    "enfermagem",
+  );
+  const nomeCategoria =
+    categoria === "enfermagem"
+      ? "Enfermagem"
+      : categoria === "cuidados_diretos"
+        ? "Cuidadoras"
+        : "Outros setores";
   const [visao, setVisao] = useState<"semanal" | "quinzenal" | "mensal">("semanal");
   const [ancora, setAncora] = useState(iso(new Date()));
   const [busca, setBusca] = useState("");
