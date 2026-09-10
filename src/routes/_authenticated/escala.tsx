@@ -525,7 +525,7 @@ function EscalaPage() {
       { wch: 12 }, { wch: 8 }, { wch: 8 }, { wch: 7 }, { wch: 16 },
       { wch: 12 }, { wch: 30 },
     ];
-    XLSX.utils.book_append_sheet(wb, ws, "Escala");
+    XLSX.utils.book_append_sheet(wb, ws, nomeCategoria.slice(0, 28));
 
     // aba resumo por colaborador
     const resumo = linhas
@@ -544,7 +544,7 @@ function EscalaPage() {
       XLSX.utils.book_append_sheet(wb, ws2, "Resumo");
     }
 
-    XLSX.writeFile(wb, `escala-${de}-a-${ate}.xlsx`);
+    XLSX.writeFile(wb, `escala-${nomeCategoria.toLowerCase().replace(/\s+/g, "-")}-${de}-a-${ate}.xlsx`);
     toast.success("Planilha da escala gerada");
   }
 
@@ -572,7 +572,7 @@ function EscalaPage() {
     const w = window.open("", "_blank", "width=1200,height=800");
     if (!w) return;
     w.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"/>
-<title>Escala de Trabalho</title><style>
+<title>Escala de Trabalho — ${nomeCategoria}</title><style>
 @page { size: A4 landscape; margin: 10mm; }
 body { font-family: system-ui, sans-serif; color: #111; }
 h1 { font-size: 16pt; margin: 0 0 2mm; }
@@ -582,7 +582,7 @@ th, td { border: 1px solid #999; padding: 2px 3px; text-align: center; vertical-
 th.nome { text-align: left; width: 40mm; font-size: 8pt; }
 hr { border: 0; border-top: 1px dashed #bbb; margin: 1px 0; }
 </style></head><body>
-<h1>Escala de Trabalho — Residencial São Camilo</h1>
+<h1>Escala de Trabalho — ${nomeCategoria} — Residencial São Camilo</h1>
 <p class="sub">Período: ${dataCurta(de)} a ${dataCurta(ate)} — emitido em ${new Date().toLocaleString("pt-BR")}</p>
 <table><thead><tr><th class="nome">Colaborador</th>${head}</tr></thead><tbody>${linhasHtml}</tbody></table>
 </body></html>`);
