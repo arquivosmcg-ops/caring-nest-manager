@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ShieldCheck, ShieldMinus, ShieldPlus, Search, History, Trash2 } from "lucide-react";
+import { ShieldCheck, ShieldMinus, ShieldPlus, Search, History, Trash2, CalendarPlus, CalendarX } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { excluirProfissional } from "@/lib/admin-usuarios.functions";
 
