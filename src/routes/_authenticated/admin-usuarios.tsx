@@ -62,6 +62,7 @@ type Profissional = {
   aprovado: boolean;
   created_at: string;
   roles: string[];
+  na_escala?: boolean | null;
 };
 
 const roleLabels: Record<string, string> = {
