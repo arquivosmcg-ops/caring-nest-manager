@@ -238,7 +238,7 @@ function EscalaPage() {
         return false;
       return true;
     });
-  }, [todosTurnos, podeEditar, perfil?.userId, de, ate, fSetor, fTurno, fStatus, busca]);
+  }, [todosTurnos, podeEditar, perfil?.userId, de, ate, categoria, fSetor, fTurno, fStatus, busca]);
 
   const linhas = useMemo(() => {
     const map = new Map<string, string>();
