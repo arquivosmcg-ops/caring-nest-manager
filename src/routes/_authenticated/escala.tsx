@@ -663,16 +663,22 @@ hr { border: 0; border-top: 1px dashed #bbb; margin: 1px 0; }
               <Label>Buscar colaborador</Label>
               <Input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Nome…" />
             </div>
-            <div className="space-y-1.5">
-              <Label>Setor</Label>
-              <Select value={fSetor} onValueChange={setFSetor}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  {SETORES.map((s) => <SelectItem key={s.chave} value={s.chave}>{s.nome}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            {categoria === "outros" ? (
+              <div className="space-y-1.5">
+                <Label>Setor</Label>
+                <Select value={fSetor} onValueChange={setFSetor}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    {SETORES.filter(
+                      (s) => s.chave !== "enfermagem" && s.chave !== "cuidados_diretos",
+                    ).map((s) => (
+                      <SelectItem key={s.chave} value={s.chave}>{s.nome}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : null}
             <div className="space-y-1.5">
               <Label>Turno</Label>
               <Select value={fTurno} onValueChange={setFTurno}>
