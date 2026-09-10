@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ShieldCheck, ShieldMinus, ShieldPlus, Search, History, Trash2 } from "lucide-react";
+import { ShieldCheck, ShieldMinus, ShieldPlus, Search, History, Trash2, CalendarPlus, CalendarX } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { excluirProfissional } from "@/lib/admin-usuarios.functions";
 
@@ -62,6 +62,7 @@ type Profissional = {
   aprovado: boolean;
   created_at: string;
   roles: string[];
+  na_escala?: boolean | null;
 };
 
 const roleLabels: Record<string, string> = {
@@ -203,6 +204,27 @@ function AdminUsuarios() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const alterarEscala = useMutation({
+    mutationFn: async ({ userId, participa }: { userId: string; participa: boolean }) => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ na_escala: participa })
+        .eq("id", userId);
+      if (error) throw error;
+    },
+    onSuccess: (_d, v) => {
+      toast.success(
+        v.participa
+          ? "Profissional passa a constar na escala de trabalho"
+          : "Profissional retirado da escala de trabalho",
+      );
+      qc.invalidateQueries({ queryKey: ["profissionais-admin"] });
+      qc.invalidateQueries({ queryKey: ["profissionais-implantacao"] });
+      qc.invalidateQueries({ queryKey: ["escala-colaboradores"] });
+    },
+    onError: (e: Error) => toast.error(e.message || "Não foi possível alterar a escala"),
+  });
+
   const lista = useMemo(() => {
     let l = profissionais ?? [];
     const q = busca.trim().toLowerCase();
@@ -314,6 +336,7 @@ function AdminUsuarios() {
                     <th className="text-left font-bold p-3">E-mail</th>
                     <th className="text-left font-bold p-3">Situação</th>
                     <th className="text-left font-bold p-3">Perfil atual</th>
+                    <th className="text-left font-bold p-3">Escala de trabalho</th>
                     <th className="text-left font-bold p-3">Cadastro</th>
                     <th className="text-right font-bold p-3">Ações</th>
                   </tr>
@@ -346,6 +369,34 @@ function AdminUsuarios() {
                                 {roleLabels[r] ?? r}
                               </Badge>
                             ))}
+                          </div>
+                        </td>
+                        <td className="p-3">
+                          <div className="flex items-center gap-2">
+                            <Badge variant={p.na_escala === false ? "secondary" : "outline"}>
+                              {p.na_escala === false ? "Fora da escala" : "Na escala"}
+                            </Badge>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              disabled={alterarEscala.isPending}
+                              onClick={() =>
+                                alterarEscala.mutate({
+                                  userId: p.id,
+                                  participa: p.na_escala === false,
+                                })
+                              }
+                            >
+                              {p.na_escala === false ? (
+                                <>
+                                  <CalendarPlus className="size-4" /> Incluir
+                                </>
+                              ) : (
+                                <>
+                                  <CalendarX className="size-4" /> Retirar
+                                </>
+                              )}
+                            </Button>
                           </div>
                         </td>
                         <td className="p-3 text-muted-foreground">{dataBr(p.created_at)}</td>

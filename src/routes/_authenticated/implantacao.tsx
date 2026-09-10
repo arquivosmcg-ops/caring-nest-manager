@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -66,6 +67,29 @@ function Implantacao() {
       if (error) throw error;
       return (data ?? []) as Profissional[];
     },
+  });
+
+  const qc = useQueryClient();
+
+  const alterarEscala = useMutation({
+    mutationFn: async ({ userId, participa }: { userId: string; participa: boolean }) => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ na_escala: participa })
+        .eq("id", userId);
+      if (error) throw error;
+    },
+    onSuccess: (_d, v) => {
+      toast.success(
+        v.participa
+          ? "Profissional incluído na escala de trabalho"
+          : "Profissional retirado da escala de trabalho",
+      );
+      qc.invalidateQueries({ queryKey: ["profissionais-implantacao"] });
+      qc.invalidateQueries({ queryKey: ["profissionais-admin"] });
+      qc.invalidateQueries({ queryKey: ["escala-colaboradores"] });
+    },
+    onError: (e: Error) => toast.error(e.message || "Não foi possível alterar a escala"),
   });
 
   const lista = profissionais ?? [];
@@ -237,7 +261,25 @@ function Implantacao() {
                           <Badge variant="secondary">Pendente</Badge>
                         )}
                       </td>
-                      <td className="p-3">{p.na_escala === false ? "Não participa" : "Sim"}</td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-2">
+                          <span>{p.na_escala === false ? "Não participa" : "Sim"}</span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="print:hidden"
+                            disabled={alterarEscala.isPending}
+                            onClick={() =>
+                              alterarEscala.mutate({
+                                userId: p.id,
+                                participa: p.na_escala === false,
+                              })
+                            }
+                          >
+                            {p.na_escala === false ? "Incluir" : "Retirar"}
+                          </Button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                   {lista.length === 0 ? (
