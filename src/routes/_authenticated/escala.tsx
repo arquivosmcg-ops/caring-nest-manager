@@ -466,6 +466,7 @@ function EscalaPage() {
     if (!podeEditar) return;
     setDialogTurno({
       ...VAZIO,
+      setor: categoria === "outros" ? (fSetor !== "todos" ? fSetor : "cozinha") : categoria,
       colaborador_id: colaboradorId ?? "",
       data: data ?? ancora,
       repetirSemanas: 1,
