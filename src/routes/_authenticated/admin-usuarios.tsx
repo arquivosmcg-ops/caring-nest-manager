@@ -336,6 +336,7 @@ function AdminUsuarios() {
                     <th className="text-left font-bold p-3">E-mail</th>
                     <th className="text-left font-bold p-3">Situação</th>
                     <th className="text-left font-bold p-3">Perfil atual</th>
+                    <th className="text-left font-bold p-3">Escala de trabalho</th>
                     <th className="text-left font-bold p-3">Cadastro</th>
                     <th className="text-right font-bold p-3">Ações</th>
                   </tr>
