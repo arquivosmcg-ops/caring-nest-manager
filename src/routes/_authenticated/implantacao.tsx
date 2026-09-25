@@ -101,7 +101,26 @@ function Implantacao() {
     const naEscala = aprovados.filter((p) => p.na_escala !== false);
     const semContato = aprovados.filter((p) => !p.celular);
     const semCategoria = aprovados.filter((p) => !p.funcao);
-    return { aprovados, pendentes, recusados, naEscala, semContato, semCategoria };
+    const ehEnfermeira = (p: Profissional) =>
+      (p.funcao ?? "").toLowerCase().includes("enferm");
+    const ehCuidadora = (p: Profissional) =>
+      (p.funcao ?? "").toLowerCase().includes("cuidador");
+    const enfermeiras = naEscala.filter(ehEnfermeira);
+    const cuidadoras = naEscala.filter(ehCuidadora);
+    const enfermeirasPendentes = pendentes.filter(ehEnfermeira).length;
+    const cuidadorasPendentes = pendentes.filter(ehCuidadora).length;
+    return {
+      aprovados,
+      pendentes,
+      recusados,
+      naEscala,
+      semContato,
+      semCategoria,
+      enfermeiras,
+      cuidadoras,
+      enfermeirasPendentes,
+      cuidadorasPendentes,
+    };
   }, [lista]);
 
   const totalEsperado = Number(meta) > 0 ? Number(meta) : null;
