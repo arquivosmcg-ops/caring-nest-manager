@@ -101,7 +101,26 @@ function Implantacao() {
     const naEscala = aprovados.filter((p) => p.na_escala !== false);
     const semContato = aprovados.filter((p) => !p.celular);
     const semCategoria = aprovados.filter((p) => !p.funcao);
-    return { aprovados, pendentes, recusados, naEscala, semContato, semCategoria };
+    const ehEnfermeira = (p: Profissional) =>
+      (p.funcao ?? "").toLowerCase().includes("enferm");
+    const ehCuidadora = (p: Profissional) =>
+      (p.funcao ?? "").toLowerCase().includes("cuidador");
+    const enfermeiras = naEscala.filter(ehEnfermeira);
+    const cuidadoras = naEscala.filter(ehCuidadora);
+    const enfermeirasPendentes = pendentes.filter(ehEnfermeira).length;
+    const cuidadorasPendentes = pendentes.filter(ehCuidadora).length;
+    return {
+      aprovados,
+      pendentes,
+      recusados,
+      naEscala,
+      semContato,
+      semCategoria,
+      enfermeiras,
+      cuidadoras,
+      enfermeirasPendentes,
+      cuidadorasPendentes,
+    };
   }, [lista]);
 
   const totalEsperado = Number(meta) > 0 ? Number(meta) : null;
@@ -228,6 +247,55 @@ function Implantacao() {
               </ul>
             </CardContent>
           </Card>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            {(
+              [
+                {
+                  titulo: "Escala de Enfermagem",
+                  equipe: resumo.enfermeiras,
+                  pendentes: resumo.enfermeirasPendentes,
+                },
+                {
+                  titulo: "Escala de Cuidadoras",
+                  equipe: resumo.cuidadoras,
+                  pendentes: resumo.cuidadorasPendentes,
+                },
+              ] as const
+            ).map((grupo) => {
+              const pronta = grupo.equipe.length > 0 && grupo.pendentes === 0;
+              return (
+                <Card key={grupo.titulo} className={pronta ? "border-primary" : undefined}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      {pronta ? (
+                        <CheckCircle2 className="h-5 w-5 text-primary" />
+                      ) : (
+                        <AlertCircle className="h-5 w-5 text-amber-500" />
+                      )}
+                      {grupo.titulo}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm">
+                    <p>
+                      <span className="font-medium">{grupo.equipe.length}</span>{" "}
+                      profissionais aprovadas e marcadas para a escala
+                    </p>
+                    {grupo.pendentes > 0 ? (
+                      <p className="text-amber-600">
+                        {grupo.pendentes} cadastro(s) desta equipe aguardando aprovação
+                      </p>
+                    ) : null}
+                    <p className={pronta ? "font-medium text-primary" : "text-muted-foreground"}>
+                      {pronta
+                        ? `Equipe completa — a ${grupo.titulo.toLowerCase()} já pode ser montada.`
+                        : "Equipe ainda incompleta para iniciar a escala mensal."}
+                    </p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
 
           <Card>
             <CardHeader className="pb-3">
