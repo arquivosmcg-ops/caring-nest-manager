@@ -30,6 +30,7 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { usePerfilAtual } from "@/hooks/use-perfil";
 import { AlertasSino } from "@/components/alertas-sino";
+import { AlertasEquipe } from "@/components/alertas-equipe";
 
 const navItems = [
   { to: "/dashboard", label: "Painel Geral", icon: LayoutDashboard, multi: false },
@@ -199,6 +200,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
+            <AlertasEquipe />
             <AlertasSino />
             <button
               onClick={() => toast.error("Alerta de emergência disparado à equipe", { duration: 4000 })}
