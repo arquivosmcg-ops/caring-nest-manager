@@ -248,6 +248,55 @@ function Implantacao() {
             </CardContent>
           </Card>
 
+          <div className="grid gap-4 md:grid-cols-2">
+            {(
+              [
+                {
+                  titulo: "Escala de Enfermagem",
+                  equipe: resumo.enfermeiras,
+                  pendentes: resumo.enfermeirasPendentes,
+                },
+                {
+                  titulo: "Escala de Cuidadoras",
+                  equipe: resumo.cuidadoras,
+                  pendentes: resumo.cuidadorasPendentes,
+                },
+              ] as const
+            ).map((grupo) => {
+              const pronta = grupo.equipe.length > 0 && grupo.pendentes === 0;
+              return (
+                <Card key={grupo.titulo} className={pronta ? "border-primary" : undefined}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      {pronta ? (
+                        <CheckCircle2 className="h-5 w-5 text-primary" />
+                      ) : (
+                        <AlertCircle className="h-5 w-5 text-amber-500" />
+                      )}
+                      {grupo.titulo}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm">
+                    <p>
+                      <span className="font-medium">{grupo.equipe.length}</span>{" "}
+                      profissionais aprovadas e marcadas para a escala
+                    </p>
+                    {grupo.pendentes > 0 ? (
+                      <p className="text-amber-600">
+                        {grupo.pendentes} cadastro(s) desta equipe aguardando aprovação
+                      </p>
+                    ) : null}
+                    <p className={pronta ? "font-medium text-primary" : "text-muted-foreground"}>
+                      {pronta
+                        ? `Equipe completa — a ${grupo.titulo.toLowerCase()} já pode ser montada.`
+                        : "Equipe ainda incompleta para iniciar a escala mensal."}
+                    </p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-base">
