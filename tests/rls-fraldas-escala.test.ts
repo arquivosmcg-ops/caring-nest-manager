@@ -23,7 +23,7 @@ const headers = { apikey: KEY, Authorization: `Bearer ${KEY}`, "Content-Type": "
 type Pol = { cmd: string; roles: string; qual: string; check: string };
 function politicas(tabela: string): Pol[] {
   const out = execSync(
-    `psql -At -F '|~|' -c "select cmd, roles::text, coalesce(qual,''), coalesce(with_check,'') from pg_policies where schemaname='public' and tablename='${tabela}'"`,
+    `psql -At -F '|~|' -c "select cmd, roles::text, regexp_replace(coalesce(qual,''),'\s+',' ','g'), regexp_replace(coalesce(with_check,''),'\s+',' ','g') from pg_policies where schemaname='public' and tablename='${tabela}'"`,
     { encoding: "utf8" },
   );
   return out.trim().split("\n").filter(Boolean).map((l) => {
