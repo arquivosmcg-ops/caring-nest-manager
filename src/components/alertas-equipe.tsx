@@ -33,6 +33,23 @@ export function AlertasEquipe() {
     },
   });
 
+  const { data: dispensas } = useQuery({
+    queryKey: ["alertas-equipe-dispensados"],
+    enabled: isAdmin,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("alertas_equipe_dispensados")
+        .select("alerta_chave");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const chavesDispensadas = useMemo(
+    () => new Set((dispensas ?? []).map((d) => d.alerta_chave)),
+    [dispensas],
+  );
+
   const avisos = useMemo(() => {
     const lista = data ?? [];
     const pendentes = lista.filter((p) => p.status_aprovacao === "pendente");
