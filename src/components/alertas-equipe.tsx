@@ -33,13 +33,38 @@ export function AlertasEquipe() {
     },
   });
 
+  const { data: dispensas } = useQuery({
+    queryKey: ["alertas-equipe-dispensados"],
+    enabled: isAdmin,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("alertas_equipe_dispensados")
+        .select("alerta_chave");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const chavesDispensadas = useMemo(
+    () => new Set((dispensas ?? []).map((d) => d.alerta_chave)),
+    [dispensas],
+  );
+
   const avisos = useMemo(() => {
     const lista = data ?? [];
-    const pendentes = lista.filter((p) => p.status_aprovacao === "pendente");
+    const pendentes = lista.filter(
+      (p) => p.status_aprovacao === "pendente" && !chavesDispensadas.has(`aprovacao:${p.id}`),
+    );
     const aprovados = lista.filter((p) => p.aprovado);
-    const semFuncao = aprovados.filter((p) => !p.funcao);
-    const foraEnfermagem = aprovados.filter((p) => ehEnfermeira(p) && p.na_escala === false);
-    const foraCuidadoras = aprovados.filter((p) => ehCuidadora(p) && p.na_escala === false);
+    const semFuncao = aprovados.filter(
+      (p) => !p.funcao && !chavesDispensadas.has(`funcao:${p.id}`),
+    );
+    const foraEnfermagem = aprovados.filter(
+      (p) => ehEnfermeira(p) && p.na_escala === false && !chavesDispensadas.has(`escala-enfermagem:${p.id}`),
+    );
+    const foraCuidadoras = aprovados.filter(
+      (p) => ehCuidadora(p) && p.na_escala === false && !chavesDispensadas.has(`escala-cuidadoras:${p.id}`),
+    );
 
     const itens: { texto: string; detalhe: string; to: string }[] = [];
     if (pendentes.length > 0)
@@ -67,7 +92,7 @@ export function AlertasEquipe() {
         to: "/implantacao",
       });
     return itens;
-  }, [data]);
+  }, [data, chavesDispensadas]);
 
   if (!isAdmin) return null;
 
@@ -106,6 +131,12 @@ export function AlertasEquipe() {
             </Link>
           ))}
         </div>
+        <Link
+          to="/alertas-equipe"
+          className="block p-3 border-t border-border text-center text-xs font-bold text-primary hover:bg-muted"
+        >
+          Abrir Central de Alertas
+        </Link>
       </PopoverContent>
     </Popover>
   );

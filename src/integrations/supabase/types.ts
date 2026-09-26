@@ -194,6 +194,30 @@ export type Database = {
           },
         ]
       }
+      alertas_equipe_dispensados: {
+        Row: {
+          alerta_chave: string
+          dispensado_em: string
+          dispensado_por: string | null
+          dispensado_por_nome: string | null
+          id: string
+        }
+        Insert: {
+          alerta_chave: string
+          dispensado_em?: string
+          dispensado_por?: string | null
+          dispensado_por_nome?: string | null
+          id?: string
+        }
+        Update: {
+          alerta_chave?: string
+          dispensado_em?: string
+          dispensado_por?: string | null
+          dispensado_por_nome?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
       assinaturas: {
         Row: {
           categoria_profissional: string

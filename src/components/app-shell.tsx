@@ -22,6 +22,7 @@ import {
   LogOut,
   Menu,
   CalendarDays,
+  BellRing,
 } from "lucide-react";
 import logoAsset from "@/assets/logo_instituto_maior.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,6 +56,7 @@ const navItems = [
 
   { to: "/admin-aprovacoes", label: "Área Admin", icon: ShieldCheck, multi: false },
   { to: "/implantacao", label: "Checklist de Implantação", icon: ClipboardCheck, multi: false, adminOnly: true },
+  { to: "/alertas-equipe", label: "Central de Alertas", icon: BellRing, multi: false, adminOnly: true },
   { to: "/admin-usuarios", label: "Gerenciar Administradores", icon: UserCog, multi: false, adminOnly: true },
 ] as const;
 
