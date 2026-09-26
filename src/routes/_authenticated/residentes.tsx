@@ -153,6 +153,7 @@ type Residente = {
   motivo_rescisao: MotivoRescisao | null;
   instituicao_destino: string | null;
   observacoes_rescisao: string | null;
+  dias_alerta_sem_visita: number | null;
   quartos: { numero: string } | null;
 };
 
@@ -199,6 +200,7 @@ type ResidenteFormValues = {
   motivo_rescisao: MotivoRescisao | null;
   instituicao_destino: string | null;
   observacoes_rescisao: string | null;
+  dias_alerta_sem_visita: number | null;
 };
 
 
@@ -314,6 +316,7 @@ function ResidenteForm({
       instituicao_destino:
         dataRescisao && motivoRescisao === "transferencia" ? (fd.get("instituicao_destino") as string) || null : null,
       observacoes_rescisao: dataRescisao ? (fd.get("observacoes_rescisao") as string) || null : null,
+      dias_alerta_sem_visita: num("dias_alerta_sem_visita"),
     }, fotoFile);
   };
 
@@ -601,6 +604,21 @@ function ResidenteForm({
       <div className="col-span-2">
         <Label>Observações</Label>
         <TextareaDitavel name="observacoes" rows={3} defaultValue={residente?.observacoes ?? ""} />
+      </div>
+
+      <div className="col-span-2">
+        <Label>Alerta de falta de visitas (dias sem visita)</Label>
+        <Input
+          name="dias_alerta_sem_visita"
+          type="number"
+          min={1}
+          max={365}
+          defaultValue={residente?.dias_alerta_sem_visita ?? ""}
+          placeholder="30 (padrão)"
+        />
+        <p className="text-xs text-muted-foreground mt-1">
+          Deixe em branco para usar o padrão de 30 dias. Um alerta é gerado quando o residente ficar mais tempo que isso sem receber visitas.
+        </p>
       </div>
 
       <div className="col-span-2 flex justify-end gap-2 pt-2">
