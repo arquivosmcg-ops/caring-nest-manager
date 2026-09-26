@@ -19,6 +19,7 @@ import { Route as AuthenticatedVisitasRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedSinaisVitaisRouteImport } from './routes/_authenticated/sinais-vitais'
 import { Route as AuthenticatedSaeRouteImport } from './routes/_authenticated/sae'
 import { Route as AuthenticatedResidentesRouteImport } from './routes/_authenticated/residentes'
+import { Route as AuthenticatedRelatorioVisitasRouteImport } from './routes/_authenticated/relatorio-visitas'
 import { Route as AuthenticatedReceituarioRouteImport } from './routes/_authenticated/receituario'
 import { Route as AuthenticatedRecebimentoItensRouteImport } from './routes/_authenticated/recebimento-itens'
 import { Route as AuthenticatedRecebimentoFraldasRouteImport } from './routes/_authenticated/recebimento-fraldas'
@@ -89,6 +90,12 @@ const AuthenticatedResidentesRoute = AuthenticatedResidentesRouteImport.update({
   path: '/residentes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedRelatorioVisitasRoute =
+  AuthenticatedRelatorioVisitasRouteImport.update({
+    id: '/relatorio-visitas',
+    path: '/relatorio-visitas',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedReceituarioRoute =
   AuthenticatedReceituarioRouteImport.update({
     id: '/receituario',
@@ -221,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/recebimento-fraldas': typeof AuthenticatedRecebimentoFraldasRoute
   '/recebimento-itens': typeof AuthenticatedRecebimentoItensRoute
   '/receituario': typeof AuthenticatedReceituarioRoute
+  '/relatorio-visitas': typeof AuthenticatedRelatorioVisitasRoute
   '/residentes': typeof AuthenticatedResidentesRoute
   '/sae': typeof AuthenticatedSaeRoute
   '/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
@@ -251,6 +259,7 @@ export interface FileRoutesByTo {
   '/recebimento-fraldas': typeof AuthenticatedRecebimentoFraldasRoute
   '/recebimento-itens': typeof AuthenticatedRecebimentoItensRoute
   '/receituario': typeof AuthenticatedReceituarioRoute
+  '/relatorio-visitas': typeof AuthenticatedRelatorioVisitasRoute
   '/residentes': typeof AuthenticatedResidentesRoute
   '/sae': typeof AuthenticatedSaeRoute
   '/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
@@ -283,6 +292,7 @@ export interface FileRoutesById {
   '/_authenticated/recebimento-fraldas': typeof AuthenticatedRecebimentoFraldasRoute
   '/_authenticated/recebimento-itens': typeof AuthenticatedRecebimentoItensRoute
   '/_authenticated/receituario': typeof AuthenticatedReceituarioRoute
+  '/_authenticated/relatorio-visitas': typeof AuthenticatedRelatorioVisitasRoute
   '/_authenticated/residentes': typeof AuthenticatedResidentesRoute
   '/_authenticated/sae': typeof AuthenticatedSaeRoute
   '/_authenticated/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
@@ -315,6 +325,7 @@ export interface FileRouteTypes {
     | '/recebimento-fraldas'
     | '/recebimento-itens'
     | '/receituario'
+    | '/relatorio-visitas'
     | '/residentes'
     | '/sae'
     | '/sinais-vitais'
@@ -345,6 +356,7 @@ export interface FileRouteTypes {
     | '/recebimento-fraldas'
     | '/recebimento-itens'
     | '/receituario'
+    | '/relatorio-visitas'
     | '/residentes'
     | '/sae'
     | '/sinais-vitais'
@@ -376,6 +388,7 @@ export interface FileRouteTypes {
     | '/_authenticated/recebimento-fraldas'
     | '/_authenticated/recebimento-itens'
     | '/_authenticated/receituario'
+    | '/_authenticated/relatorio-visitas'
     | '/_authenticated/residentes'
     | '/_authenticated/sae'
     | '/_authenticated/sinais-vitais'
@@ -462,6 +475,13 @@ declare module '@tanstack/react-router' {
       path: '/residentes'
       fullPath: '/residentes'
       preLoaderRoute: typeof AuthenticatedResidentesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/relatorio-visitas': {
+      id: '/_authenticated/relatorio-visitas'
+      path: '/relatorio-visitas'
+      fullPath: '/relatorio-visitas'
+      preLoaderRoute: typeof AuthenticatedRelatorioVisitasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/receituario': {
@@ -620,6 +640,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRecebimentoFraldasRoute: typeof AuthenticatedRecebimentoFraldasRoute
   AuthenticatedRecebimentoItensRoute: typeof AuthenticatedRecebimentoItensRoute
   AuthenticatedReceituarioRoute: typeof AuthenticatedReceituarioRoute
+  AuthenticatedRelatorioVisitasRoute: typeof AuthenticatedRelatorioVisitasRoute
   AuthenticatedResidentesRoute: typeof AuthenticatedResidentesRoute
   AuthenticatedSaeRoute: typeof AuthenticatedSaeRoute
   AuthenticatedSinaisVitaisRoute: typeof AuthenticatedSinaisVitaisRoute
@@ -648,6 +669,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRecebimentoFraldasRoute: AuthenticatedRecebimentoFraldasRoute,
   AuthenticatedRecebimentoItensRoute: AuthenticatedRecebimentoItensRoute,
   AuthenticatedReceituarioRoute: AuthenticatedReceituarioRoute,
+  AuthenticatedRelatorioVisitasRoute: AuthenticatedRelatorioVisitasRoute,
   AuthenticatedResidentesRoute: AuthenticatedResidentesRoute,
   AuthenticatedSaeRoute: AuthenticatedSaeRoute,
   AuthenticatedSinaisVitaisRoute: AuthenticatedSinaisVitaisRoute,

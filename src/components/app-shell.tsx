@@ -23,6 +23,7 @@ import {
   Menu,
   CalendarDays,
   BellRing,
+  HeartHandshake,
 } from "lucide-react";
 import logoAsset from "@/assets/logo_instituto_maior.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
