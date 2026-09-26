@@ -92,7 +92,7 @@ export function AlertasEquipe() {
         to: "/implantacao",
       });
     return itens;
-  }, [data]);
+  }, [data, chavesDispensadas]);
 
   if (!isAdmin) return null;
 
