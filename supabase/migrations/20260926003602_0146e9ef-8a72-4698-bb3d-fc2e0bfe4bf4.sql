@@ -1,0 +1,1 @@
+ALTER TABLE public.residentes ADD COLUMN IF NOT EXISTS dias_alerta_sem_visita integer;
