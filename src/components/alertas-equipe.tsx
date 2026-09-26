@@ -1,98 +1,35 @@
 import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { UserCog } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { usePerfilAtual } from "@/hooks/use-perfil";
+import { useAlertasEquipe, type CategoriaAlerta } from "@/hooks/use-alertas-equipe";
 
-type Profissional = {
-  id: string;
-  full_name: string;
-  funcao: string | null;
-  status_aprovacao: string;
-  aprovado: boolean;
-  na_escala: boolean | null;
+const ROTULOS: Record<CategoriaAlerta, string> = {
+  aprovacao: "cadastro(s) aguardando aprovação",
+  funcao: "profissional(is) sem função definida",
+  escala_enfermagem: "enfermeira(s) fora da escala",
+  escala_cuidadoras: "cuidadora(s) fora da escala",
+  sem_visita: "residente(s) sem visita há +1 mês",
 };
 
-const ehEnfermeira = (p: Profissional) => (p.funcao ?? "").toLowerCase().includes("enferm");
-const ehCuidadora = (p: Profissional) => (p.funcao ?? "").toLowerCase().includes("cuidador");
-
 export function AlertasEquipe() {
-  const perfil = usePerfilAtual().data;
-  const isAdmin = !!perfil?.isAdmin;
-
-  const { data } = useQuery({
-    queryKey: ["alertas-equipe"],
-    enabled: isAdmin,
-    refetchInterval: 120_000,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("listar_profissionais");
-      if (error) throw error;
-      return (data ?? []) as Profissional[];
-    },
-  });
-
-  const { data: dispensas } = useQuery({
-    queryKey: ["alertas-equipe-dispensados"],
-    enabled: isAdmin,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("alertas_equipe_dispensados")
-        .select("alerta_chave");
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
-
-  const chavesDispensadas = useMemo(
-    () => new Set((dispensas ?? []).map((d) => d.alerta_chave)),
-    [dispensas],
-  );
+  const { isAdmin, alertas, mapaDispensas } = useAlertasEquipe();
 
   const avisos = useMemo(() => {
-    const lista = data ?? [];
-    const pendentes = lista.filter(
-      (p) => p.status_aprovacao === "pendente" && !chavesDispensadas.has(`aprovacao:${p.id}`),
-    );
-    const aprovados = lista.filter((p) => p.aprovado);
-    const semFuncao = aprovados.filter(
-      (p) => !p.funcao && !chavesDispensadas.has(`funcao:${p.id}`),
-    );
-    const foraEnfermagem = aprovados.filter(
-      (p) => ehEnfermeira(p) && p.na_escala === false && !chavesDispensadas.has(`escala-enfermagem:${p.id}`),
-    );
-    const foraCuidadoras = aprovados.filter(
-      (p) => ehCuidadora(p) && p.na_escala === false && !chavesDispensadas.has(`escala-cuidadoras:${p.id}`),
-    );
-
-    const itens: { texto: string; detalhe: string; to: string }[] = [];
-    if (pendentes.length > 0)
-      itens.push({
-        texto: `${pendentes.length} cadastro(s) aguardando aprovação`,
-        detalhe: pendentes.map((p) => p.full_name).join(", "),
-        to: "/admin-aprovacoes",
-      });
-    if (semFuncao.length > 0)
-      itens.push({
-        texto: `${semFuncao.length} profissional(is) sem função definida`,
-        detalhe: semFuncao.map((p) => p.full_name).join(", "),
-        to: "/admin-usuarios",
-      });
-    if (foraEnfermagem.length > 0)
-      itens.push({
-        texto: `${foraEnfermagem.length} enfermeira(s) fora da escala`,
-        detalhe: foraEnfermagem.map((p) => p.full_name).join(", "),
-        to: "/implantacao",
-      });
-    if (foraCuidadoras.length > 0)
-      itens.push({
-        texto: `${foraCuidadoras.length} cuidadora(s) fora da escala`,
-        detalhe: foraCuidadoras.map((p) => p.full_name).join(", "),
-        to: "/implantacao",
-      });
-    return itens;
-  }, [data, chavesDispensadas]);
+    const ativos = alertas.filter((a) => !mapaDispensas.has(a.chave));
+    const grupos = new Map<CategoriaAlerta, { nomes: string[]; to: string }>();
+    for (const a of ativos) {
+      const nome = a.titulo.split(" aguarda")[0].split(" está")[0];
+      const g = grupos.get(a.categoria) ?? { nomes: [], to: a.to };
+      g.nomes.push(nome);
+      grupos.set(a.categoria, g);
+    }
+    return [...grupos.entries()].map(([cat, g]) => ({
+      texto: `${g.nomes.length} ${ROTULOS[cat]}`,
+      detalhe: g.nomes.join(", "),
+      to: g.to,
+    }));
+  }, [alertas, mapaDispensas]);
 
   if (!isAdmin) return null;
 
@@ -119,7 +56,7 @@ export function AlertasEquipe() {
         <div className="max-h-80 overflow-y-auto divide-y divide-border">
           {avisos.length === 0 && (
             <p className="p-4 text-xs text-muted-foreground">
-              Nenhuma pendência: equipe aprovada, com função e escalas definidas.
+              Nenhuma pendência: equipe aprovada, com função, escalas definidas e visitas em dia.
             </p>
           )}
           {avisos.map((a) => (

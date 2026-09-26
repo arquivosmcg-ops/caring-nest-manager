@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { BellOff, BellRing, CheckCircle2, RotateCcw, ShieldAlert, UserCheck, UserCog, Users } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { BellOff, BellRing, CheckCircle2, HeartHandshake, RotateCcw, ShieldAlert, UserCheck, UserCog, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePerfilAtual } from "@/hooks/use-perfil";
+import { useAlertasEquipe, type AlertaEquipe, type CategoriaAlerta } from "@/hooks/use-alertas-equipe";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -11,9 +12,9 @@ export const Route = createFileRoute("/_authenticated/alertas-equipe")({
   head: () => ({
     meta: [
       { title: "Central de Alertas da Equipe — Residencial São Camilo" },
-      { name: "description", content: "Central de alertas administrativos: aprovações pendentes, funções não definidas e inclusão nas escalas." },
+      { name: "description", content: "Central de alertas administrativos: aprovações pendentes, funções não definidas, escalas e visitas em atraso." },
       { property: "og:title", content: "Central de Alertas da Equipe — Residencial São Camilo" },
-      { property: "og:description", content: "Visualize, filtre e dispense pendências da equipe." },
+      { property: "og:description", content: "Visualize, filtre e dispense pendências da equipe e dos residentes." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -21,118 +22,22 @@ export const Route = createFileRoute("/_authenticated/alertas-equipe")({
   component: CentralAlertasEquipe,
 });
 
-type Profissional = {
-  id: string;
-  full_name: string;
-  funcao: string | null;
-  status_aprovacao: string;
-  aprovado: boolean;
-  na_escala: boolean | null;
-};
-
-type Categoria = "aprovacao" | "funcao" | "escala_enfermagem" | "escala_cuidadoras";
-
-type Alerta = {
-  chave: string;
-  categoria: Categoria;
-  titulo: string;
-  detalhe: string;
-  to: string;
-};
-
-const CATEGORIAS: { valor: Categoria; rotulo: string; icone: typeof UserCheck }[] = [
+const CATEGORIAS: { valor: CategoriaAlerta; rotulo: string; icone: typeof UserCheck }[] = [
   { valor: "aprovacao", rotulo: "Aprovação pendente", icone: UserCheck },
   { valor: "funcao", rotulo: "Função não definida", icone: UserCog },
   { valor: "escala_enfermagem", rotulo: "Fora da escala de enfermagem", icone: ShieldAlert },
   { valor: "escala_cuidadoras", rotulo: "Fora da escala de cuidadoras", icone: Users },
+  { valor: "sem_visita", rotulo: "Residente sem visita +1 mês", icone: HeartHandshake },
 ];
-
-const ehEnfermeira = (p: Profissional) => (p.funcao ?? "").toLowerCase().includes("enferm");
-const ehCuidadora = (p: Profissional) => (p.funcao ?? "").toLowerCase().includes("cuidador");
-
-function montarAlertas(lista: Profissional[]): Alerta[] {
-  const alertas: Alerta[] = [];
-  for (const p of lista) {
-    if (p.status_aprovacao === "pendente") {
-      alertas.push({
-        chave: `aprovacao:${p.id}`,
-        categoria: "aprovacao",
-        titulo: `${p.full_name} aguarda aprovação de cadastro`,
-        detalhe: "Aprove ou recuse o cadastro na Área Admin.",
-        to: "/admin-aprovacoes",
-      });
-      continue;
-    }
-    if (!p.aprovado) continue;
-    if (!p.funcao) {
-      alertas.push({
-        chave: `funcao:${p.id}`,
-        categoria: "funcao",
-        titulo: `${p.full_name} está sem função definida`,
-        detalhe: "Defina a função para classificar a escala correta.",
-        to: "/admin-usuarios",
-      });
-    }
-    if (ehEnfermeira(p) && p.na_escala === false) {
-      alertas.push({
-        chave: `escala-enfermagem:${p.id}`,
-        categoria: "escala_enfermagem",
-        titulo: `${p.full_name} (enfermagem) está fora da escala`,
-        detalhe: "Inclua na escala de enfermagem ou confirme a exclusão.",
-        to: "/implantacao",
-      });
-    }
-    if (ehCuidadora(p) && p.na_escala === false) {
-      alertas.push({
-        chave: `escala-cuidadoras:${p.id}`,
-        categoria: "escala_cuidadoras",
-        titulo: `${p.full_name} (cuidadora) está fora da escala`,
-        detalhe: "Inclua na escala de cuidadoras ou confirme a exclusão.",
-        to: "/implantacao",
-      });
-    }
-  }
-  return alertas;
-}
 
 function CentralAlertasEquipe() {
   const perfil = usePerfilAtual().data;
-  const isAdmin = !!perfil?.isAdmin;
+  const { isAdmin, alertas, mapaDispensas } = useAlertasEquipe();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [filtroCategoria, setFiltroCategoria] = useState<Categoria | "todas">("todas");
+  const [filtroCategoria, setFiltroCategoria] = useState<CategoriaAlerta | "todas">("todas");
   const [filtroStatus, setFiltroStatus] = useState<"pendentes" | "dispensados" | "todos">("pendentes");
   const [busca, setBusca] = useState("");
-
-  const { data: profissionais } = useQuery({
-    queryKey: ["alertas-equipe"],
-    enabled: isAdmin,
-    refetchInterval: 120_000,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("listar_profissionais");
-      if (error) throw error;
-      return (data ?? []) as Profissional[];
-    },
-  });
-
-  const { data: dispensas } = useQuery({
-    queryKey: ["alertas-equipe-dispensados"],
-    enabled: isAdmin,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("alertas_equipe_dispensados")
-        .select("alerta_chave, dispensado_por_nome, dispensado_em");
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
-
-  const mapaDispensas = useMemo(
-    () => new Map((dispensas ?? []).map((d) => [d.alerta_chave, d])),
-    [dispensas],
-  );
-
-  const alertas = useMemo(() => montarAlertas(profissionais ?? []), [profissionais]);
 
   const visiveis = useMemo(() => {
     return alertas.filter((a) => {
@@ -151,7 +56,7 @@ function CentralAlertasEquipe() {
   );
 
   const dispensar = useMutation({
-    mutationFn: async (alerta: Alerta) => {
+    mutationFn: async (alerta: AlertaEquipe) => {
       const { data: userData } = await supabase.auth.getUser();
       const { error } = await supabase.from("alertas_equipe_dispensados").insert({
         alerta_chave: alerta.chave,
@@ -201,7 +106,7 @@ function CentralAlertasEquipe() {
     <div className="space-y-6 max-w-4xl">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-extrabold tracking-tight">Central de Alertas da Equipe</h2>
+          <h2 className="text-2xl font-extrabold tracking-tight">Central de Alertas</h2>
           <p className="text-sm text-muted-foreground">
             {contagemPendentes} pendência(s) ativa(s) • {mapaDispensas.size} dispensada(s)
           </p>
@@ -212,7 +117,7 @@ function CentralAlertasEquipe() {
         {(["todas", ...CATEGORIAS.map((c) => c.valor)] as const).map((c) => (
           <button
             key={c}
-            onClick={() => setFiltroCategoria(c as Categoria | "todas")}
+            onClick={() => setFiltroCategoria(c as CategoriaAlerta | "todas")}
             className={cn(
               "px-3 py-1.5 rounded-full text-xs font-bold border transition-colors",
               filtroCategoria === c
@@ -252,7 +157,7 @@ function CentralAlertasEquipe() {
             <p className="text-sm text-muted-foreground">
               {filtroStatus === "dispensados"
                 ? "Nenhum alerta dispensado neste filtro."
-                : "Nenhuma pendência neste filtro. Equipe em dia!"}
+                : "Nenhuma pendência neste filtro. Tudo em dia!"}
             </p>
           </div>
         )}
