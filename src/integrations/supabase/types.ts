@@ -1574,6 +1574,7 @@ export type Database = {
           data_admissao: string | null
           data_nascimento: string | null
           data_rescisao_contrato: string | null
+          dias_alerta_sem_visita: number | null
           dieta: string | null
           endereco_bairro: string | null
           endereco_cep: string | null
@@ -1616,6 +1617,7 @@ export type Database = {
           data_admissao?: string | null
           data_nascimento?: string | null
           data_rescisao_contrato?: string | null
+          dias_alerta_sem_visita?: number | null
           dieta?: string | null
           endereco_bairro?: string | null
           endereco_cep?: string | null
@@ -1658,6 +1660,7 @@ export type Database = {
           data_admissao?: string | null
           data_nascimento?: string | null
           data_rescisao_contrato?: string | null
+          dias_alerta_sem_visita?: number | null
           dieta?: string | null
           endereco_bairro?: string | null
           endereco_cep?: string | null
