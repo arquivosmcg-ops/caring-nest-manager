@@ -51,6 +51,7 @@ const navItems = [
   { to: "/recebimento-fraldas", label: "Recebimento de Fraldas", icon: Package, multi: true },
   { to: "/recebimento-itens", label: "Recebimento de Itens e Materiais", icon: Boxes, multi: true },
   { to: "/visitas", label: "Controle de Visitas", icon: DoorOpen, multi: true },
+  { to: "/relatorio-visitas", label: "Relatório de Visitas", icon: HeartHandshake, multi: true },
   { to: "/auditoria-assinaturas", label: "Auditoria de Assinaturas", icon: ShieldCheck, multi: true },
   { to: "/perfil", label: "Meu Perfil / Certificado", icon: BadgeCheck, multi: true },
 
