@@ -55,6 +55,7 @@ const navItems = [
 
   { to: "/admin-aprovacoes", label: "Área Admin", icon: ShieldCheck, multi: false },
   { to: "/implantacao", label: "Checklist de Implantação", icon: ClipboardCheck, multi: false, adminOnly: true },
+  { to: "/alertas-equipe", label: "Central de Alertas", icon: BellRing, multi: false, adminOnly: true },
   { to: "/admin-usuarios", label: "Gerenciar Administradores", icon: UserCog, multi: false, adminOnly: true },
 ] as const;
 

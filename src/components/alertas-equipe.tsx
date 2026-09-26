@@ -131,6 +131,12 @@ export function AlertasEquipe() {
             </Link>
           ))}
         </div>
+        <Link
+          to="/alertas-equipe"
+          className="block p-3 border-t border-border text-center text-xs font-bold text-primary hover:bg-muted"
+        >
+          Abrir Central de Alertas
+        </Link>
       </PopoverContent>
     </Popover>
   );
