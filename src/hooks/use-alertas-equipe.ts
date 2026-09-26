@@ -80,23 +80,26 @@ function montarAlertasEquipe(lista: ProfissionalAlerta[]): AlertaEquipe[] {
 }
 
 function montarAlertasVisitas(
-  residentes: { id: string; nome_completo: string }[],
+  residentes: { id: string; nome_completo: string; dias_alerta_sem_visita: number | null }[],
   ultimaVisitaPorResidente: Map<string, Date>,
 ): AlertaEquipe[] {
   const agora = Date.now();
   const alertas: AlertaEquipe[] = [];
   for (const r of residentes) {
+    const limite = r.dias_alerta_sem_visita && r.dias_alerta_sem_visita > 0
+      ? r.dias_alerta_sem_visita
+      : LIMITE_DIAS_SEM_VISITA;
     const ultima = ultimaVisitaPorResidente.get(r.id);
     const dias = ultima ? Math.floor((agora - ultima.getTime()) / 86_400_000) : null;
-    if (dias === null || dias > LIMITE_DIAS_SEM_VISITA) {
+    if (dias === null || dias > limite) {
       alertas.push({
         chave: `sem-visita:${r.id}`,
         categoria: "sem_visita",
-        titulo: `${r.nome_completo} está sem visita há mais de 1 mês`,
+        titulo: `${r.nome_completo} está sem visita há mais de ${limite} dias`,
         detalhe:
           dias === null
-            ? "Nenhuma visita registrada até agora."
-            : `Última visita há ${dias} dias (${ultima!.toLocaleDateString("pt-BR")}).`,
+            ? `Nenhuma visita registrada até agora (limite: ${limite} dias).`
+            : `Última visita há ${dias} dias (${ultima!.toLocaleDateString("pt-BR")}); limite: ${limite} dias.`,
         to: "/visitas",
       });
     }
@@ -125,7 +128,7 @@ export function useAlertasEquipe() {
     refetchInterval: 300_000,
     queryFn: async () => {
       const [{ data: residentes, error: e1 }, { data: vinculos, error: e2 }] = await Promise.all([
-        supabase.from("residentes").select("id, nome_completo").eq("ativo", true),
+        supabase.from("residentes").select("id, nome_completo, dias_alerta_sem_visita").eq("ativo", true),
         supabase.from("visitas_residentes").select("residente_id, visitas(data)"),
       ]);
       if (e1) throw e1;
