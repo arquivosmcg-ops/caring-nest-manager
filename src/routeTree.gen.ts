@@ -35,6 +35,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedChecklistsRouteImport } from './routes/_authenticated/checklists'
 import { Route as AuthenticatedAuditoriaAssinaturasRouteImport } from './routes/_authenticated/auditoria-assinaturas'
 import { Route as AuthenticatedAniversariantesRouteImport } from './routes/_authenticated/aniversariantes'
+import { Route as AuthenticatedAlertasEquipeRouteImport } from './routes/_authenticated/alertas-equipe'
 import { Route as AuthenticatedAdminUsuariosRouteImport } from './routes/_authenticated/admin-usuarios'
 import { Route as AuthenticatedAdminAprovacoesRouteImport } from './routes/_authenticated/admin-aprovacoes'
 
@@ -177,6 +178,12 @@ const AuthenticatedAniversariantesRoute =
     path: '/aniversariantes',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAlertasEquipeRoute =
+  AuthenticatedAlertasEquipeRouteImport.update({
+    id: '/alertas-equipe',
+    path: '/alertas-equipe',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminUsuariosRoute =
   AuthenticatedAdminUsuariosRouteImport.update({
     id: '/admin-usuarios',
@@ -197,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/admin-aprovacoes': typeof AuthenticatedAdminAprovacoesRoute
   '/admin-usuarios': typeof AuthenticatedAdminUsuariosRoute
+  '/alertas-equipe': typeof AuthenticatedAlertasEquipeRoute
   '/aniversariantes': typeof AuthenticatedAniversariantesRoute
   '/auditoria-assinaturas': typeof AuthenticatedAuditoriaAssinaturasRoute
   '/checklists': typeof AuthenticatedChecklistsRoute
@@ -226,6 +234,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/admin-aprovacoes': typeof AuthenticatedAdminAprovacoesRoute
   '/admin-usuarios': typeof AuthenticatedAdminUsuariosRoute
+  '/alertas-equipe': typeof AuthenticatedAlertasEquipeRoute
   '/aniversariantes': typeof AuthenticatedAniversariantesRoute
   '/auditoria-assinaturas': typeof AuthenticatedAuditoriaAssinaturasRoute
   '/checklists': typeof AuthenticatedChecklistsRoute
@@ -257,6 +266,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin-aprovacoes': typeof AuthenticatedAdminAprovacoesRoute
   '/_authenticated/admin-usuarios': typeof AuthenticatedAdminUsuariosRoute
+  '/_authenticated/alertas-equipe': typeof AuthenticatedAlertasEquipeRoute
   '/_authenticated/aniversariantes': typeof AuthenticatedAniversariantesRoute
   '/_authenticated/auditoria-assinaturas': typeof AuthenticatedAuditoriaAssinaturasRoute
   '/_authenticated/checklists': typeof AuthenticatedChecklistsRoute
@@ -288,6 +298,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/admin-aprovacoes'
     | '/admin-usuarios'
+    | '/alertas-equipe'
     | '/aniversariantes'
     | '/auditoria-assinaturas'
     | '/checklists'
@@ -317,6 +328,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/admin-aprovacoes'
     | '/admin-usuarios'
+    | '/alertas-equipe'
     | '/aniversariantes'
     | '/auditoria-assinaturas'
     | '/checklists'
@@ -347,6 +359,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/admin-aprovacoes'
     | '/_authenticated/admin-usuarios'
+    | '/_authenticated/alertas-equipe'
     | '/_authenticated/aniversariantes'
     | '/_authenticated/auditoria-assinaturas'
     | '/_authenticated/checklists'
@@ -563,6 +576,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAniversariantesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/alertas-equipe': {
+      id: '/_authenticated/alertas-equipe'
+      path: '/alertas-equipe'
+      fullPath: '/alertas-equipe'
+      preLoaderRoute: typeof AuthenticatedAlertasEquipeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin-usuarios': {
       id: '/_authenticated/admin-usuarios'
       path: '/admin-usuarios'
@@ -583,6 +603,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminAprovacoesRoute: typeof AuthenticatedAdminAprovacoesRoute
   AuthenticatedAdminUsuariosRoute: typeof AuthenticatedAdminUsuariosRoute
+  AuthenticatedAlertasEquipeRoute: typeof AuthenticatedAlertasEquipeRoute
   AuthenticatedAniversariantesRoute: typeof AuthenticatedAniversariantesRoute
   AuthenticatedAuditoriaAssinaturasRoute: typeof AuthenticatedAuditoriaAssinaturasRoute
   AuthenticatedChecklistsRoute: typeof AuthenticatedChecklistsRoute
@@ -608,6 +629,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminAprovacoesRoute: AuthenticatedAdminAprovacoesRoute,
   AuthenticatedAdminUsuariosRoute: AuthenticatedAdminUsuariosRoute,
+  AuthenticatedAlertasEquipeRoute: AuthenticatedAlertasEquipeRoute,
   AuthenticatedAniversariantesRoute: AuthenticatedAniversariantesRoute,
   AuthenticatedAuditoriaAssinaturasRoute:
     AuthenticatedAuditoriaAssinaturasRoute,

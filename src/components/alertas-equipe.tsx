@@ -52,11 +52,19 @@ export function AlertasEquipe() {
 
   const avisos = useMemo(() => {
     const lista = data ?? [];
-    const pendentes = lista.filter((p) => p.status_aprovacao === "pendente");
+    const pendentes = lista.filter(
+      (p) => p.status_aprovacao === "pendente" && !chavesDispensadas.has(`aprovacao:${p.id}`),
+    );
     const aprovados = lista.filter((p) => p.aprovado);
-    const semFuncao = aprovados.filter((p) => !p.funcao);
-    const foraEnfermagem = aprovados.filter((p) => ehEnfermeira(p) && p.na_escala === false);
-    const foraCuidadoras = aprovados.filter((p) => ehCuidadora(p) && p.na_escala === false);
+    const semFuncao = aprovados.filter(
+      (p) => !p.funcao && !chavesDispensadas.has(`funcao:${p.id}`),
+    );
+    const foraEnfermagem = aprovados.filter(
+      (p) => ehEnfermeira(p) && p.na_escala === false && !chavesDispensadas.has(`escala-enfermagem:${p.id}`),
+    );
+    const foraCuidadoras = aprovados.filter(
+      (p) => ehCuidadora(p) && p.na_escala === false && !chavesDispensadas.has(`escala-cuidadoras:${p.id}`),
+    );
 
     const itens: { texto: string; detalhe: string; to: string }[] = [];
     if (pendentes.length > 0)
