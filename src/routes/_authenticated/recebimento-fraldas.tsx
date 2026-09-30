@@ -453,6 +453,28 @@ function RecebimentoFraldasPage() {
       .sort((a, b) => (b.dias ?? Infinity) - (a.dias ?? Infinity));
   }, [registros.data, residentes.data, limiteDias]);
 
+  const exportarAlertasCsv = () => {
+    const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const linhas = [
+      ["Residente", "Dias sem recebimento", "Data do ultimo recebimento", "Situacao"].map(esc).join(";"),
+      ...alertasAtraso.map((a) =>
+        [
+          esc(a.nome),
+          a.dias === null ? "Nunca recebeu" : String(a.dias),
+          a.ultima ? esc(new Date(`${a.ultima}T12:00:00`).toLocaleDateString("pt-BR")) : "",
+          esc(a.dias === null ? "Sem recebimento registrado" : `Atrasado (limite: ${limiteDias} dias)`),
+        ].join(";"),
+      ),
+    ];
+    const csv = "\uFEFF" + linhas.join("\r\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `fraldas-atrasadas-${hoje()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const detalheForma = (r: Registro) =>
     r.forma_entrega === "familiar"
       ? `Familiar: ${r.nome_familiar ?? "—"}`
