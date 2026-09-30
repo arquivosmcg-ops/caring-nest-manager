@@ -453,6 +453,28 @@ function RecebimentoFraldasPage() {
       .sort((a, b) => (b.dias ?? Infinity) - (a.dias ?? Infinity));
   }, [registros.data, residentes.data, limiteDias]);
 
+  const exportarAlertasCsv = () => {
+    const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const linhas = [
+      ["Residente", "Dias sem recebimento", "Data do ultimo recebimento", "Situacao"].map(esc).join(";"),
+      ...alertasAtraso.map((a) =>
+        [
+          esc(a.nome),
+          a.dias === null ? "Nunca recebeu" : String(a.dias),
+          a.ultima ? esc(new Date(`${a.ultima}T12:00:00`).toLocaleDateString("pt-BR")) : "",
+          esc(a.dias === null ? "Sem recebimento registrado" : `Atrasado (limite: ${limiteDias} dias)`),
+        ].join(";"),
+      ),
+    ];
+    const csv = "\uFEFF" + linhas.join("\r\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `fraldas-atrasadas-${hoje()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const detalheForma = (r: Registro) =>
     r.forma_entrega === "familiar"
       ? `Familiar: ${r.nome_familiar ?? "—"}`
@@ -464,11 +486,21 @@ function RecebimentoFraldasPage() {
     <div className="space-y-8">
       {alertasAtraso.length > 0 && (
         <section className="border border-primary/40 bg-primary/5 rounded-lg p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="size-5 text-primary" />
-            <h2 className="font-extrabold text-lg">
-              {alertasAtraso.length} residente(s) há mais de {limiteDias} dias sem recebimento de fraldas
-            </h2>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="size-5 text-primary" />
+              <h2 className="font-extrabold text-lg">
+                {alertasAtraso.length} residente(s) há mais de {limiteDias} dias sem recebimento de fraldas
+              </h2>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={exportarAlertasCsv}
+            >
+              Exportar CSV
+            </Button>
           </div>
           <div className="divide-y divide-border">
             {alertasAtraso.map((a) => (
