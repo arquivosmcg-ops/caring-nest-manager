@@ -432,6 +432,28 @@ function RecebimentoFraldasPage() {
 
   return (
     <div className="space-y-8">
+      {alertasAtraso.length > 0 && (
+        <section className="border border-primary/40 bg-primary/5 rounded-lg p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="size-5 text-primary" />
+            <h2 className="font-extrabold text-lg">
+              {alertasAtraso.length} residente(s) há mais de {LIMITE_DIAS} dias sem recebimento de fraldas
+            </h2>
+          </div>
+          <div className="divide-y divide-border">
+            {alertasAtraso.map((a) => (
+              <div key={a.id} className="py-2 flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm font-bold">{a.nome}</p>
+                <p className="text-xs text-muted-foreground">
+                  {a.dias === null
+                    ? "Nenhum recebimento registrado até agora"
+                    : `Último recebimento há ${a.dias} dias (${new Date(`${a.ultima}T12:00:00`).toLocaleDateString("pt-BR")})`}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
       <section className="bg-surface border border-border rounded-lg p-6 space-y-6">
         <div className="flex items-center gap-2">
           <Package className="size-5" />
