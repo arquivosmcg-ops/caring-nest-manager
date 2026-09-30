@@ -454,6 +454,24 @@ export type Database = {
         }
         Relationships: []
       }
+      config_fraldas: {
+        Row: {
+          dias_alerta: number
+          id: boolean
+          updated_at: string
+        }
+        Insert: {
+          dias_alerta?: number
+          id?: boolean
+          updated_at?: string
+        }
+        Update: {
+          dias_alerta?: number
+          id?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       config_visitas: {
         Row: {
           alerta_horas: number

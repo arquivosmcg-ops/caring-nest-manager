@@ -10,6 +10,7 @@ import { AlertTriangle, ChevronDown, ChevronRight, Package, Plus, Trash2 } from 
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { usePerfilAtual } from "@/hooks/use-perfil";
 
 export const Route = createFileRoute("/_authenticated/recebimento-fraldas")({
   head: () => ({
@@ -206,6 +207,36 @@ function RegistroCard({
 
 function RecebimentoFraldasPage() {
   const qc = useQueryClient();
+  const perfil = usePerfilAtual().data;
+  const isAdmin = !!perfil?.isAdmin;
+
+  const config = useQuery({
+    queryKey: ["config-fraldas"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("config_fraldas" as never)
+        .select("dias_alerta")
+        .eq("id", true)
+        .maybeSingle();
+      return (data as unknown as { dias_alerta: number } | null)?.dias_alerta ?? 30;
+    },
+  });
+  const limiteDias = config.data ?? 30;
+
+  const salvarLimite = useMutation({
+    mutationFn: async (dias: number) => {
+      const { error } = await supabase
+        .from("config_fraldas" as never)
+        .update({ dias_alerta: dias } as never)
+        .eq("id", true);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["config-fraldas"] });
+      toast.success("Limite de dias atualizado");
+    },
+    onError: () => toast.error("Não foi possível salvar. Apenas administradores podem alterar."),
+  });
 
   const residentes = useQuery({
     queryKey: ["residentes-simple"],
@@ -402,8 +433,7 @@ function RecebimentoFraldasPage() {
   const totalPeriodo = filtrados.reduce((s, r) => s + totalRegistro(r), 0);
   const totalGrupo = (lista: Registro[]) => lista.reduce((s, r) => s + totalRegistro(r), 0);
 
-  // ---- alerta: residentes há mais de 30 dias sem recebimento ----
-  const LIMITE_DIAS = 30;
+  // ---- alerta: residentes sem recebimento além do limite configurado ----
   const alertasAtraso = useMemo(() => {
     const ultima = new Map<string, string>();
     for (const r of registros.data ?? []) {
@@ -419,9 +449,9 @@ function RecebimentoFraldasPage() {
           : null;
         return { id: res.id, nome: res.nome_completo, ultima: ult ?? null, dias };
       })
-      .filter((a) => a.dias === null || a.dias > LIMITE_DIAS)
+      .filter((a) => a.dias === null || a.dias > limiteDias)
       .sort((a, b) => (b.dias ?? Infinity) - (a.dias ?? Infinity));
-  }, [registros.data, residentes.data]);
+  }, [registros.data, residentes.data, limiteDias]);
 
   const detalheForma = (r: Registro) =>
     r.forma_entrega === "familiar"
@@ -437,7 +467,7 @@ function RecebimentoFraldasPage() {
           <div className="flex items-center gap-2">
             <AlertTriangle className="size-5 text-primary" />
             <h2 className="font-extrabold text-lg">
-              {alertasAtraso.length} residente(s) há mais de {LIMITE_DIAS} dias sem recebimento de fraldas
+              {alertasAtraso.length} residente(s) há mais de {limiteDias} dias sem recebimento de fraldas
             </h2>
           </div>
           <div className="divide-y divide-border">
@@ -452,6 +482,29 @@ function RecebimentoFraldasPage() {
               </div>
             ))}
           </div>
+        </section>
+      )}
+      {isAdmin && (
+        <section className="border border-border rounded-lg p-4 flex flex-wrap items-center gap-3">
+          <AlertTriangle className="size-4 text-muted-foreground" />
+          <p className="text-sm font-bold">Alerta de fraldas:</p>
+          <label className="text-sm text-muted-foreground flex items-center gap-2">
+            avisar após
+            <input
+              type="number"
+              min={1}
+              value={limiteDias}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                if (Number.isInteger(v) && v > 0) salvarLimite.mutate(v);
+              }}
+              className="w-20 px-2 py-1 rounded-md border border-border bg-background text-sm text-center"
+            />
+            dias sem recebimento
+          </label>
+          {salvarLimite.isPending && (
+            <span className="text-xs text-muted-foreground">Salvando…</span>
+          )}
         </section>
       )}
       <section className="bg-surface border border-border rounded-lg p-6 space-y-6">
