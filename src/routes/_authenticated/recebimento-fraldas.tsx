@@ -433,8 +433,7 @@ function RecebimentoFraldasPage() {
   const totalPeriodo = filtrados.reduce((s, r) => s + totalRegistro(r), 0);
   const totalGrupo = (lista: Registro[]) => lista.reduce((s, r) => s + totalRegistro(r), 0);
 
-  // ---- alerta: residentes há mais de 30 dias sem recebimento ----
-  const LIMITE_DIAS = 30;
+  // ---- alerta: residentes sem recebimento além do limite configurado ----
   const alertasAtraso = useMemo(() => {
     const ultima = new Map<string, string>();
     for (const r of registros.data ?? []) {
