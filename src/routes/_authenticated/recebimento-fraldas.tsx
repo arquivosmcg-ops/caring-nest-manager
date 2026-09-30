@@ -449,7 +449,7 @@ function RecebimentoFraldasPage() {
           : null;
         return { id: res.id, nome: res.nome_completo, ultima: ult ?? null, dias };
       })
-      .filter((a) => a.dias === null || a.dias > LIMITE_DIAS)
+      .filter((a) => a.dias === null || a.dias > limiteDias)
       .sort((a, b) => (b.dias ?? Infinity) - (a.dias ?? Infinity));
   }, [registros.data, residentes.data]);
 
@@ -467,7 +467,7 @@ function RecebimentoFraldasPage() {
           <div className="flex items-center gap-2">
             <AlertTriangle className="size-5 text-primary" />
             <h2 className="font-extrabold text-lg">
-              {alertasAtraso.length} residente(s) há mais de {LIMITE_DIAS} dias sem recebimento de fraldas
+              {alertasAtraso.length} residente(s) há mais de {limiteDias} dias sem recebimento de fraldas
             </h2>
           </div>
           <div className="divide-y divide-border">
