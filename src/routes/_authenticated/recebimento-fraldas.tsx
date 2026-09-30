@@ -451,7 +451,7 @@ function RecebimentoFraldasPage() {
       })
       .filter((a) => a.dias === null || a.dias > limiteDias)
       .sort((a, b) => (b.dias ?? Infinity) - (a.dias ?? Infinity));
-  }, [registros.data, residentes.data]);
+  }, [registros.data, residentes.data, limiteDias]);
 
   const detalheForma = (r: Registro) =>
     r.forma_entrega === "familiar"
@@ -482,6 +482,29 @@ function RecebimentoFraldasPage() {
               </div>
             ))}
           </div>
+        </section>
+      )}
+      {isAdmin && (
+        <section className="border border-border rounded-lg p-4 flex flex-wrap items-center gap-3">
+          <AlertTriangle className="size-4 text-muted-foreground" />
+          <p className="text-sm font-bold">Alerta de fraldas:</p>
+          <label className="text-sm text-muted-foreground flex items-center gap-2">
+            avisar após
+            <input
+              type="number"
+              min={1}
+              value={limiteDias}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                if (Number.isInteger(v) && v > 0) salvarLimite.mutate(v);
+              }}
+              className="w-20 px-2 py-1 rounded-md border border-border bg-background text-sm text-center"
+            />
+            dias sem recebimento
+          </label>
+          {salvarLimite.isPending && (
+            <span className="text-xs text-muted-foreground">Salvando…</span>
+          )}
         </section>
       )}
       <section className="bg-surface border border-border rounded-lg p-6 space-y-6">
