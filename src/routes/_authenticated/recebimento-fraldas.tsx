@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TextareaDitavel } from "@/components/ditar-audio";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronDown, ChevronRight, Package, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, ChevronDown, ChevronRight, Package, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -402,6 +402,27 @@ function RecebimentoFraldasPage() {
   const totalPeriodo = filtrados.reduce((s, r) => s + totalRegistro(r), 0);
   const totalGrupo = (lista: Registro[]) => lista.reduce((s, r) => s + totalRegistro(r), 0);
 
+  // ---- alerta: residentes há mais de 30 dias sem recebimento ----
+  const LIMITE_DIAS = 30;
+  const alertasAtraso = useMemo(() => {
+    const ultima = new Map<string, string>();
+    for (const r of registros.data ?? []) {
+      const atual = ultima.get(r.residente_id);
+      if (!atual || r.data_entrega > atual) ultima.set(r.residente_id, r.data_entrega);
+    }
+    const hojeMs = new Date(`${hoje()}T12:00:00`).getTime();
+    return (residentes.data ?? [])
+      .map((res) => {
+        const ult = ultima.get(res.id);
+        const dias = ult
+          ? Math.floor((hojeMs - new Date(`${ult}T12:00:00`).getTime()) / 86_400_000)
+          : null;
+        return { id: res.id, nome: res.nome_completo, ultima: ult ?? null, dias };
+      })
+      .filter((a) => a.dias === null || a.dias > LIMITE_DIAS)
+      .sort((a, b) => (b.dias ?? Infinity) - (a.dias ?? Infinity));
+  }, [registros.data, residentes.data]);
+
   const detalheForma = (r: Registro) =>
     r.forma_entrega === "familiar"
       ? `Familiar: ${r.nome_familiar ?? "—"}`
@@ -411,6 +432,28 @@ function RecebimentoFraldasPage() {
 
   return (
     <div className="space-y-8">
+      {alertasAtraso.length > 0 && (
+        <section className="border border-primary/40 bg-primary/5 rounded-lg p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="size-5 text-primary" />
+            <h2 className="font-extrabold text-lg">
+              {alertasAtraso.length} residente(s) há mais de {LIMITE_DIAS} dias sem recebimento de fraldas
+            </h2>
+          </div>
+          <div className="divide-y divide-border">
+            {alertasAtraso.map((a) => (
+              <div key={a.id} className="py-2 flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm font-bold">{a.nome}</p>
+                <p className="text-xs text-muted-foreground">
+                  {a.dias === null
+                    ? "Nenhum recebimento registrado até agora"
+                    : `Último recebimento há ${a.dias} dias (${new Date(`${a.ultima}T12:00:00`).toLocaleDateString("pt-BR")})`}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
       <section className="bg-surface border border-border rounded-lg p-6 space-y-6">
         <div className="flex items-center gap-2">
           <Package className="size-5" />
