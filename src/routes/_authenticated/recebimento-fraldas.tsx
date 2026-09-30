@@ -486,11 +486,21 @@ function RecebimentoFraldasPage() {
     <div className="space-y-8">
       {alertasAtraso.length > 0 && (
         <section className="border border-primary/40 bg-primary/5 rounded-lg p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="size-5 text-primary" />
-            <h2 className="font-extrabold text-lg">
-              {alertasAtraso.length} residente(s) há mais de {limiteDias} dias sem recebimento de fraldas
-            </h2>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="size-5 text-primary" />
+              <h2 className="font-extrabold text-lg">
+                {alertasAtraso.length} residente(s) há mais de {limiteDias} dias sem recebimento de fraldas
+              </h2>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={exportarAlertasCsv}
+            >
+              Exportar CSV
+            </Button>
           </div>
           <div className="divide-y divide-border">
             {alertasAtraso.map((a) => (
