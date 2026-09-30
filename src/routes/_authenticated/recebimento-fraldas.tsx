@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TextareaDitavel } from "@/components/ditar-audio";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronDown, ChevronRight, Package, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, ChevronDown, ChevronRight, Package, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -401,6 +401,27 @@ function RecebimentoFraldasPage() {
     (r.recebimentos_fraldas_itens ?? []).reduce((s, i) => s + (i.total_unidades ?? 0), 0);
   const totalPeriodo = filtrados.reduce((s, r) => s + totalRegistro(r), 0);
   const totalGrupo = (lista: Registro[]) => lista.reduce((s, r) => s + totalRegistro(r), 0);
+
+  // ---- alerta: residentes há mais de 30 dias sem recebimento ----
+  const LIMITE_DIAS = 30;
+  const alertasAtraso = useMemo(() => {
+    const ultima = new Map<string, string>();
+    for (const r of registros.data ?? []) {
+      const atual = ultima.get(r.residente_id);
+      if (!atual || r.data_entrega > atual) ultima.set(r.residente_id, r.data_entrega);
+    }
+    const hojeMs = new Date(`${hoje()}T12:00:00`).getTime();
+    return (residentes.data ?? [])
+      .map((res) => {
+        const ult = ultima.get(res.id);
+        const dias = ult
+          ? Math.floor((hojeMs - new Date(`${ult}T12:00:00`).getTime()) / 86_400_000)
+          : null;
+        return { id: res.id, nome: res.nome_completo, ultima: ult ?? null, dias };
+      })
+      .filter((a) => a.dias === null || a.dias > LIMITE_DIAS)
+      .sort((a, b) => (b.dias ?? Infinity) - (a.dias ?? Infinity));
+  }, [registros.data, residentes.data]);
 
   const detalheForma = (r: Registro) =>
     r.forma_entrega === "familiar"
