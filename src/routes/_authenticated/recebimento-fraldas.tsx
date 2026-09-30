@@ -10,6 +10,7 @@ import { AlertTriangle, ChevronDown, ChevronRight, Package, Plus, Trash2 } from 
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { usePerfilAtual } from "@/hooks/use-perfil";
 
 export const Route = createFileRoute("/_authenticated/recebimento-fraldas")({
   head: () => ({
@@ -206,6 +207,36 @@ function RegistroCard({
 
 function RecebimentoFraldasPage() {
   const qc = useQueryClient();
+  const perfil = usePerfilAtual().data;
+  const isAdmin = !!perfil?.isAdmin;
+
+  const config = useQuery({
+    queryKey: ["config-fraldas"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("config_fraldas" as never)
+        .select("dias_alerta")
+        .eq("id", true)
+        .maybeSingle();
+      return (data as unknown as { dias_alerta: number } | null)?.dias_alerta ?? 30;
+    },
+  });
+  const limiteDias = config.data ?? 30;
+
+  const salvarLimite = useMutation({
+    mutationFn: async (dias: number) => {
+      const { error } = await supabase
+        .from("config_fraldas" as never)
+        .update({ dias_alerta: dias } as never)
+        .eq("id", true);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["config-fraldas"] });
+      toast.success("Limite de dias atualizado");
+    },
+    onError: () => toast.error("Não foi possível salvar. Apenas administradores podem alterar."),
+  });
 
   const residentes = useQuery({
     queryKey: ["residentes-simple"],
