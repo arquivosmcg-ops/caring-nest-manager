@@ -2028,6 +2028,10 @@ export type Database = {
         Args: { _atual: string; _nova: string }
         Returns: boolean
       }
+      corrigir_visita_em_andamento: {
+        Args: { _dados: Json; _residentes: string[]; _visita_id: string }
+        Returns: undefined
+      }
       definir_admin: {
         Args: {
           _equipamento?: string
