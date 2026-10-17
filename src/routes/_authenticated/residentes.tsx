@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { GRAUS_PARENTESCO } from "@/lib/visitas";
 import { maskCelular } from "@/lib/phone";
+import { quartoOcupado } from "@/lib/quartos";
 
 
 function ResidenteAvatar({ path, nome }: { path: string | null; nome: string }) {
@@ -158,6 +159,7 @@ type Residente = {
 };
 
 type QuartoOption = {
+  ocupantes: number;
   id: string;
   numero: string;
   ala: string | null;
@@ -222,6 +224,9 @@ function ResidenteForm({
   submitLabel: string;
 }) {
   const [selectedQuarto, setSelectedQuarto] = useState<string | null>(residente?.quarto_id ?? null);
+  const [mostrarOcupados, setMostrarOcupados] = useState(false);
+  const [avisoQuarto, setAvisoQuarto] = useState<string | null>(null);
+  const quartosVagos = quartos?.filter((q) => q.status === "vago" && !quartoOcupado(q.status, q.ocupantes)) ?? [];
   const [origem, setOrigem] = useState<OrigemProcedencia | null>(residente?.origem_procedencia ?? null);
   const [estadoCivil, setEstadoCivil] = useState<EstadoCivil | null>(residente?.estado_civil ?? null);
   const [parentesco, setParentesco] = useState<string | null>(residente?.responsavel_principal_parentesco ?? null);
@@ -364,6 +369,13 @@ function ResidenteForm({
       </div>
       <div className="col-span-2">
         <Label>Quarto</Label>
+        <div className="flex items-center justify-between gap-2 mt-2">
+          <p className="text-xs text-muted-foreground">{quartosVagos.length} quarto(s) vago(s)</p>
+          <Button type="button" size="sm" variant="outline" onClick={() => setMostrarOcupados((v) => !v)}>
+            {mostrarOcupados ? "Exibir somente vagos" : "Exibir todos os quartos"}
+          </Button>
+        </div>
+        {avisoQuarto && <p role="alert" className="mt-2 text-sm text-primary font-semibold">{avisoQuarto}</p>}
         <input type="hidden" name="quarto_id" value={selectedQuarto ?? ""} />
         <div className="mt-1.5 grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto p-1 border border-border rounded-md bg-surface">
           {quartos?.length === 0 && (
@@ -371,33 +383,44 @@ function ResidenteForm({
               Nenhum quarto cadastrado.
             </div>
           )}
-          {quartos?.map((q) => (
-            <button
+          {quartos?.filter((q) => mostrarOcupados || quartosVagos.some((v) => v.id === q.id) || q.id === selectedQuarto).map((q) => (
+            <Button
               key={q.id}
               type="button"
-              onClick={() => setSelectedQuarto(q.id)}
+              variant="outline"
+              onClick={() => {
+                if (q.id === residente?.quarto_id) { setSelectedQuarto(q.id); setAvisoQuarto(null); return; }
+                if (q.status === "manutencao") {
+                  setAvisoQuarto(`O quarto ${q.numero} está em manutenção. Escolha um dos quartos vagos.`);
+                  return;
+                }
+                if (quartoOcupado(q.status, q.ocupantes)) {
+                  setAvisoQuarto(`Atenção: o quarto ${q.numero} está ocupado (${q.ocupantes} residente(s), capacidade ${q.capacidade}). Confira os quartos vagos antes de continuar.`);
+                } else setAvisoQuarto(null);
+                setSelectedQuarto(q.id);
+              }}
               className={cn(
-                "text-left rounded-md border p-2.5 transition-colors focus:outline-none focus:ring-2 focus:ring-ring",
+                "h-auto block text-left rounded-md border p-2.5 transition-colors focus:outline-none focus:ring-2 focus:ring-ring",
                 selectedQuarto === q.id
                   ? "border-primary bg-primary/5 ring-1 ring-primary"
-                  : "border-border hover:border-primary/50 hover:bg-black/[0.02]"
+                  : "border-border hover:border-primary/50 hover:bg-muted"
               )}
             >
               <div className="flex items-center justify-between">
                 <span className="font-mono font-extrabold text-sm">{q.numero}</span>
                 <span className={cn(
                   "text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm",
-                  q.status === "vago" && "bg-green-100 text-green-700",
-                  q.status === "ocupado" && "bg-slate-100 text-slate-700",
-                  q.status === "manutencao" && "bg-warning/20 text-orange-700"
+                  q.status === "vago" && !q.ocupantes && "bg-muted text-foreground",
+                  quartoOcupado(q.status, q.ocupantes) && "bg-primary/10 text-primary",
+                  q.status === "manutencao" && "bg-warning/20 text-foreground"
                 )}>
-                  {q.status}
+                  {quartoOcupado(q.status, q.ocupantes) ? "ocupado" : q.status}
                 </span>
               </div>
               <div className="mt-1.5 text-[10px] text-muted-foreground leading-tight">
-                {q.ala || "Sem ala"} · Cap. {q.capacidade}
+                {q.ala || "Sem ala"} · {q.ocupantes}/{q.capacidade} ocupados
               </div>
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -666,9 +689,15 @@ function ResidentesPage() {
         .select("id, numero, ala, capacidade, status")
         .order("numero");
       if (error) throw error;
-      return (data ?? []) as QuartoOption[];
+      const { data: ocupantes, error: erroOcupantes } = await supabase.from("residentes").select("quarto_id").eq("ativo", true);
+      if (erroOcupantes) throw erroOcupantes;
+      return (data ?? []).map((q) => ({ ...q, ocupantes: (ocupantes ?? []).filter((r) => r.quarto_id === q.id).length })) as QuartoOption[];
     },
   });
+
+  useEffect(() => {
+    qc.invalidateQueries({ queryKey: ["quartos-livres"] });
+  }, [todosResidentes.data, qc]);
 
   const create = useMutation({
     mutationFn: async (payload: Record<string, unknown>) => {

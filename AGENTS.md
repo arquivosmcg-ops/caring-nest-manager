@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Correct ongoing visits through the SECURITY INVOKER RPC with a row lock and atomic resident-link updates; preserve checkout and reception attribution, and isolate corrected visitor identity from earlier visits.
+- Derive room occupancy from active resident assignments as well as room status so stale status labels cannot hide occupancy warnings.
