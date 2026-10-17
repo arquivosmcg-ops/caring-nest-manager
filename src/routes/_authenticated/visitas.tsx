@@ -20,7 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, DoorOpen, LogOut, Settings, Users } from "lucide-react";
+import { AlertTriangle, DoorOpen, LogOut, Pencil, Settings, Users } from "lucide-react";
 import {
   GRAUS_PARENTESCO,
   type ConfigVisitas,
@@ -153,6 +153,7 @@ function VisitasPage() {
   const [assinatura, setAssinatura] = useState<string | null>(null);
   const [normasAbertas, setNormasAbertas] = useState(false);
   const [confirmarDupla, setConfirmarDupla] = useState<Visita | null>(null);
+  const [editandoVisita, setEditandoVisita] = useState<Visita | null>(null);
 
   const sugestoes = useMemo(() => {
     const termo = normalizar(nomeVisitante);
@@ -169,6 +170,7 @@ function VisitasPage() {
   }, [buscaResidente, residentes.data]);
 
   const limpar = () => {
+    setEditandoVisita(null);
     setResidentesSel([]);
     setBuscaResidente("");
     setNomeVisitante("");
@@ -199,6 +201,52 @@ function VisitasPage() {
   };
 
   const grauFinal = grau === "Outro" ? grauOutro.trim() || "Outro" : grau;
+
+  const corrigir = useMutation({
+    mutationFn: async () => {
+      if (!editandoVisita) throw new Error("Selecione uma visita em andamento");
+      const { error } = await supabase.rpc("corrigir_visita_em_andamento", {
+        _visita_id: editandoVisita.id,
+        _residentes: residentesSel,
+        _dados: {
+          nome: nomeVisitante.trim(), documento: documento.trim(), data,
+          horario_entrada: deInputLocal(entrada), grau_parentesco: grauFinal,
+          observacoes: observacoes.trim(), sintomas_gripais: sintomas,
+          temperatura: temperatura ? Number(temperatura) : null,
+          ciente_normas: ciente, assinatura_visitante: assinatura,
+        },
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Dados da visita corrigidos");
+      qc.invalidateQueries({ queryKey: ["visitas"] });
+      qc.invalidateQueries({ queryKey: ["visitantes"] });
+      qc.invalidateQueries({ queryKey: ["alertas-visitas"] });
+      limpar();
+    },
+    onError: (e: unknown) => toast.error((e as Error)?.message || "Não foi possível corrigir a visita"),
+  });
+
+  const iniciarCorrecao = (v: Visita) => {
+    setEditandoVisita(v);
+    setResidentesSel(v.visitas_residentes.map((r) => r.residente_id));
+    setBuscaResidente("");
+    setNomeVisitante(v.visitantes?.nome ?? "");
+    setDocumento(v.visitantes?.documento ?? "");
+    const relacao = v.grau_parentesco ?? "Outro";
+    const conhecida = (GRAUS_PARENTESCO as readonly string[]).includes(relacao);
+    setGrau(conhecida ? relacao : "Outro");
+    setGrauOutro(conhecida ? "" : relacao);
+    setData(v.data);
+    setEntrada(paraInputLocal(v.horario_entrada));
+    setObservacoes(v.observacoes ?? "");
+    setSintomas(v.sintomas_gripais);
+    setTemperatura(v.temperatura === null ? "" : String(v.temperatura));
+    setCiente(v.ciente_normas);
+    setAssinatura(v.assinatura_visitante);
+    document.getElementById("form-visita")?.scrollIntoView({ block: "start" });
+  };
 
   const registrar = useMutation({
     mutationFn: async (opts: { fecharAnterior?: string } = {}) => {
@@ -269,6 +317,14 @@ function VisitasPage() {
     }
     if (!nomeVisitante.trim()) {
       toast.error("Informe o nome do visitante");
+      return;
+    }
+    if (editandoVisita) {
+      if (!data || !deInputLocal(entrada)) {
+        toast.error("Informe a data e o horário de entrada");
+        return;
+      }
+      corrigir.mutate();
       return;
     }
     if (config.data?.termo_ativo && !ciente) {
@@ -385,6 +441,9 @@ function VisitasPage() {
                       Aberta há mais de {alertaHoras}h — confirme a saída.
                     </p>
                   )}
+                  <Button size="sm" variant="outline" className="w-full" onClick={() => iniciarCorrecao(v)}>
+                    <Pencil className="mr-2 size-3.5" /> Corrigir dados
+                  </Button>
                   <Button
                     size="sm"
                     className="w-full mt-1"
@@ -403,8 +462,8 @@ function VisitasPage() {
       )}
 
       {/* formulário de entrada */}
-      <section className="rounded-lg border border-border bg-surface p-4 space-y-5">
-        <h3 className="text-sm font-bold">Registrar entrada</h3>
+      <section id="form-visita" className="rounded-lg border border-border bg-surface p-4 space-y-5 scroll-mt-4">
+        <h3 className="text-sm font-bold">{editandoVisita ? "Corrigir visita em andamento" : "Registrar entrada"}</h3>
 
         <div className="space-y-2">
           <Label>Residente(s) visitado(s) *</Label>
@@ -437,7 +496,7 @@ function VisitasPage() {
           <div className="space-y-1.5 relative">
             <Label>Nome do visitante *</Label>
             <Input value={nomeVisitante} onChange={(e) => setNomeVisitante(e.target.value)} autoComplete="off" />
-            {sugestoes.length > 0 && (
+            {!editandoVisita && sugestoes.length > 0 && (
               <div className="absolute z-20 top-full left-0 right-0 mt-1 rounded-md border border-border bg-background shadow-lg">
                 {sugestoes.map((s) => (
                   <button
@@ -497,11 +556,11 @@ function VisitasPage() {
           </div>
           <div className="space-y-1.5">
             <Label>Recebido por</Label>
-            <Input value={perfil?.fullName ?? ""} readOnly className="bg-muted" />
+            <Input value={editandoVisita?.recebido_por_nome ?? perfil?.fullName ?? ""} readOnly className="bg-muted" />
           </div>
         </div>
 
-        {config.data?.triagem_ativa && (
+        {(config.data?.triagem_ativa || editandoVisita?.sintomas_gripais !== null && !!editandoVisita) && (
           <div className="rounded-md border border-border p-3 space-y-3">
             <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Triagem de saúde
@@ -535,7 +594,7 @@ function VisitasPage() {
           </div>
         )}
 
-        {config.data?.termo_ativo && (
+        {(config.data?.termo_ativo || !!editandoVisita) && (
           <div className="rounded-md border border-border p-3 space-y-3">
             <div className="flex items-start gap-2">
               <Checkbox
@@ -572,11 +631,11 @@ function VisitasPage() {
         </div>
 
         <div className="flex gap-2">
-          <Button onClick={salvarEntrada} disabled={registrar.isPending}>
-            Registrar entrada
+          <Button onClick={salvarEntrada} disabled={registrar.isPending || corrigir.isPending}>
+            {editandoVisita ? "Salvar correções" : "Registrar entrada"}
           </Button>
-          <Button variant="outline" onClick={limpar}>
-            Limpar
+          <Button variant="outline" onClick={limpar} disabled={corrigir.isPending}>
+            {editandoVisita ? "Cancelar correção" : "Limpar"}
           </Button>
         </div>
       </section>
@@ -646,6 +705,11 @@ function VisitasPage() {
                   <td className="p-3 whitespace-nowrap">{duracao(v.horario_entrada, v.horario_saida)}</td>
                   <td className="p-3">{v.recebido_por_nome ?? "—"}</td>
                   <td className="p-3">
+                    {!v.horario_saida && (
+                      <Button size="sm" variant="outline" className="mr-2 mb-1" onClick={() => iniciarCorrecao(v)}>
+                        <Pencil className="mr-2 size-3.5" /> Corrigir dados
+                      </Button>
+                    )}
                     <Button
                       size="sm"
                       variant={v.horario_saida ? "outline" : "default"}
