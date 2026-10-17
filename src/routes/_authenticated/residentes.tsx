@@ -396,7 +396,6 @@ function ResidenteForm({
                 }
                 if (quartoOcupado(q.status, q.ocupantes)) {
                   setAvisoQuarto(`Atenção: o quarto ${q.numero} está ocupado (${q.ocupantes} residente(s), capacidade ${q.capacidade}). Confira os quartos vagos antes de continuar.`);
-                  if (q.ocupantes >= q.capacidade) return;
                 } else setAvisoQuarto(null);
                 setSelectedQuarto(q.id);
               }}
@@ -695,6 +694,10 @@ function ResidentesPage() {
       return (data ?? []).map((q) => ({ ...q, ocupantes: (ocupantes ?? []).filter((r) => r.quarto_id === q.id).length })) as QuartoOption[];
     },
   });
+
+  useEffect(() => {
+    qc.invalidateQueries({ queryKey: ["quartos-livres"] });
+  }, [todosResidentes.data, qc]);
 
   const create = useMutation({
     mutationFn: async (payload: Record<string, unknown>) => {
