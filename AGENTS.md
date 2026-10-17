@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Correct ongoing visits through the SECURITY INVOKER RPC with a row lock and atomic resident-link updates; preserve checkout and reception attribution, and isolate corrected visitor identity from earlier visits.
