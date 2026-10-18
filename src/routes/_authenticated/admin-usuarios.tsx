@@ -26,7 +26,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ShieldCheck, ShieldMinus, ShieldPlus, Search, History, Trash2, CalendarPlus, CalendarX } from "lucide-react";
+import { ShieldCheck, ShieldMinus, ShieldPlus, Search, History, Trash2, CalendarPlus, CalendarX, Pencil } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useServerFn } from "@tanstack/react-start";
 import { excluirProfissional } from "@/lib/admin-usuarios.functions";
 
@@ -225,6 +233,49 @@ function AdminUsuarios() {
     onError: (e: Error) => toast.error(e.message || "Não foi possível alterar a escala"),
   });
 
+  const [editando, setEditando] = useState<Profissional | null>(null);
+
+  const opcoesFuncao = useMemo(() => {
+    const base = [
+      { v: "medico", label: "Médico" },
+      { v: "enfermeira", label: "Enfermeira" },
+      { v: "cuidadora", label: "Cuidadora" },
+    ];
+    const extras = (categorias ?? [])
+      .filter((c) => !base.some((b) => b.v === c.chave))
+      .map((c) => ({ v: c.chave, label: c.nome }));
+    const lista = [...base, ...extras];
+    if (editando?.funcao && !lista.some((o) => o.v === editando.funcao)) {
+      lista.push({ v: editando.funcao, label: editando.funcao });
+    }
+    return lista;
+  }, [categorias, editando?.funcao]);
+
+  const salvarCadastro = useMutation({
+    mutationFn: async (p: Profissional) => {
+      if (!p.full_name.trim()) throw new Error("Informe o nome completo");
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          full_name: p.full_name.trim(),
+          celular: p.celular?.trim() || null,
+          funcao: p.funcao || null,
+          registro_profissional: p.registro_profissional?.trim() || null,
+        })
+        .eq("id", p.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Cadastro corrigido");
+      setEditando(null);
+      qc.invalidateQueries({ queryKey: ["profissionais-admin"] });
+      qc.invalidateQueries({ queryKey: ["profissionais-implantacao"] });
+      qc.invalidateQueries({ queryKey: ["escala-colaboradores"] });
+      qc.invalidateQueries({ queryKey: ["perfil-atual"] });
+    },
+    onError: (e: Error) => toast.error(e.message || "Não foi possível salvar"),
+  });
+
   const lista = useMemo(() => {
     let l = profissionais ?? [];
     const q = busca.trim().toLowerCase();
@@ -402,6 +453,9 @@ function AdminUsuarios() {
                         <td className="p-3 text-muted-foreground">{dataBr(p.created_at)}</td>
                         <td className="p-3 text-right">
                           <div className="flex justify-end gap-2">
+                          <Button size="sm" variant="outline" onClick={() => setEditando({ ...p })}>
+                            <Pencil className="size-4" /> Corrigir
+                          </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button
@@ -548,6 +602,48 @@ function AdminUsuarios() {
           )}
         </TabsContent>
       </Tabs>
+
+      <Dialog open={!!editando} onOpenChange={(o) => !o && setEditando(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Corrigir cadastro</DialogTitle>
+            <DialogDescription>{editando?.email ?? ""}</DialogDescription>
+          </DialogHeader>
+          {editando && (
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="ed-nome">Nome completo</Label>
+                <Input id="ed-nome" value={editando.full_name} onChange={(e) => setEditando({ ...editando, full_name: e.target.value })} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="ed-cel">Celular</Label>
+                <Input id="ed-cel" value={editando.celular ?? ""} onChange={(e) => setEditando({ ...editando, celular: e.target.value })} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Categoria profissional</Label>
+                <Select value={editando.funcao ?? ""} onValueChange={(v) => setEditando({ ...editando, funcao: v })}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    {opcoesFuncao.map((o) => (
+                      <SelectItem key={o.v} value={o.v}>{o.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="ed-reg">Registro profissional / conselho (opcional)</Label>
+                <Input id="ed-reg" value={editando.registro_profissional ?? ""} onChange={(e) => setEditando({ ...editando, registro_profissional: e.target.value })} />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditando(null)}>Cancelar</Button>
+            <Button disabled={salvarCadastro.isPending} onClick={() => editando && salvarCadastro.mutate(editando)}>
+              Salvar correções
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
