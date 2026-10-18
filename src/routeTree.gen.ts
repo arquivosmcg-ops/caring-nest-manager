@@ -36,6 +36,7 @@ import { Route as AuthenticatedReceituarioRouteImport } from './routes/_authenti
 import { Route as AuthenticatedRelatorioVisitasRouteImport } from './routes/_authenticated/relatorio-visitas'
 import { Route as AuthenticatedResidentesRouteImport } from './routes/_authenticated/residentes'
 import { Route as AuthenticatedSaeRouteImport } from './routes/_authenticated/sae'
+import { Route as AuthenticatedSaidasTemporariasRouteImport } from './routes/_authenticated/saidas-temporarias'
 import { Route as AuthenticatedSinaisVitaisRouteImport } from './routes/_authenticated/sinais-vitais'
 import { Route as AuthenticatedVisitasRouteImport } from './routes/_authenticated/visitas'
 import { Route as ApiTranscreverRouteImport } from './routes/api/transcrever'
@@ -187,6 +188,12 @@ const AuthenticatedSaeRoute = AuthenticatedSaeRouteImport.update({
   path: '/sae',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSaidasTemporariasRoute =
+  AuthenticatedSaidasTemporariasRouteImport.update({
+    id: '/saidas-temporarias',
+    path: '/saidas-temporarias',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSinaisVitaisRoute =
   AuthenticatedSinaisVitaisRouteImport.update({
     id: '/sinais-vitais',
@@ -231,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/relatorio-visitas': typeof AuthenticatedRelatorioVisitasRoute
   '/residentes': typeof AuthenticatedResidentesRoute
   '/sae': typeof AuthenticatedSaeRoute
+  '/saidas-temporarias': typeof AuthenticatedSaidasTemporariasRoute
   '/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
   '/visitas': typeof AuthenticatedVisitasRoute
   '/api/transcrever': typeof ApiTranscreverRoute
@@ -262,6 +270,7 @@ export interface FileRoutesByTo {
   '/relatorio-visitas': typeof AuthenticatedRelatorioVisitasRoute
   '/residentes': typeof AuthenticatedResidentesRoute
   '/sae': typeof AuthenticatedSaeRoute
+  '/saidas-temporarias': typeof AuthenticatedSaidasTemporariasRoute
   '/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
   '/visitas': typeof AuthenticatedVisitasRoute
   '/api/transcrever': typeof ApiTranscreverRoute
@@ -295,6 +304,7 @@ export interface FileRoutesById {
   '/_authenticated/relatorio-visitas': typeof AuthenticatedRelatorioVisitasRoute
   '/_authenticated/residentes': typeof AuthenticatedResidentesRoute
   '/_authenticated/sae': typeof AuthenticatedSaeRoute
+  '/_authenticated/saidas-temporarias': typeof AuthenticatedSaidasTemporariasRoute
   '/_authenticated/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
   '/_authenticated/visitas': typeof AuthenticatedVisitasRoute
   '/api/transcrever': typeof ApiTranscreverRoute
@@ -328,6 +338,7 @@ export interface FileRouteTypes {
     | '/relatorio-visitas'
     | '/residentes'
     | '/sae'
+    | '/saidas-temporarias'
     | '/sinais-vitais'
     | '/visitas'
     | '/api/transcrever'
@@ -359,6 +370,7 @@ export interface FileRouteTypes {
     | '/relatorio-visitas'
     | '/residentes'
     | '/sae'
+    | '/saidas-temporarias'
     | '/sinais-vitais'
     | '/visitas'
     | '/api/transcrever'
@@ -391,6 +403,7 @@ export interface FileRouteTypes {
     | '/_authenticated/relatorio-visitas'
     | '/_authenticated/residentes'
     | '/_authenticated/sae'
+    | '/_authenticated/saidas-temporarias'
     | '/_authenticated/sinais-vitais'
     | '/_authenticated/visitas'
     | '/api/transcrever'
@@ -596,6 +609,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSaeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/saidas-temporarias': {
+      id: '/_authenticated/saidas-temporarias'
+      path: '/saidas-temporarias'
+      fullPath: '/saidas-temporarias'
+      preLoaderRoute: typeof AuthenticatedSaidasTemporariasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/sinais-vitais': {
       id: '/_authenticated/sinais-vitais'
       path: '/sinais-vitais'
@@ -643,6 +663,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRelatorioVisitasRoute: typeof AuthenticatedRelatorioVisitasRoute
   AuthenticatedResidentesRoute: typeof AuthenticatedResidentesRoute
   AuthenticatedSaeRoute: typeof AuthenticatedSaeRoute
+  AuthenticatedSaidasTemporariasRoute: typeof AuthenticatedSaidasTemporariasRoute
   AuthenticatedSinaisVitaisRoute: typeof AuthenticatedSinaisVitaisRoute
   AuthenticatedVisitasRoute: typeof AuthenticatedVisitasRoute
 }
@@ -672,6 +693,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRelatorioVisitasRoute: AuthenticatedRelatorioVisitasRoute,
   AuthenticatedResidentesRoute: AuthenticatedResidentesRoute,
   AuthenticatedSaeRoute: AuthenticatedSaeRoute,
+  AuthenticatedSaidasTemporariasRoute: AuthenticatedSaidasTemporariasRoute,
   AuthenticatedSinaisVitaisRoute: AuthenticatedSinaisVitaisRoute,
   AuthenticatedVisitasRoute: AuthenticatedVisitasRoute,
 }
