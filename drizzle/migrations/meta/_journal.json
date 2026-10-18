@@ -8,6 +8,13 @@
       "when": 1792241260263,
       "tag": "0000_corrigir_visita_em_andamento",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792324441104,
+      "tag": "0001_saidas_temporarias",
+      "breakpoints": true
     }
   ]
 }
