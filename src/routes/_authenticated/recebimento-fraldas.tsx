@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TextareaDitavel } from "@/components/ditar-audio";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertTriangle, ChevronDown, ChevronRight, Package, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, ChevronDown, ChevronRight, Package, Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -120,6 +120,7 @@ function RegistroCard({
   totalRegistro,
   detalheForma,
   onRemover,
+  onEditar,
 }: {
   r: Registro;
   abertos: Record<string, boolean>;
@@ -127,6 +128,7 @@ function RegistroCard({
   totalRegistro: (r: Registro) => number;
   detalheForma: (r: Registro) => string;
   onRemover: (id: string) => void;
+  onEditar: (r: Registro) => void;
 }) {
   const aberto = !!abertos[r.id];
   const its = r.recebimentos_fraldas_itens ?? [];
@@ -165,6 +167,14 @@ function RegistroCard({
           </div>
         </div>
 
+        <button
+          onClick={() => onEditar(r)}
+          className="text-muted-foreground hover:text-foreground p-1"
+          title="Corrigir registro"
+          aria-label="Corrigir registro"
+        >
+          <Pencil className="size-4" />
+        </button>
         <button
           onClick={() => onRemover(r.id)}
           className="text-muted-foreground hover:text-primary p-1"
@@ -318,7 +328,10 @@ function RecebimentoFraldasPage() {
     [registros.data],
   );
 
+  const [editandoId, setEditandoId] = useState<string | null>(null);
+
   const limpar = () => {
+    setEditandoId(null);
     setResidenteId("");
     setDataEntrega(hoje());
     setRecebidoPor("");
@@ -328,6 +341,37 @@ function RecebimentoFraldasPage() {
     setOrigemCorreios("governo");
     setObservacoes("");
     setItens([novoItem()]);
+  };
+
+  const editar = (r: Registro) => {
+    const nomesLista = new Set((produtos.data ?? []).map((p) => p.nome_produto));
+    setEditandoId(r.id);
+    setResidenteId(r.residente_id);
+    setDataEntrega(r.data_entrega);
+    setRecebidoPor(r.recebido_por);
+    setForma(r.forma_entrega);
+    setNomeFamiliar(r.nome_familiar ?? "");
+    setNomeFornecedor(r.nome_fornecedor ?? "");
+    setOrigemCorreios(r.origem_correios ?? "governo");
+    setObservacoes(r.observacoes ?? "");
+    const its = r.recebimentos_fraldas_itens ?? [];
+    setItens(
+      its.length
+        ? its.map((i) => {
+            const naLista = !!i.produto && nomesLista.has(i.produto);
+            return {
+              uid: crypto.randomUUID(),
+              produtoSel: naLista ? (i.produto as string) : OUTROS,
+              produtoOutro: naLista ? "" : (i.produto ?? ""),
+              marca: i.marca,
+              tipo: i.tipo,
+              fardos: String(i.quantidade_fardos),
+              unidades: String(i.unidades_por_fardo),
+            };
+          })
+        : [novoItem()],
+    );
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const criar = useMutation({
@@ -343,25 +387,41 @@ function RecebimentoFraldasPage() {
         if (totalItem(i) <= 0) throw new Error(`Informe fardos e unidades do item ${idx + 1}`);
       });
 
-      const { data: user } = await supabase.auth.getUser();
-      const { data: header, error } = await supabase
-        .from("recebimentos_fraldas" as never)
-        .insert({
-          residente_id: residenteId,
-          data_entrega: dataEntrega,
-          recebido_por: recebidoPor.trim(),
-          registrado_por: user.user?.id ?? null,
-          forma_entrega: forma,
-          nome_familiar: forma === "familiar" ? nomeFamiliar.trim() : null,
-          nome_fornecedor: forma === "fornecedor" ? nomeFornecedor.trim() : null,
-          origem_correios: forma === "correios" ? origemCorreios : null,
-          observacoes: observacoes.trim() || null,
-        } as never)
-        .select("id")
-        .single();
-      if (error) throw error;
+      const cabecalho = {
+        residente_id: residenteId,
+        data_entrega: dataEntrega,
+        recebido_por: recebidoPor.trim(),
+        forma_entrega: forma,
+        nome_familiar: forma === "familiar" ? nomeFamiliar.trim() : null,
+        nome_fornecedor: forma === "fornecedor" ? nomeFornecedor.trim() : null,
+        origem_correios: forma === "correios" ? origemCorreios : null,
+        observacoes: observacoes.trim() || null,
+      };
 
-      const recebimentoId = (header as unknown as { id: string }).id;
+      let recebimentoId: string;
+      if (editandoId) {
+        const { error } = await supabase
+          .from("recebimentos_fraldas" as never)
+          .update(cabecalho as never)
+          .eq("id", editandoId);
+        if (error) throw error;
+        const { error: errDel } = await supabase
+          .from("recebimentos_fraldas_itens" as never)
+          .delete()
+          .eq("recebimento_id", editandoId);
+        if (errDel) throw errDel;
+        recebimentoId = editandoId;
+      } else {
+        const { data: user } = await supabase.auth.getUser();
+        const { data: header, error } = await supabase
+          .from("recebimentos_fraldas" as never)
+          .insert({ ...cabecalho, registrado_por: user.user?.id ?? null } as never)
+          .select("id")
+          .single();
+        if (error) throw error;
+        recebimentoId = (header as unknown as { id: string }).id;
+      }
+
       const { error: errItens } = await supabase.from("recebimentos_fraldas_itens" as never).insert(
         itens.map((i) => ({
           recebimento_id: recebimentoId,
@@ -373,11 +433,12 @@ function RecebimentoFraldasPage() {
         })) as never,
       );
       if (errItens) throw errItens;
+      return !!editandoId;
     },
-    onSuccess: () => {
+    onSuccess: (corrigido) => {
       qc.invalidateQueries({ queryKey: ["recebimentos-fraldas"] });
       limpar();
-      toast.success("Entrega registrada");
+      toast.success(corrigido ? "Registro corrigido" : "Entrega registrada");
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -542,7 +603,7 @@ function RecebimentoFraldasPage() {
       <section className="bg-surface border border-border rounded-lg p-6 space-y-6">
         <div className="flex items-center gap-2">
           <Package className="size-5" />
-          <h2 className="font-extrabold text-lg">Registrar entrega</h2>
+          <h2 className="font-extrabold text-lg">{editandoId ? "Corrigir registro de entrega" : "Registrar entrega"}</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -726,10 +787,15 @@ function RecebimentoFraldasPage() {
           />
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          {editandoId && (
+            <Button variant="outline" onClick={limpar}>
+              Cancelar correção
+            </Button>
+          )}
           <Button onClick={() => criar.mutate()} disabled={criar.isPending} className="gap-2">
-            <Plus className="size-4" />
-            Registrar entrega
+            {editandoId ? <Pencil className="size-4" /> : <Plus className="size-4" />}
+            {editandoId ? "Salvar correções" : "Registrar entrega"}
           </Button>
         </div>
       </section>
