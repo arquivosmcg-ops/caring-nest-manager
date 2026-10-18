@@ -1823,6 +1823,56 @@ export type Database = {
           },
         ]
       }
+      saidas_temporarias: {
+        Row: {
+          acompanhante: string
+          created_at: string
+          id: string
+          motivo: string
+          observacoes: string | null
+          registrado_por: string | null
+          registrado_por_nome: string | null
+          residente_id: string
+          retorno_em: string | null
+          saida_em: string
+          updated_at: string
+        }
+        Insert: {
+          acompanhante: string
+          created_at?: string
+          id?: string
+          motivo: string
+          observacoes?: string | null
+          registrado_por?: string | null
+          registrado_por_nome?: string | null
+          residente_id: string
+          retorno_em?: string | null
+          saida_em: string
+          updated_at?: string
+        }
+        Update: {
+          acompanhante?: string
+          created_at?: string
+          id?: string
+          motivo?: string
+          observacoes?: string | null
+          registrado_por?: string | null
+          registrado_por_nome?: string | null
+          residente_id?: string
+          retorno_em?: string | null
+          saida_em?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saidas_temporarias_residente_id_fkey"
+            columns: ["residente_id"]
+            isOneToOne: false
+            referencedRelation: "residentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sinais_vitais: {
         Row: {
           frequencia_cardiaca: number | null
