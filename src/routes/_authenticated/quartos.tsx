@@ -10,6 +10,7 @@ import { Plus, BedDouble } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { usePerfilAtual } from "@/hooks/use-perfil";
 
 export const Route = createFileRoute("/_authenticated/quartos")({
   component: QuartosPage,
@@ -27,6 +28,8 @@ type Quarto = {
 function QuartosPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const perfil = usePerfilAtual().data;
+  const podeEditar = !!perfil?.isEquipeClinica;
 
   const quartos = useQuery({
     queryKey: ["quartos"],
@@ -87,7 +90,7 @@ function QuartosPage() {
         <p className="text-sm text-muted-foreground">
           {quartos.data?.length ?? 0} quarto(s) cadastrados
         </p>
-        <Dialog open={open} onOpenChange={setOpen}>
+        {podeEditar && (<Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button><Plus className="size-4 mr-1" /> Novo quarto</Button>
           </DialogTrigger>
@@ -123,7 +126,7 @@ function QuartosPage() {
               </div>
             </form>
           </DialogContent>
-        </Dialog>
+        </Dialog>)}
       </div>
 
       {quartos.data?.length === 0 ? (
@@ -143,14 +146,18 @@ function QuartosPage() {
                 <span className="text-[10px] font-bold uppercase">{q.status}</span>
               </div>
               <p className="text-xs mt-3">Capacidade: <b>{q.capacidade}</b></p>
-              <Select value={q.status} onValueChange={(v) => updateStatus.mutate({ id: q.id, status: v as Quarto["status"] })}>
-                <SelectTrigger className="mt-3 h-8 text-xs bg-white/60"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="vago">Vago</SelectItem>
-                  <SelectItem value="ocupado">Ocupado</SelectItem>
-                  <SelectItem value="manutencao">Manutenção</SelectItem>
-                </SelectContent>
-              </Select>
+              {podeEditar && (
+                <Select
+                  value={q.status === "manutencao" ? "manutencao" : "auto"}
+                  onValueChange={(v) => updateStatus.mutate({ id: q.id, status: v === "manutencao" ? "manutencao" : "vago" })}
+                >
+                  <SelectTrigger className="mt-3 h-8 text-xs bg-white/60"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="auto">Automático (pelos residentes)</SelectItem>
+                    <SelectItem value="manutencao">Manutenção</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           ))}
         </div>

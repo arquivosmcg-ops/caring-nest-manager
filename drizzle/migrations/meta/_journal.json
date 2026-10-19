@@ -15,6 +15,20 @@
       "when": 1792324441104,
       "tag": "0001_saidas_temporarias",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792412578532,
+      "tag": "0002_quartos_status_automatico",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792412598494,
+      "tag": "0003_quartos_status_before_update",
+      "breakpoints": true
     }
   ]
 }
