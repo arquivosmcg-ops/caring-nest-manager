@@ -10,6 +10,7 @@ import { Plus, BedDouble } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { usePerfilAtual } from "@/hooks/use-perfil";
 
 export const Route = createFileRoute("/_authenticated/quartos")({
   component: QuartosPage,
@@ -27,6 +28,8 @@ type Quarto = {
 function QuartosPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const perfil = usePerfilAtual().data;
+  const podeEditar = !!perfil?.isEquipeClinica;
 
   const quartos = useQuery({
     queryKey: ["quartos"],
