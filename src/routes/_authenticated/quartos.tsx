@@ -90,7 +90,7 @@ function QuartosPage() {
         <p className="text-sm text-muted-foreground">
           {quartos.data?.length ?? 0} quarto(s) cadastrados
         </p>
-        <Dialog open={open} onOpenChange={setOpen}>
+        {podeEditar && (<Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button><Plus className="size-4 mr-1" /> Novo quarto</Button>
           </DialogTrigger>
@@ -126,7 +126,7 @@ function QuartosPage() {
               </div>
             </form>
           </DialogContent>
-        </Dialog>
+        </Dialog>)}
       </div>
 
       {quartos.data?.length === 0 ? (
