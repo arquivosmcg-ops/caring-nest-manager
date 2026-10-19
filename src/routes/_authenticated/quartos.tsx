@@ -143,14 +143,18 @@ function QuartosPage() {
                 <span className="text-[10px] font-bold uppercase">{q.status}</span>
               </div>
               <p className="text-xs mt-3">Capacidade: <b>{q.capacidade}</b></p>
-              <Select value={q.status} onValueChange={(v) => updateStatus.mutate({ id: q.id, status: v as Quarto["status"] })}>
-                <SelectTrigger className="mt-3 h-8 text-xs bg-white/60"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="vago">Vago</SelectItem>
-                  <SelectItem value="ocupado">Ocupado</SelectItem>
-                  <SelectItem value="manutencao">Manutenção</SelectItem>
-                </SelectContent>
-              </Select>
+              {podeEditar && (
+                <Select
+                  value={q.status === "manutencao" ? "manutencao" : "auto"}
+                  onValueChange={(v) => updateStatus.mutate({ id: q.id, status: v === "manutencao" ? "manutencao" : "vago" })}
+                >
+                  <SelectTrigger className="mt-3 h-8 text-xs bg-white/60"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="auto">Automático (pelos residentes)</SelectItem>
+                    <SelectItem value="manutencao">Manutenção</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           ))}
         </div>
