@@ -29,6 +29,13 @@
       "when": 1792412598494,
       "tag": "0003_quartos_status_before_update",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792412704131,
+      "tag": "0004_corrigir_recebimento_fraldas",
+      "breakpoints": true
     }
   ]
 }

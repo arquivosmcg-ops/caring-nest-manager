@@ -2078,6 +2078,10 @@ export type Database = {
         Args: { _atual: string; _nova: string }
         Returns: boolean
       }
+      corrigir_recebimento_fraldas: {
+        Args: { _dados: Json; _id: string; _itens: Json }
+        Returns: undefined
+      }
       corrigir_visita_em_andamento: {
         Args: { _dados: Json; _residentes: string[]; _visita_id: string }
         Returns: undefined
