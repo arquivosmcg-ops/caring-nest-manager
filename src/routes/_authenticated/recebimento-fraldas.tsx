@@ -398,42 +398,40 @@ function RecebimentoFraldasPage() {
         observacoes: observacoes.trim() || null,
       };
 
-      let recebimentoId: string;
-      if (editandoId) {
-        const { error } = await supabase
-          .from("recebimentos_fraldas" as never)
-          .update(cabecalho as never)
-          .eq("id", editandoId);
-        if (error) throw error;
-        const { error: errDel } = await supabase
-          .from("recebimentos_fraldas_itens" as never)
-          .delete()
-          .eq("recebimento_id", editandoId);
-        if (errDel) throw errDel;
-        recebimentoId = editandoId;
-      } else {
-        const { data: user } = await supabase.auth.getUser();
-        const { data: header, error } = await supabase
-          .from("recebimentos_fraldas" as never)
-          .insert({ ...cabecalho, registrado_por: user.user?.id ?? null } as never)
-          .select("id")
-          .single();
-        if (error) throw error;
-        recebimentoId = (header as unknown as { id: string }).id;
-      }
-
-      const { error: errItens } = await supabase.from("recebimentos_fraldas_itens" as never).insert(
+      const linhas = (recebimentoId: string | null) =>
         itens.map((i) => ({
-          recebimento_id: recebimentoId,
+          ...(recebimentoId ? { recebimento_id: recebimentoId } : {}),
           produto: nomeProduto(i),
           marca: i.marca.trim(),
           tipo: i.tipo,
           quantidade_fardos: Number(i.fardos) || 0,
           unidades_por_fardo: Number(i.unidades) || 0,
-        })) as never,
-      );
+        }));
+
+      if (editandoId) {
+        // Cabeçalho e itens corrigidos numa única transação no banco.
+        const { error } = await supabase.rpc("corrigir_recebimento_fraldas", {
+          _id: editandoId,
+          _dados: cabecalho,
+          _itens: linhas(null),
+        });
+        if (error) throw error;
+        return true;
+      }
+
+      const { data: user } = await supabase.auth.getUser();
+      const { data: header, error } = await supabase
+        .from("recebimentos_fraldas" as never)
+        .insert({ ...cabecalho, registrado_por: user.user?.id ?? null } as never)
+        .select("id")
+        .single();
+      if (error) throw error;
+      const recebimentoId = (header as unknown as { id: string }).id;
+      const { error: errItens } = await supabase
+        .from("recebimentos_fraldas_itens" as never)
+        .insert(linhas(recebimentoId) as never);
       if (errItens) throw errItens;
-      return !!editandoId;
+      return false;
     },
     onSuccess: (corrigido) => {
       qc.invalidateQueries({ queryKey: ["recebimentos-fraldas"] });
