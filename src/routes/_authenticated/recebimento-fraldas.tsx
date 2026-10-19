@@ -868,7 +868,7 @@ function RecebimentoFraldasPage() {
 
           {!modoAgrupado &&
             filtrados.map((r) => (
-              <RegistroCard key={r.id} r={r} abertos={abertos} setAbertos={setAbertos} totalRegistro={totalRegistro} detalheForma={detalheForma} onRemover={(id) => remover.mutate(id)} />
+              <RegistroCard key={r.id} r={r} abertos={abertos} setAbertos={setAbertos} totalRegistro={totalRegistro} detalheForma={detalheForma} onRemover={(id) => remover.mutate(id)} onEditar={editar} />
             ))}
 
           {modoAgrupado &&
@@ -885,7 +885,7 @@ function RecebimentoFraldasPage() {
                 </div>
                 <div className="bg-surface p-3 space-y-3">
                   {g.registros.map((r) => (
-                    <RegistroCard key={r.id} r={r} abertos={abertos} setAbertos={setAbertos} totalRegistro={totalRegistro} detalheForma={detalheForma} onRemover={(id) => remover.mutate(id)} />
+                    <RegistroCard key={r.id} r={r} abertos={abertos} setAbertos={setAbertos} totalRegistro={totalRegistro} detalheForma={detalheForma} onRemover={(id) => remover.mutate(id)} onEditar={editar} />
                   ))}
                 </div>
               </div>
