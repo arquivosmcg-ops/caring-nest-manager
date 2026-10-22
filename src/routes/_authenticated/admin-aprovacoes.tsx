@@ -18,7 +18,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Check, X, ShieldCheck, Lock, KeyRound } from "lucide-react";
+import { Check, X, ShieldCheck, Lock, KeyRound, Pencil } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import { SenhaForca } from "@/components/senha-forca";
 import { senhaValida } from "@/lib/senha";
@@ -265,6 +267,31 @@ function AdminAprovacoes() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const [editando, setEditando] = useState<Perfil | null>(null);
+  const salvarCadastro = useMutation({
+    mutationFn: async (p: Perfil) => {
+      if (!p.full_name.trim()) throw new Error("Informe o nome completo");
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          full_name: p.full_name.trim(),
+          celular: p.celular?.trim() || null,
+          funcao: p.funcao || null,
+          registro_profissional: p.registro_profissional?.trim() || null,
+        })
+        .eq("id", p.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Cadastro corrigido");
+      setEditando(null);
+      qc.invalidateQueries({ queryKey: ["perfis-aprovacao"] });
+      qc.invalidateQueries({ queryKey: ["profissionais-admin"] });
+      qc.invalidateQueries({ queryKey: ["perfil-atual"] });
+    },
+    onError: (e: Error) => toast.error(e.message || "Não foi possível salvar"),
+  });
+
   if (loadingRole) return <p className="text-sm text-muted-foreground">Verificando permissões…</p>;
 
   if (!isAdmin) {
@@ -385,6 +412,9 @@ function AdminAprovacoes() {
                                     </AlertDialogFooter>
                                   </AlertDialogContent>
                                 </AlertDialog>
+                                <Button size="sm" variant="outline" onClick={() => setEditando({ ...p })}>
+                                  <Pencil className="size-4" /> Corrigir
+                                </Button>
                               </div>
                             </td>
                           </tr>
@@ -414,7 +444,10 @@ function AdminAprovacoes() {
                               {p.status_aprovacao}
                             </Badge>
                           </td>
-                          <td className="p-3 text-right">
+                          <td className="p-3 text-right space-x-2 whitespace-nowrap">
+                            <Button size="sm" variant="outline" onClick={() => setEditando({ ...p })}>
+                              <Pencil className="size-4" /> Corrigir
+                            </Button>
                             {p.status_aprovacao !== "aprovado" && (
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
@@ -457,6 +490,50 @@ function AdminAprovacoes() {
           <ConfiguracoesSeguranca />
         </TabsContent>
       </Tabs>
+
+      <Dialog open={!!editando} onOpenChange={(o) => !o && setEditando(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Corrigir cadastro</DialogTitle>
+            <DialogDescription>{editando?.email ?? ""}</DialogDescription>
+          </DialogHeader>
+          {editando && (
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="ap-nome">Nome completo</Label>
+                <Input id="ap-nome" value={editando.full_name} onChange={(e) => setEditando({ ...editando, full_name: e.target.value })} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="ap-cel">Celular</Label>
+                <Input id="ap-cel" value={editando.celular ?? ""} onChange={(e) => setEditando({ ...editando, celular: e.target.value })} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Função</Label>
+                <Select value={editando.funcao ?? ""} onValueChange={(v) => setEditando({ ...editando, funcao: v })}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    {[["medico", "Médico"], ["enfermeira", "Enfermeira"], ["cuidadora", "Cuidadora"], ["outro", "Outro"]]
+                      .concat(editando.funcao && !["medico", "enfermeira", "cuidadora", "outro"].includes(editando.funcao) ? [[editando.funcao, editando.funcao]] : [])
+                      .map(([v, l]) => (
+                        <SelectItem key={v} value={v}>{l}</SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="ap-reg">Carteira profissional / conselho (opcional)</Label>
+                <Input id="ap-reg" value={editando.registro_profissional ?? ""} onChange={(e) => setEditando({ ...editando, registro_profissional: e.target.value })} />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditando(null)}>Cancelar</Button>
+            <Button disabled={salvarCadastro.isPending} onClick={() => editando && salvarCadastro.mutate(editando)}>
+              Salvar correções
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
