@@ -36,6 +36,13 @@
       "when": 1792412704131,
       "tag": "0004_corrigir_recebimento_fraldas",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792865664493,
+      "tag": "0005_residentes_cadastro_outros_aprovados",
+      "breakpoints": true
     }
   ]
 }

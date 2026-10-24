@@ -72,6 +72,14 @@ export function calcularIdade(data: string | null): number | null {
 }
 
 export const Route = createFileRoute("/_authenticated/residentes")({
+  head: () => ({ meta: [
+    { title: "Residentes · Residencial São Camilo" },
+    { name: "description", content: "Cadastro e atualização das residentes do Residencial São Camilo." },
+    { property: "og:title", content: "Residentes · Residencial São Camilo" },
+    { property: "og:description", content: "Gestão dos cadastros de residentes do Residencial São Camilo." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: ResidentesPage,
 });
 
@@ -724,7 +732,7 @@ function ResidentesPage() {
         const { error } = await supabase
           .from("residentes")
           .update({ nome_completo: u.novo })
-          .eq("id", u.id);
+          .eq("id", u.id).select("id").single();
         if (error) throw error;
       }
       return updates.length;
@@ -740,7 +748,7 @@ function ResidentesPage() {
 
   const updateNome = useMutation({
     mutationFn: async ({ id, nome }: { id: string; nome: string }) => {
-      const { error } = await supabase.from("residentes").update({ nome_completo: nome }).eq("id", id);
+      const { error } = await supabase.from("residentes").update({ nome_completo: nome }).eq("id", id).select("id").single();
       if (error) throw error;
     },
     onSuccess: () => {
@@ -764,7 +772,7 @@ function ResidentesPage() {
         if (error) throw error;
         foto_url = path;
       }
-      const { error } = await supabase.from("residentes").update({ ...values, foto_url }).eq("id", id);
+      const { error } = await supabase.from("residentes").update({ ...values, foto_url }).eq("id", id).select("id").single();
       if (error) throw error;
     },
     onSuccess: () => {
