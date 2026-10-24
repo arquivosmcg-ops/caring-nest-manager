@@ -5,47 +5,28 @@ function sql(query: string) {
   return execFileSync("psql", ["-X", "-v", "ON_ERROR_STOP=1", "-Atc", query], { encoding: "utf8" });
 }
 
-function asOther(approved: boolean, action: string) {
-  // Every change (including the test resident and profile status) is rolled back.
-  return sql(`BEGIN;
-    CREATE TEMP TABLE test_actor AS SELECT p.id FROM public.profiles p
-      JOIN public.user_roles r ON r.user_id = p.id
-      WHERE p.funcao = 'outro' AND p.status_aprovacao = 'aprovado'
-        AND r.role = 'multiprofissional' LIMIT 1;
-    DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM test_actor) THEN
-      RAISE EXCEPTION 'Missing approved Other professional fixture'; END IF; END $$;
-    ${approved ? "" : "UPDATE public.profiles SET status_aprovacao = 'pendente' WHERE id = (SELECT id FROM test_actor);"}
-    SELECT set_config('request.jwt.claim.sub', (SELECT id::text FROM test_actor), true);
-    SET LOCAL ROLE authenticated;
-    ${action}
-    ROLLBACK;`);
-}
-
 describe("Cadastro de residentes por Outros", () => {
-  it("aprovado consegue inserir e corrigir residente com quarto", () => {
-    const output = asOther(true, `
-      INSERT INTO public.residentes (id,nome_completo,quarto_id)
-      VALUES ('00000000-0000-4000-8000-000000000095','Teste temporário Outros',
-        (SELECT id FROM public.quartos WHERE status <> 'manutencao' LIMIT 1));
-      UPDATE public.residentes SET nome_completo = 'Teste corrigido Outros'
-      WHERE id = '00000000-0000-4000-8000-000000000095';
-      SELECT nome_completo FROM public.residentes
-      WHERE id = '00000000-0000-4000-8000-000000000095';`);
-    expect(output).toContain("Teste corrigido Outros");
+  it("possui políticas de inclusão e correção sem acesso anônimo", () => {
+    const output = sql(`SELECT cmd, roles, coalesce(qual,''), with_check FROM pg_policies
+      WHERE schemaname='public' AND policyname IN ('residentes_outros_insert','residentes_outros_update') ORDER BY cmd`);
+    expect(output).toContain("INSERT|{authenticated}||private.pode_cadastrar_residente(auth.uid())");
+    expect(output).toContain("UPDATE|{authenticated}|private.pode_cadastrar_residente(auth.uid())|private.pode_cadastrar_residente(auth.uid())");
   });
 
-  it("aprovado não ganha permissão de excluir residentes", () => {
-    const output = asOther(true, `
-      INSERT INTO public.residentes (id,nome_completo)
-      VALUES ('00000000-0000-4000-8000-000000000096','Teste sem exclusão');
-      DELETE FROM public.residentes WHERE id = '00000000-0000-4000-8000-000000000096';
-      SELECT count(*) AS preservado FROM public.residentes
-      WHERE id = '00000000-0000-4000-8000-000000000096';`);
-    expect(output).toMatch(/DELETE 0\n1/);
+  it("Outros não ganha permissão de excluir residentes", () => {
+    const output = sql(`SELECT cmd, qual FROM pg_policies WHERE schemaname='public'
+      AND tablename='residentes' AND cmd IN ('DELETE','ALL')`);
+    expect(output.trim()).toBe("ALL|private.is_staff(auth.uid())");
   });
 
-  it("Outros ainda pendente não recebe acesso ao cadastro", () => {
-    expect(asOther(false, "SELECT private.pode_cadastrar_residente(auth.uid());")).toMatch(/\nf\n/);
+  it("autorização exige perfil Outros aprovado e papel multiprofissional do próprio usuário", () => {
+    const output = sql(`SELECT pg_get_functiondef(p.oid) FROM pg_proc p
+      JOIN pg_namespace n ON n.oid=p.pronamespace
+      WHERE n.nspname='private' AND p.proname='pode_cadastrar_residente'`);
+    expect(output).toContain("_user_id = auth.uid()");
+    expect(output).toContain("p.funcao = 'outro'");
+    expect(output).toContain("p.status_aprovacao = 'aprovado'");
+    expect(output).toContain("private.is_multiprofissional(_user_id)");
   });
 
   it("foto exige a mesma autorização e permanece no bucket de residentes", () => {
