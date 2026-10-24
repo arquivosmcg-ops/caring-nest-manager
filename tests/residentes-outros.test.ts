@@ -20,7 +20,9 @@ describe("Cadastro de residentes por Outros", () => {
   });
 
   it("autorização exige perfil Outros aprovado e papel multiprofissional do próprio usuário", () => {
-    const output = sql(`SELECT pg_get_functiondef('private.pode_cadastrar_residente(uuid)'::regprocedure)`);
+    const output = sql(`SELECT pg_get_functiondef(p.oid) FROM pg_proc p
+      JOIN pg_namespace n ON n.oid=p.pronamespace
+      WHERE n.nspname='private' AND p.proname='pode_cadastrar_residente'`);
     expect(output).toContain("_user_id = auth.uid()");
     expect(output).toContain("p.funcao = 'outro'");
     expect(output).toContain("p.status_aprovacao = 'aprovado'");
