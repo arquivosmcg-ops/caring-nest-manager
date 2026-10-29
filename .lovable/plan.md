@@ -7,7 +7,7 @@ As outras áreas manterão seu funcionamento. Os dados financeiros ficarão em u
 
 ## 1. Estrutura, acesso e cadastros
 - Criar armazenamento de catálogo, fichas financeiras, cobranças e itens, pagamentos e suas distribuições, créditos, configurações, contatos, promessas, fechamento de caixa e auditoria.
-- Permissões independentes: **Visualizar financeiro**, **Lançar e receber** e **Administrador financeiro**. A administração atual poderá conceder e retirar essas permissões; administradores do app terão acesso inicial à administração financeira. Nenhum outro perfil receberá acesso automaticamente.
+- Acesso exclusivo aos **administradores do app** e à nova função **Administrador financeiro**, após aprovação e concessão por administrador. Ambos podem visualizar, lançar, receber e administrar o Financeiro. A função financeira não dá poderes de administração geral; selecionar essa função no cadastro não concede acesso automaticamente.
 - Catálogo com nome, categoria, unidade, preço padrão e inativação. Preservar descrições e valores históricos mesmo quando o catálogo mudar.
 - Ficha financeira por residente: mensalidade, vencimento de 1 a 28, responsável, telefone e pagamento preferencial. Permitir reaproveitar nome e telefone do responsável já cadastrado, mediante confirmação, sem assumir que o contato de emergência é o pagador.
 - Comprovantes opcionais em armazenamento privado; histórico financeiro sem exclusão.
@@ -44,13 +44,13 @@ As outras áreas manterão seu funcionamento. Os dados financeiros ficarão em u
 
 ## 6. Verificação
 - Testar concretamente vencimento 1–28, valores em centavos, multa única de 2%, juros de 1%/mês, carência, parcial, seleção manual, crédito, estorno, cancelamento, promessa, fechamento e geração sem duplicidade.
-- Testar permissões: não autorizados sem acesso, consulta sem escrita, operação sem poderes administrativos e administração financeira com acesso às funções previstas.
+- Testar permissões: somente administradores e Administrador financeiro autorizado têm acesso; profissionais pendentes e demais funções não acessam nem os dados. Administrador financeiro não ganha administração geral.
 - Confirmar na tela um ciclo real controlado de cadastro financeiro, cobrança, pagamento parcial, extrato e estorno, sem deixar dados de teste na ficha de uma residente real.
 - Verificar computador/celular, arquivos exportados e ausência de erros antes de declarar concluído.
 
 ## Detalhes técnicos
 - Tabelas financeiras próprias ligadas a `residentes`, preservando as regras existentes de cadastro por Outros. Valores monetários em centavos inteiros; percentuais com precisão fixa.
-- Permissões em tabela separada dos perfis, RLS e GRANT explícitos. Auditoria gerada no banco com identidade autenticada, protegida contra alteração ou exclusão.
+- Papel financeiro protegido em tabela separada dos perfis, concedido/revogado somente por administrador, RLS e GRANT explícitos. Auditoria gerada no banco com identidade autenticada, protegida contra alteração ou exclusão.
 - Operações de múltiplos registros em rotinas transacionais com validação de permissão, bloqueio de linhas e chaves de idempotência. O banco determina saldos e aplica as regras; prévia no navegador nunca autoriza a escrita.
 - Rotina SQL mensal agendada para geração de mensalidades e fechamento dos extras do mês anterior; alternativa manual chama a mesma lógica. Não criar consulta periódica frequente para persistir estados de atraso.
 - Novas páginas sob a área autenticada, carregamento integrado ao cache existente, metadados próprios e componentes visuais já usados no aplicativo. Utilizar biblioteca compatível para PDF e ferramentas existentes para planilhas.
