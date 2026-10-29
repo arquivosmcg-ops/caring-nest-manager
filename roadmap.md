@@ -1,5 +1,6 @@
 # Financeiro
 
+- [ ] Criar função Administrador financeiro; acesso exclusivo a ela (aprovada e concedida por administrador) e aos administradores do app.
 - [ ] Estrutura de dados, permissões financeiras, auditoria e comprovantes privados.
 - [ ] Catálogo e ficha financeira vinculada aos residentes existentes.
 - [ ] Mensalidades automáticas, consumo em lote e cobranças avulsas ou agrupadas.
