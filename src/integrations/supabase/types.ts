@@ -791,6 +791,541 @@ export type Database = {
           },
         ]
       }
+      financeiro_abatimentos: {
+        Row: {
+          cobranca_id: string
+          correcao_centavos: number
+          criado_em: string
+          criado_por: string | null
+          data: string
+          id: string
+          juros_centavos: number
+          motivo: string
+          multa_centavos: number
+        }
+        Insert: {
+          cobranca_id: string
+          correcao_centavos?: number
+          criado_em?: string
+          criado_por?: string | null
+          data: string
+          id?: string
+          juros_centavos?: number
+          motivo: string
+          multa_centavos?: number
+        }
+        Update: {
+          cobranca_id?: string
+          correcao_centavos?: number
+          criado_em?: string
+          criado_por?: string | null
+          data?: string
+          id?: string
+          juros_centavos?: number
+          motivo?: string
+          multa_centavos?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financeiro_abatimentos_cobranca_id_fkey"
+            columns: ["cobranca_id"]
+            isOneToOne: false
+            referencedRelation: "financeiro_cobrancas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financeiro_acessos: {
+        Row: {
+          atualizado_em: string
+          concedido_por: string | null
+          usuario_id: string
+        }
+        Insert: {
+          atualizado_em?: string
+          concedido_por?: string | null
+          usuario_id: string
+        }
+        Update: {
+          atualizado_em?: string
+          concedido_por?: string | null
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financeiro_acessos_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financeiro_alocacoes: {
+        Row: {
+          cobranca_id: string
+          correcao_centavos: number
+          id: string
+          juros_centavos: number
+          multa_centavos: number
+          pagamento_id: string
+          principal_centavos: number
+        }
+        Insert: {
+          cobranca_id: string
+          correcao_centavos?: number
+          id?: string
+          juros_centavos?: number
+          multa_centavos?: number
+          pagamento_id: string
+          principal_centavos?: number
+        }
+        Update: {
+          cobranca_id?: string
+          correcao_centavos?: number
+          id?: string
+          juros_centavos?: number
+          multa_centavos?: number
+          pagamento_id?: string
+          principal_centavos?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financeiro_alocacoes_cobranca_id_fkey"
+            columns: ["cobranca_id"]
+            isOneToOne: false
+            referencedRelation: "financeiro_cobrancas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_alocacoes_pagamento_id_fkey"
+            columns: ["pagamento_id"]
+            isOneToOne: false
+            referencedRelation: "financeiro_pagamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financeiro_auditoria: {
+        Row: {
+          acao: string
+          antes: Json | null
+          criado_em: string
+          depois: Json | null
+          entidade: string
+          entidade_id: string | null
+          id: string
+          usuario_id: string | null
+          usuario_nome: string
+        }
+        Insert: {
+          acao: string
+          antes?: Json | null
+          criado_em?: string
+          depois?: Json | null
+          entidade: string
+          entidade_id?: string | null
+          id?: string
+          usuario_id?: string | null
+          usuario_nome: string
+        }
+        Update: {
+          acao?: string
+          antes?: Json | null
+          criado_em?: string
+          depois?: Json | null
+          entidade?: string
+          entidade_id?: string | null
+          id?: string
+          usuario_id?: string | null
+          usuario_nome?: string
+        }
+        Relationships: []
+      }
+      financeiro_cadastros: {
+        Row: {
+          atualizado_em: string
+          dia_vencimento: number
+          forma_preferencial: string
+          mensalidade_centavos: number
+          residente_id: string
+          responsavel_nome: string
+          responsavel_telefone: string
+        }
+        Insert: {
+          atualizado_em?: string
+          dia_vencimento: number
+          forma_preferencial?: string
+          mensalidade_centavos: number
+          residente_id: string
+          responsavel_nome: string
+          responsavel_telefone?: string
+        }
+        Update: {
+          atualizado_em?: string
+          dia_vencimento?: number
+          forma_preferencial?: string
+          mensalidade_centavos?: number
+          residente_id?: string
+          responsavel_nome?: string
+          responsavel_telefone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financeiro_cadastros_residente_id_fkey"
+            columns: ["residente_id"]
+            isOneToOne: true
+            referencedRelation: "residentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financeiro_caixa: {
+        Row: {
+          atualizado_em: string
+          atualizado_por: string | null
+          data: string
+          fechado: boolean
+          motivo: string
+        }
+        Insert: {
+          atualizado_em?: string
+          atualizado_por?: string | null
+          data: string
+          fechado?: boolean
+          motivo?: string
+        }
+        Update: {
+          atualizado_em?: string
+          atualizado_por?: string | null
+          data?: string
+          fechado?: boolean
+          motivo?: string
+        }
+        Relationships: []
+      }
+      financeiro_catalogo: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          categoria: string
+          id: string
+          nome: string
+          unidade: string
+          valor_centavos: number
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          categoria: string
+          id?: string
+          nome: string
+          unidade?: string
+          valor_centavos: number
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          categoria?: string
+          id?: string
+          nome?: string
+          unidade?: string
+          valor_centavos?: number
+        }
+        Relationships: []
+      }
+      financeiro_cobrancas: {
+        Row: {
+          ajuste_centavos: number
+          cancelada: boolean
+          carencia: number
+          competencia: string
+          correcao_bp: number
+          criado_em: string
+          criado_por: string | null
+          descricao: string
+          emissao: string
+          id: string
+          juros_bp: number
+          motivo_cancelamento: string | null
+          multa_bp: number
+          observacoes: string
+          residente_id: string
+          tipo: string
+          valor_centavos: number
+          vencimento: string
+        }
+        Insert: {
+          ajuste_centavos?: number
+          cancelada?: boolean
+          carencia: number
+          competencia: string
+          correcao_bp?: number
+          criado_em?: string
+          criado_por?: string | null
+          descricao: string
+          emissao: string
+          id?: string
+          juros_bp: number
+          motivo_cancelamento?: string | null
+          multa_bp: number
+          observacoes?: string
+          residente_id: string
+          tipo: string
+          valor_centavos?: number
+          vencimento: string
+        }
+        Update: {
+          ajuste_centavos?: number
+          cancelada?: boolean
+          carencia?: number
+          competencia?: string
+          correcao_bp?: number
+          criado_em?: string
+          criado_por?: string | null
+          descricao?: string
+          emissao?: string
+          id?: string
+          juros_bp?: number
+          motivo_cancelamento?: string | null
+          multa_bp?: number
+          observacoes?: string
+          residente_id?: string
+          tipo?: string
+          valor_centavos?: number
+          vencimento?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financeiro_cobrancas_residente_id_fkey"
+            columns: ["residente_id"]
+            isOneToOne: false
+            referencedRelation: "residentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financeiro_config: {
+        Row: {
+          alerta_dias: number
+          atualizado_em: string
+          automatico: boolean
+          carencia: number
+          correcao_bp: number
+          extras_agrupados: boolean
+          extras_dia: number | null
+          id: boolean
+          inadimplencia_dias: number
+          juros_bp: number
+          mensagem: string
+          multa_bp: number
+        }
+        Insert: {
+          alerta_dias?: number
+          atualizado_em?: string
+          automatico?: boolean
+          carencia?: number
+          correcao_bp?: number
+          extras_agrupados?: boolean
+          extras_dia?: number | null
+          id?: boolean
+          inadimplencia_dias?: number
+          juros_bp?: number
+          mensagem?: string
+          multa_bp?: number
+        }
+        Update: {
+          alerta_dias?: number
+          atualizado_em?: string
+          automatico?: boolean
+          carencia?: number
+          correcao_bp?: number
+          extras_agrupados?: boolean
+          extras_dia?: number | null
+          id?: boolean
+          inadimplencia_dias?: number
+          juros_bp?: number
+          mensagem?: string
+          multa_bp?: number
+        }
+        Relationships: []
+      }
+      financeiro_contatos: {
+        Row: {
+          cobranca_id: string
+          criado_em: string
+          criado_por: string | null
+          forma: string
+          id: string
+          observacao: string
+          promessa_data: string | null
+        }
+        Insert: {
+          cobranca_id: string
+          criado_em?: string
+          criado_por?: string | null
+          forma: string
+          id?: string
+          observacao?: string
+          promessa_data?: string | null
+        }
+        Update: {
+          cobranca_id?: string
+          criado_em?: string
+          criado_por?: string | null
+          forma?: string
+          id?: string
+          observacao?: string
+          promessa_data?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financeiro_contatos_cobranca_id_fkey"
+            columns: ["cobranca_id"]
+            isOneToOne: false
+            referencedRelation: "financeiro_cobrancas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financeiro_itens: {
+        Row: {
+          catalogo_id: string | null
+          categoria: string
+          cobranca_id: string
+          data_consumo: string
+          descricao: string
+          id: string
+          quantidade: number
+          total_centavos: number
+          unidade: string
+          valor_unitario_centavos: number
+        }
+        Insert: {
+          catalogo_id?: string | null
+          categoria: string
+          cobranca_id: string
+          data_consumo: string
+          descricao: string
+          id?: string
+          quantidade: number
+          total_centavos: number
+          unidade: string
+          valor_unitario_centavos: number
+        }
+        Update: {
+          catalogo_id?: string | null
+          categoria?: string
+          cobranca_id?: string
+          data_consumo?: string
+          descricao?: string
+          id?: string
+          quantidade?: number
+          total_centavos?: number
+          unidade?: string
+          valor_unitario_centavos?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financeiro_itens_catalogo_id_fkey"
+            columns: ["catalogo_id"]
+            isOneToOne: false
+            referencedRelation: "financeiro_catalogo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_itens_cobranca_id_fkey"
+            columns: ["cobranca_id"]
+            isOneToOne: false
+            referencedRelation: "financeiro_cobrancas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financeiro_operacoes: {
+        Row: {
+          acao: string
+          criado_em: string
+          id: string
+          resposta: Json
+          usuario_id: string
+        }
+        Insert: {
+          acao: string
+          criado_em?: string
+          id: string
+          resposta: Json
+          usuario_id: string
+        }
+        Update: {
+          acao?: string
+          criado_em?: string
+          id?: string
+          resposta?: Json
+          usuario_id?: string
+        }
+        Relationships: []
+      }
+      financeiro_pagamentos: {
+        Row: {
+          comprovante_path: string | null
+          criado_em: string
+          criado_por: string | null
+          data: string
+          estornado: boolean
+          fonte_credito: string | null
+          forma: string
+          id: string
+          motivo_estorno: string | null
+          observacoes: string
+          residente_id: string
+          valor_centavos: number
+        }
+        Insert: {
+          comprovante_path?: string | null
+          criado_em?: string
+          criado_por?: string | null
+          data: string
+          estornado?: boolean
+          fonte_credito?: string | null
+          forma: string
+          id?: string
+          motivo_estorno?: string | null
+          observacoes?: string
+          residente_id: string
+          valor_centavos: number
+        }
+        Update: {
+          comprovante_path?: string | null
+          criado_em?: string
+          criado_por?: string | null
+          data?: string
+          estornado?: boolean
+          fonte_credito?: string | null
+          forma?: string
+          id?: string
+          motivo_estorno?: string | null
+          observacoes?: string
+          residente_id?: string
+          valor_centavos?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financeiro_pagamentos_fonte_credito_fkey"
+            columns: ["fonte_credito"]
+            isOneToOne: false
+            referencedRelation: "financeiro_pagamentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_pagamentos_residente_id_fkey"
+            columns: ["residente_id"]
+            isOneToOne: false
+            referencedRelation: "residentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       incidentes: {
         Row: {
           acao_tomada: string | null
@@ -2096,6 +2631,7 @@ export type Database = {
         Returns: boolean
       }
       definir_pin_assinatura: { Args: { _pin: string }; Returns: boolean }
+      financeiro_tem_acesso: { Args: never; Returns: boolean }
       listar_profissionais: {
         Args: never
         Returns: {
