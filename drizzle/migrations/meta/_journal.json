@@ -43,6 +43,20 @@
       "when": 1792865664493,
       "tag": "0005_residentes_cadastro_outros_aprovados",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793367513448,
+      "tag": "0006_financeiro_estrutura_acesso",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793367600512,
+      "tag": "0007_financeiro_calculo_operacoes",
+      "breakpoints": true
     }
   ]
 }
