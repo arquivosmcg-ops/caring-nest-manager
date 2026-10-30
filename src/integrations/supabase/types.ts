@@ -2631,6 +2631,11 @@ export type Database = {
         Returns: boolean
       }
       definir_pin_assinatura: { Args: { _pin: string }; Returns: boolean }
+      financeiro_operar: {
+        Args: { _acao: string; _dados: Json; _operacao: string }
+        Returns: Json
+      }
+      financeiro_resumo: { Args: never; Returns: Json }
       financeiro_tem_acesso: { Args: never; Returns: boolean }
       listar_profissionais: {
         Args: never
