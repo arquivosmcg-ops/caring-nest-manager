@@ -51,7 +51,7 @@ type Perfil = {
   created_at: string;
 };
 
-const funcaoLabel: Record<string, string> = { medico: "Médico", enfermeira: "Enfermeira" };
+const funcaoLabel: Record<string, string> = { medico: "Médico", enfermeira: "Enfermeira", administrador_financeiro: "Administrador financeiro" };
 
 function CelularLink({ celular }: { celular: string | null }) {
   if (!celular) return <span className="text-muted-foreground">—</span>;
@@ -512,8 +512,8 @@ function AdminAprovacoes() {
                 <Select value={editando.funcao ?? ""} onValueChange={(v) => setEditando({ ...editando, funcao: v })}>
                   <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                   <SelectContent>
-                    {[["medico", "Médico"], ["enfermeira", "Enfermeira"], ["cuidadora", "Cuidadora"], ["outro", "Outro"]]
-                      .concat(editando.funcao && !["medico", "enfermeira", "cuidadora", "outro"].includes(editando.funcao) ? [[editando.funcao, editando.funcao]] : [])
+                    {[["medico", "Médico"], ["enfermeira", "Enfermeira"], ["cuidadora", "Cuidadora"], ["outro", "Outro"], ["administrador_financeiro", "Administrador financeiro"]]
+                      .concat(editando.funcao && !["medico", "enfermeira", "cuidadora", "outro", "administrador_financeiro"].includes(editando.funcao) ? [[editando.funcao, editando.funcao]] : [])
                       .map(([v, l]) => (
                         <SelectItem key={v} value={v}>{l}</SelectItem>
                       ))}
