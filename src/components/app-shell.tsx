@@ -24,6 +24,7 @@ import {
   CalendarDays,
   BellRing,
   HeartHandshake,
+  Wallet,
 } from "lucide-react";
 import logoAsset from "@/assets/logo_instituto_maior.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,10 +34,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { usePerfilAtual } from "@/hooks/use-perfil";
 import { AlertasSino } from "@/components/alertas-sino";
 import { AlertasEquipe } from "@/components/alertas-equipe";
+import { useFinanceiroAcesso } from "@/lib/financeiro-data";
+import { FinanceiroIndicador } from "@/components/financeiro-indicador";
 
 const navItems = [
   { to: "/dashboard", label: "Painel Geral", icon: LayoutDashboard, multi: false },
   { to: "/residentes", label: "Residentes", icon: Users, multi: true },
+  { to: "/financeiro", label: "Financeiro", icon: Wallet, multi: true, financeOnly: true },
   { to: "/aniversariantes", label: "Aniversariantes do Mês", icon: Cake, multi: true },
   { to: "/prontuario", label: "Prontuário", icon: FileText, multi: true },
   { to: "/evolucao-multi", label: "Evolução Multiprofissional", icon: Stethoscope, multi: true },
@@ -71,12 +75,15 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const perfil = usePerfilAtual().data;
+  const financeiro = useFinanceiroAcesso().data === true;
   const somenteMulti = !!perfil && perfil.isMultiprofissional && !perfil.isEquipeClinica;
   const itensVisiveis = navItems.filter(
     (i) =>
       (somenteMulti ? i.multi : true) &&
       (!("adminOnly" in i && i.adminOnly) || !!perfil?.isAdmin),
+      
   );
+  const itensPermitidos = itensVisiveis.filter(i => !("financeOnly" in i && i.financeOnly) || financeiro);
   const [profile, setProfile] = useState<{ full_name: string; role: string } | null>(null);
 
   useEffect(() => {
@@ -145,7 +152,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
 
         <nav className="flex-1 overflow-y-auto p-4 space-y-1">
-          {itensVisiveis.map((item) => {
+          {itensPermitidos.map((item) => {
             const active = pathname === item.to || (item.to !== "/dashboard" && pathname.startsWith(item.to));
             return (
               <Link
@@ -161,6 +168,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               >
                 <item.icon className="size-4" />
                 {item.label}
+                {item.to === "/financeiro" && <FinanceiroIndicador compact />}
               </Link>
             );
           })}
@@ -206,6 +214,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           <div className="flex items-center gap-2 shrink-0">
             <AlertasEquipe />
+            {financeiro && <FinanceiroIndicador />}
             <AlertasSino />
             <button
               onClick={() => toast.error("Alerta de emergência disparado à equipe", { duration: 4000 })}

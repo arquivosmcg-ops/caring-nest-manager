@@ -86,6 +86,7 @@ const funcaoFallback: Record<string, string> = {
   medico: "Médico",
   enfermeira: "Enfermeira",
   outro: "Outro profissional",
+  administrador_financeiro: "Administrador financeiro",
 };
 
 function dataBr(iso: string) {
@@ -240,6 +241,7 @@ function AdminUsuarios() {
       { v: "medico", label: "Médico" },
       { v: "enfermeira", label: "Enfermeira" },
       { v: "cuidadora", label: "Cuidadora" },
+      { v: "administrador_financeiro", label: "Administrador financeiro" },
     ];
     const extras = (categorias ?? [])
       .filter((c) => !base.some((b) => b.v === c.chave))

@@ -13,3 +13,5 @@
 - Derive room occupancy from active resident assignments as well as room status so stale status labels cannot hide occupancy warnings.
 - Grant resident creation, updates and photo uploads to approved Other professionals through a narrowly scoped RLS helper; never widen is_staff or grant administrative roles to enable registration.
 - Resident updates must return a saved row before showing success, so RLS-filtered zero-row updates cannot silently appear saved.
+- Finance uses separate resident-linked records, minimal resident projections, protected finance grants and atomic audited RPCs; never widen clinical staff access or derive financial privileges from editable signup metadata.
+- Financial amounts use integer cents and date-based simple-interest intervals; server-authoritative calculations and idempotent payment allocations prevent client previews or retries from corrupting balances.

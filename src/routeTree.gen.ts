@@ -23,6 +23,7 @@ import { Route as AuthenticatedChecklistsRouteImport } from './routes/_authentic
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedEscalaRouteImport } from './routes/_authenticated/escala'
 import { Route as AuthenticatedEvolucaoMultiRouteImport } from './routes/_authenticated/evolucao-multi'
+import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
 import { Route as AuthenticatedImplantacaoRouteImport } from './routes/_authenticated/implantacao'
 import { Route as AuthenticatedIncidentesRouteImport } from './routes/_authenticated/incidentes'
 import { Route as AuthenticatedMedicamentosRouteImport } from './routes/_authenticated/medicamentos'
@@ -116,6 +117,11 @@ const AuthenticatedEvolucaoMultiRoute =
     path: '/evolucao-multi',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedFinanceiroRoute = AuthenticatedFinanceiroRouteImport.update({
+  id: '/financeiro',
+  path: '/financeiro',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedImplantacaoRoute =
   AuthenticatedImplantacaoRouteImport.update({
     id: '/implantacao',
@@ -225,6 +231,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/escala': typeof AuthenticatedEscalaRoute
   '/evolucao-multi': typeof AuthenticatedEvolucaoMultiRoute
+  '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/implantacao': typeof AuthenticatedImplantacaoRoute
   '/incidentes': typeof AuthenticatedIncidentesRoute
   '/medicamentos': typeof AuthenticatedMedicamentosRoute
@@ -257,6 +264,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/escala': typeof AuthenticatedEscalaRoute
   '/evolucao-multi': typeof AuthenticatedEvolucaoMultiRoute
+  '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/implantacao': typeof AuthenticatedImplantacaoRoute
   '/incidentes': typeof AuthenticatedIncidentesRoute
   '/medicamentos': typeof AuthenticatedMedicamentosRoute
@@ -291,6 +299,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/escala': typeof AuthenticatedEscalaRoute
   '/_authenticated/evolucao-multi': typeof AuthenticatedEvolucaoMultiRoute
+  '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/implantacao': typeof AuthenticatedImplantacaoRoute
   '/_authenticated/incidentes': typeof AuthenticatedIncidentesRoute
   '/_authenticated/medicamentos': typeof AuthenticatedMedicamentosRoute
@@ -325,6 +334,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/escala'
     | '/evolucao-multi'
+    | '/financeiro'
     | '/implantacao'
     | '/incidentes'
     | '/medicamentos'
@@ -357,6 +367,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/escala'
     | '/evolucao-multi'
+    | '/financeiro'
     | '/implantacao'
     | '/incidentes'
     | '/medicamentos'
@@ -390,6 +401,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/escala'
     | '/_authenticated/evolucao-multi'
+    | '/_authenticated/financeiro'
     | '/_authenticated/implantacao'
     | '/_authenticated/incidentes'
     | '/_authenticated/medicamentos'
@@ -516,6 +528,13 @@ declare module '@tanstack/react-router' {
       path: '/evolucao-multi'
       fullPath: '/evolucao-multi'
       preLoaderRoute: typeof AuthenticatedEvolucaoMultiRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/financeiro': {
+      id: '/_authenticated/financeiro'
+      path: '/financeiro'
+      fullPath: '/financeiro'
+      preLoaderRoute: typeof AuthenticatedFinanceiroRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/implantacao': {
@@ -650,6 +669,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEscalaRoute: typeof AuthenticatedEscalaRoute
   AuthenticatedEvolucaoMultiRoute: typeof AuthenticatedEvolucaoMultiRoute
+  AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedImplantacaoRoute: typeof AuthenticatedImplantacaoRoute
   AuthenticatedIncidentesRoute: typeof AuthenticatedIncidentesRoute
   AuthenticatedMedicamentosRoute: typeof AuthenticatedMedicamentosRoute
@@ -679,6 +699,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEscalaRoute: AuthenticatedEscalaRoute,
   AuthenticatedEvolucaoMultiRoute: AuthenticatedEvolucaoMultiRoute,
+  AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedImplantacaoRoute: AuthenticatedImplantacaoRoute,
   AuthenticatedIncidentesRoute: AuthenticatedIncidentesRoute,
   AuthenticatedMedicamentosRoute: AuthenticatedMedicamentosRoute,

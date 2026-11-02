@@ -231,6 +231,7 @@ function AuthPage() {
                       <SelectItem value="educacao_fisica">Educador(a) Físico</SelectItem>
                       <SelectItem value="farmacia_clinica">Farmacêutico(a) Clínico</SelectItem>
                       <SelectItem value="outro">Outro profissional autorizado</SelectItem>
+                      <SelectItem value="administrador_financeiro">Administrador financeiro</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -238,17 +239,17 @@ function AuthPage() {
                 <div>
                   <Label htmlFor="registro">
                     Nº carteira profissional (CRM/COREN)
-                    {funcao === "outro" && (
+                    {["outro", "administrador_financeiro"].includes(funcao) && (
                       <span className="text-muted-foreground font-normal"> (opcional)</span>
                     )}
                   </Label>
                   <Input
                     id="registro"
-                    required={funcao !== "outro"}
+                    required={!["outro", "administrador_financeiro"].includes(funcao)}
                     maxLength={40}
                     value={registro}
                     onChange={(e) => setRegistro(e.target.value)}
-                    placeholder={funcao === "outro" ? "Opcional" : "Ex.: CRM-SP 123456"}
+                    placeholder={["outro", "administrador_financeiro"].includes(funcao) ? "Opcional" : "Ex.: CRM-SP 123456"}
                   />
                 </div>
                 <div>
