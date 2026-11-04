@@ -2635,6 +2635,10 @@ export type Database = {
         Args: { _acao: string; _dados: Json; _operacao: string }
         Returns: Json
       }
+      financeiro_previa: {
+        Args: { _data: string; _residente: string }
+        Returns: Json
+      }
       financeiro_resumo: { Args: never; Returns: Json }
       financeiro_tem_acesso: { Args: never; Returns: boolean }
       listar_profissionais: {
