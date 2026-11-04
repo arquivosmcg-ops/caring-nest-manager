@@ -57,6 +57,20 @@
       "when": 1793367600512,
       "tag": "0007_financeiro_calculo_operacoes",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793791543883,
+      "tag": "0008_financeiro_validacao_comprovantes_credito",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793791646732,
+      "tag": "0009_financeiro_agendamento_e_validacoes",
+      "breakpoints": true
     }
   ]
 }
