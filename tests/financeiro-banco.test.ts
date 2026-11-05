@@ -4,6 +4,7 @@ import { describe, it, expect } from 'vitest';
 function sql(query: string) {
   return execFileSync('psql', ['-X', '-v', 'ON_ERROR_STOP=1', '-Atc', query], { encoding: 'utf8' });
 }
+const podeExecutarTransacoes = sql("SELECT has_function_privilege(current_user,'public.financeiro_operar(text,jsonb,uuid)','EXECUTE');").trim() === 't';
 const setup = `
   PERFORM set_config('request.jwt.claim.sub', (SELECT user_id::text FROM public.user_roles WHERE role='admin' LIMIT 1), true);
   SELECT id INTO residente FROM public.residentes LIMIT 1;
@@ -13,7 +14,7 @@ const setup = `
 function transaction(body: string) {
   return sql(`BEGIN; DO $$ DECLARE residente uuid; cobranca uuid; pagamento uuid; op uuid; x jsonb; y jsonb; n integer; BEGIN ${setup} ${body} END $$; SELECT 'ok'; ROLLBACK;`);
 }
-describe('Financeiro — regras reais do banco, com reversão dos dados de teste', () => {
+describe.skipIf(!podeExecutarTransacoes)('Financeiro — regras reais do banco, com reversão dos dados de teste (exige conexão de teste autorizada)', () => {
   it('calcula 2% de multa e 1% de juros simples em 30 dias', () => {
     expect(transaction(`
       PERFORM public.financeiro_operar('avulsa',jsonb_build_object('residente_id',residente,'data','2026-01-01','vencimento','2026-01-01','valor_centavos',10000,'descricao','Teste','categoria','outros'),gen_random_uuid());
@@ -81,6 +82,8 @@ describe('Financeiro — regras reais do banco, com reversão dos dados de teste
       BEGIN PERFORM public.financeiro_resumo();RAISE EXCEPTION 'SEM PERMISSÃO CONSEGUIU LER';EXCEPTION WHEN OTHERS THEN IF SQLERRM NOT LIKE '%Acesso financeiro não autorizado%' THEN RAISE;END IF;END;
     `)).toContain('ok');
   });
+});
+describe('Financeiro — privilégios efetivos', () => {
   it('visitante não tem acesso de leitura a tabelas nem execução de operações', () => {
     const output=sql(`SELECT has_table_privilege('anon','public.financeiro_cobrancas','SELECT'),has_function_privilege('anon','public.financeiro_operar(text,jsonb,uuid)','EXECUTE'),has_table_privilege('authenticated','public.financeiro_cobrancas','DELETE');`);
     expect(output.trim()).toBe('f|f|f');
