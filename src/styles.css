@@ -37,6 +37,8 @@
   --color-destructive-foreground: var(--destructive-foreground);
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-due-soon: var(--due-soon);
+  --color-due-today: var(--due-today);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -76,6 +78,8 @@
   --destructive-foreground: oklch(1 0 0);
   --success: oklch(0.55 0.14 150);
   --warning: oklch(0.7 0.15 65);
+  --due-soon: oklch(0.79 0.15 90);
+  --due-today: oklch(0.68 0.18 50);
   --border: oklch(0.24 0.012 260 / 0.12);
   --input: oklch(0.24 0.012 260 / 0.16);
   --ring: oklch(0.404 0.163 29.5 / 0.45);
@@ -111,6 +115,8 @@
   --destructive-foreground: oklch(1 0 0);
   --success: oklch(0.7 0.16 150);
   --warning: oklch(0.78 0.16 65);
+  --due-soon: oklch(0.83 0.14 90);
+  --due-today: oklch(0.77 0.16 50);
   --border: oklch(1 0 0 / 0.08);
   --input: oklch(1 0 0 / 0.12);
   --ring: oklch(0.55 0.18 29.5 / 0.5);

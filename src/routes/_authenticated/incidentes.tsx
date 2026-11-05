@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/incidentes")({
+  head: () => ({meta:[{title:'Incidentes · Residencial São Camilo'},{name:'description',content:'Registro e acompanhamento de incidentes do Residencial São Camilo.'},{property:'og:title',content:'Incidentes · Residencial São Camilo'},{property:'og:description',content:'Histórico de ocorrências e ações tomadas.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'}]}),
   component: IncidentesPage,
 });
 

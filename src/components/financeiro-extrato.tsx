@@ -1,0 +1,9 @@
+import { dataBr, reais } from '@/lib/financeiro';
+import { creditoResidente, type FinanceiroDados } from '@/lib/financeiro-data';
+export function FinanceiroExtrato({d,id}:{d:FinanceiroDados;id:string}){
+  const registros=d.cobrancas.filter(c=>c.residente_id===id).flatMap(c=>[{data:c.emissao,descricao:c.descricao,valor:c.valor_centavos+c.ajuste_centavos,tipo:c.cancelada?'Débito cancelado':'Débito'},...(c.calculo.multa+c.calculo.juros+c.calculo.correcao>0?[{data:d.hoje,descricao:`Encargos atualizados · ${c.descricao}`,valor:c.calculo.multa+c.calculo.juros+c.calculo.correcao,tipo:'Encargos pendentes'}]:[])]);
+  for(const p of d.pagamentos.filter(p=>p.residente_id===id))registros.push({data:p.data,descricao:p.observacoes||'Recebimento',valor:-p.valor_centavos,tipo:p.estornado?'Pagamento estornado':p.forma==='credito'?'Crédito aplicado':'Pagamento'});
+  registros.sort((a,b)=>a.data.localeCompare(b.data));
+  const saldo=d.cobrancas.filter(c=>c.residente_id===id).reduce((s,c)=>s+c.calculo.saldo,0);
+  return <section className="space-y-3 py-5"><h3 className="font-bold">Extrato cronológico · {d.residentes.find(r=>r.id===id)?.nome}</h3><div className="flex flex-wrap gap-6 text-sm"><p>Saldo devedor <b>{reais(saldo)}</b></p><p>Saldo de crédito <b>{reais(creditoResidente(d,id))}</b></p></div><div className="divide-y divide-border">{registros.map((r,i)=><div key={i} className="py-2 flex flex-wrap gap-3 text-sm"><span className="text-muted-foreground w-24">{dataBr(r.data)}</span><div className="flex-1 min-w-40"><b>{r.tipo}</b><p className="text-muted-foreground">{r.descricao}</p></div><span>{reais(r.valor)}</span></div>)}</div></section>;
+}
