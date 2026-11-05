@@ -1,5 +1,5 @@
 import { reais, dataBr } from './financeiro';
-import type { FinanceiroDados } from './financeiro-data';
+import { creditoResidente, type FinanceiroDados } from './financeiro-data';
 
 export async function exportarFinanceiro(titulo: string, colunas: string[], linhas: (string | number)[][], formato: 'pdf' | 'xlsx' | 'csv') {
   const nome = titulo.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase();
@@ -26,6 +26,8 @@ export async function extratoFinanceiro(d: FinanceiroDados, id: string) {
     for (const i of d.itens.filter(i => i.cobranca_id === c.id)) linhas.push([dataBr(i.data_consumo), `${i.descricao} (${i.quantidade} ${i.unidade})`, '', reais(i.total_centavos), '', '', '', '']);
     total += c.calculo.saldo;
   }
+  for(const p of d.pagamentos.filter(p=>p.residente_id===id))linhas.push([dataBr(p.data),`Pagamento · ${p.forma}`, '', '', '', reais(p.valor_centavos), '', p.estornado?'Estornado':'Confirmado']);
   linhas.push(['', 'Saldo devedor atualizado', dataBr(d.hoje), '', '', '', reais(total), '']);
+  linhas.push(['', 'Saldo de crédito', dataBr(d.hoje), '', '', '', reais(creditoResidente(d,id)), '']);
   await exportarFinanceiro(`Demonstrativo — ${residente.nome}`, ['Emissão/Consumo', 'Descrição', 'Vencimento', 'Original', 'Encargos', 'Abatido', 'Saldo', 'Situação'], linhas, 'pdf');
 }

@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { usePerfilAtual } from "@/hooks/use-perfil";
 
 export const Route = createFileRoute("/_authenticated/quartos")({
+  head: () => ({meta:[{title:'Quartos · Residencial São Camilo'},{name:'description',content:'Ocupação e disponibilidade de quartos do Residencial São Camilo.'},{property:'og:title',content:'Quartos · Residencial São Camilo'},{property:'og:description',content:'Acompanhamento de vagas e ocupação.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'}]}),
   component: QuartosPage,
 });
 

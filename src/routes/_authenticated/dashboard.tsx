@@ -6,6 +6,7 @@ import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
+  head: () => ({meta:[{title:'Painel Geral · Residencial São Camilo'},{name:'description',content:'Visão geral dos residentes e cuidados do Residencial São Camilo.'},{property:'og:title',content:'Painel Geral · Residencial São Camilo'},{property:'og:description',content:'Acompanhamento diário de residentes e cuidados.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'}]}),
   component: DashboardPage,
 });
 

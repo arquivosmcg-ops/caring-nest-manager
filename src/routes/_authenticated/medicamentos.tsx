@@ -16,6 +16,7 @@ import { AdministracaoDiariaDialog } from "@/components/administracao-diaria";
 import { TURNOS_MED, calcularDataFim, isoDate, rotuloDuracao, type MedicamentoPrescrito } from "@/lib/medicamentos";
 
 export const Route = createFileRoute("/_authenticated/medicamentos")({
+  head: () => ({meta:[{title:'Prescrição Médica · Residencial São Camilo'},{name:'description',content:'Prescrições médicas e administração de medicamentos das residentes.'},{property:'og:title',content:'Prescrição Médica · Residencial São Camilo'},{property:'og:description',content:'Gestão das prescrições de medicamentos.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'}]}),
   component: PrescricaoPage,
 });
 

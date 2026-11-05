@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/checklists")({
+  head: () => ({meta:[{title:'Checklists · Residencial São Camilo'},{name:'description',content:'Acompanhamento das tarefas e cuidados diários das residentes.'},{property:'og:title',content:'Checklists · Residencial São Camilo'},{property:'og:description',content:'Rotina de cuidados por turno.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'}]}),
   component: ChecklistsPage,
 });
 
