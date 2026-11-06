@@ -86,10 +86,10 @@ describe.skipIf(!podeExecutarTransacoes)('Financeiro — regras reais do banco, 
 describe('Financeiro — privilégios efetivos', () => {
   it('exige admin geral ou concessão financeira com função aprovada', () => {
     const helper=sql("SELECT pg_get_functiondef(p.oid) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='private' AND p.proname='financeiro_autorizado';");
-    expect(helper).toContain("role = 'admin'");
+    expect(helper).toMatch(/role\s*=\s*'admin'/);
     expect(helper).toContain('financeiro_acessos');
-    expect(helper).toContain("funcao = 'administrador_financeiro'");
-    expect(helper).toContain("status_aprovacao = 'aprovado'");
+    expect(helper).toMatch(/funcao\s*=\s*'administrador_financeiro'/);
+    expect(helper).toMatch(/status_aprovacao\s*=\s*'aprovado'/);
     expect(helper).not.toContain('raw_user_meta_data');
   });
   it('todas as tabelas financeiras ficam protegidas e sem escrita direta por usuários', () => {
