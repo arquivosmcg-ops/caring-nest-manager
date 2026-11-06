@@ -84,6 +84,18 @@ describe.skipIf(!podeExecutarTransacoes)('Financeiro — regras reais do banco, 
   });
 });
 describe('Financeiro — privilégios efetivos', () => {
+  it('exige admin geral ou concessão financeira com função aprovada', () => {
+    const helper=sql("SELECT pg_get_functiondef(p.oid) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='private' AND p.proname='financeiro_autorizado';");
+    expect(helper).toContain("role = 'admin'");
+    expect(helper).toContain('financeiro_acessos');
+    expect(helper).toContain("funcao = 'administrador_financeiro'");
+    expect(helper).toContain("status_aprovacao = 'aprovado'");
+    expect(helper).not.toContain('raw_user_meta_data');
+  });
+  it('todas as tabelas financeiras ficam protegidas e sem escrita direta por usuários', () => {
+    const output=sql("SELECT count(*) FROM pg_tables t WHERE t.schemaname='public' AND t.tablename LIKE 'financeiro_%' AND (NOT t.rowsecurity OR has_table_privilege('anon',format('%I.%I',t.schemaname,t.tablename),'SELECT') OR has_table_privilege('authenticated',format('%I.%I',t.schemaname,t.tablename),'INSERT,UPDATE,DELETE'));");
+    expect(output.trim()).toBe('0');
+  });
   it('visitante não tem acesso de leitura a tabelas nem execução de operações', () => {
     const output=sql(`SELECT has_table_privilege('anon','public.financeiro_cobrancas','SELECT'),has_function_privilege('anon','public.financeiro_operar(text,jsonb,uuid)','EXECUTE'),has_table_privilege('authenticated','public.financeiro_cobrancas','DELETE');`);
     expect(output.trim()).toBe('f|f|f');
