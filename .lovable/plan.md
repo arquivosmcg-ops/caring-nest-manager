@@ -1,62 +1,62 @@
-# Financeiro — Residencial São Camilo
+# Financeiro — Boleto e Pix automáticos via Asaas
 
-## Resultado
-Nova área **Financeiro**, em português, integrada às residentes já cadastradas e com o mesmo visual do aplicativo. Valores em R$, datas em dd/mm/aaaa e telas adequadas ao celular. Nenhuma mensalidade, dívida ou pagamento fictício será lançado.
+Adicionar emissão e conciliação automática de cobranças por boleto bancário e Pix usando o gateway Asaas, sem remover nada do Financeiro atual (lançamentos, pagamentos manuais, correções, alertas, caixa, relatórios continuam iguais).
 
-As outras áreas manterão seu funcionamento. Os dados financeiros ficarão em uma ficha separada vinculada a cada residente; usuários sem permissão financeira não terão acesso a esses valores, mesmo que possam corrigir o cadastro de residentes.
+## Etapa 1 — Responsável financeiro completo + integração em sandbox
 
-## 1. Estrutura, acesso e cadastros
-- Criar armazenamento de catálogo, fichas financeiras, cobranças e itens, pagamentos e suas distribuições, créditos, configurações, contatos, promessas, fechamento de caixa e auditoria.
-- Acesso exclusivo aos **administradores do app** e à nova função **Administrador financeiro**, após aprovação e concessão por administrador. Ambos podem visualizar, lançar, receber e administrar o Financeiro. A função financeira não dá poderes de administração geral; selecionar essa função no cadastro não concede acesso automaticamente.
-- Catálogo com nome, categoria, unidade, preço padrão e inativação. Preservar descrições e valores históricos mesmo quando o catálogo mudar.
-- Ficha financeira por residente: mensalidade, vencimento de 1 a 28, responsável, telefone e pagamento preferencial. Permitir reaproveitar nome e telefone do responsável já cadastrado, mediante confirmação, sem assumir que o contato de emergência é o pagador.
-- Comprovantes opcionais em armazenamento privado; histórico financeiro sem exclusão.
+- Ampliar o cadastro financeiro do responsável: nome completo, CPF ou CNPJ (com validação dos dígitos), e-mail, telefone/WhatsApp e endereço completo (CEP, rua, número, bairro, cidade, UF). Um mesmo responsável pode pagar por mais de uma residente.
+- Dados pessoais protegidos: visíveis só para quem já tem permissão financeira.
+- Nova aba/área "Faturas": agrupa cobranças em aberto de um responsável em um único boleto/Pix, com seleção automática das que vencem no mês e escolha manual do que entra.
+- Integração com o Asaas em ambiente de testes (sandbox): ao emitir a primeira fatura de um responsável, o app cria o cliente no gateway e guarda o ID para reutilizar.
+- Fatura emitida guarda: pagador, cobranças incluídas, valor total, vencimento, forma (Boleto, Pix ou Boleto com Pix), ID no gateway, link do boleto, linha digitável, código Pix copia-e-cola, QR Code, status e histórico.
+- Multa e juros das Configurações (padrão 2% + 1% ao mês) enviados ao gateway na criação, para o boleto vencido calcular encargos sozinho.
+- Enquanto a fatura estiver ativa, as cobranças incluídas ficam travadas para edição de valor; para alterar, cancela-se a fatura (também no gateway) e gera-se outra.
+- Aviso visível "Ambiente de testes (sandbox)" enquanto não estiver em produção.
 
-## 2. Cobranças e pagamentos
-- Gerar mensalidades no primeiro dia de cada mês para residentes ativas com ficha financeira completa, com geração manual de recuperação e proteção contra duplicação. Avisar quais cadastros estão incompletos.
-- Permitir descontos/acréscimos individuais, cobrança avulsa e consumo de vários itens para uma ou várias residentes. Valores preenchidos pelo catálogo, mas editáveis antes da confirmação.
-- Extras agrupados por mês ou cobrados avulsamente. Padrão: extras do mês vencem com a mensalidade do mês seguinte; oferecer vencimento alternativo configurável.
-- Mostrar descrição, itens, emissão, vencimento, observações e estados: em aberto, parcialmente paga, paga, vencida ou cancelada.
-- Registrar recebimentos em Pix, dinheiro, transferência, boleto, cartão ou cheque. Prévia da distribuição antes de confirmar; encargos primeiro, depois principal, na ordem das dívidas mais antigas. Seleção manual de cobranças e valores, com validação dos totais.
-- Excedente vira crédito vinculado à residente, com saldo e aplicação rastreáveis. Pagamento, distribuição e crédito são confirmados juntos, sem risco de salvar só uma parte.
-- Cancelamentos e estornos exigem motivo, preservam o registro e recalculam saldos. Impedir duplicação por duplo clique ou repetição após falha de conexão.
+## Etapa 2 — Geração em lote e envio ao responsável
 
-## 3. Encargos e configurações
-- Padrões do anexo: **multa 2%**, aplicada uma vez; **juros simples 1% ao mês**, proporcionais aos dias; **carência zero**; correção monetária manual desligada.
-- Para cálculo diário, usar mês comercial de 30 dias e datas de São Paulo. Com carência, encargos começam após os dias de tolerância, sem retroagir ao período de carência.
-- Calcular juros por intervalos entre pagamentos: somente o principal ainda em aberto gera novos juros. Multa não se reaplica, e encargos não geram juros sobre juros.
-- Arredondar valores para centavos, conservando a memória dos intervalos. A configuração aplicável fica registrada na cobrança para alterações futuras não mudarem o passado silenciosamente.
-- Memorial: valor original, saldo principal, dias, multa, juros, correção opcional, pagamentos, abatimentos e saldo atualizado. Administrador financeiro pode perdoar encargos com justificativa.
-- Atualizar valores ao consultar e ao virar o dia com a tela aberta; não depender de gravar um novo saldo todos os dias.
+- Botão "Gerar faturas do mês": cria as faturas de todos os responsáveis de uma vez, com prévia e confirmação antes de enviar ao gateway, e relatório de sucessos e falhas com o motivo (ex.: CPF inválido).
+- Botões por fatura: copiar link, enviar por WhatsApp (mensagem pré-preenchida com valor, vencimento e link), enviar por e-mail (notificação do próprio gateway) e baixar PDF do boleto.
+- Modelo da mensagem editável em Configurações; cada envio registrado no histórico de contatos.
+- Alertas existentes ("vence em breve", "vence hoje", "atrasado") passam a ter o botão "Reenviar boleto/Pix".
 
-## 4. Ficha financeira e alertas
-- Ficha com dívida atualizada, crédito, cobranças, pagamentos e extrato cronológico. Ações diretas para consumo, cobrança e pagamento; demonstrativo PDF com itens e saldo.
-- Alertas no topo do Financeiro e indicador no menu: vence em breve (3 dias), hoje, atrasado (1–30 dias) e inadimplente (mais de 30 dias), com limites configuráveis.
-- Mostrar responsável, telefone, dívida atualizada e atraso. Registrar contatos, observações e promessa de pagamento; avisar novamente quando a promessa vencer sem quitação.
-- Preparar mensagem de cobrança configurável e editável. **WhatsApp da enfermagem:** não conectar nem enviar pelo número pessoal. Abrir uma conversa usa a conta ativa no dispositivo; isso só será disponibilizado após confirmar que a equipe usa a conta da enfermagem. Envio direto pelo aplicativo depende da conexão dessa conta. Contatos e mensagens preparadas continuam disponíveis sem a conexão.
-- Ao abrir o app, autorizados veem as pendências financeiras sem expor dados aos demais usuários.
+## Etapa 3 — Webhook e conciliação automática
 
-## 5. Caixa e relatórios
-- Caixa por data: total, quantidade e lista de recebimentos, separados por forma. Fechar o dia impede novos lançamentos e alterações que afetem aquela data, inclusive pagamentos retroativos e estornos; reabertura só por administrador financeiro com motivo.
-- Visão mensal: gráfico diário, previsto, recebido, aberto e vencido; separação de mensalidades e repasses por categoria. Percentual de inadimplência calculado sobre o valor vencido não quitado em relação ao valor que já venceu no período, com denominador explícito.
-- Relatórios de inadimplência (0–30, 31–60, 61–90 e mais de 90 dias), atrasos/pontualidade, recebimentos e consumo, com filtros e ordenação previstos no anexo.
-- Exportação PDF, Excel e CSV; demonstrativos usam os mesmos cálculos da tela. PDF será um arquivo para baixar, não apenas uma janela de impressão.
+- Endpoint público `/api/public/asaas-webhook` que recebe eventos do gateway: pagamento criado, confirmado/recebido, vencido, estornado/devolvido e cobrança cancelada.
+- Autenticidade validada por token secreto conferido no endpoint; chamadas sem o token são rejeitadas.
+- Idempotência: o ID de cada evento é guardado e repetições são ignoradas — o mesmo evento nunca gera dois pagamentos.
+- Ao confirmar pagamento: cria o registro de pagamento automaticamente (forma Pix ou Boleto, data, valor efetivamente recebido, referência da fatura), abate das cobranças pela regra já existente (encargos, depois principal, mais antiga primeiro), atualiza status e Caixa do dia e remove os alertas daquele pagador.
+- Valor pago diferente do esperado: mostrar a diferença e permitir ajuste manual; divergência entre gateway e memorial interno é sinalizada.
+- Estorno/devolução: reverte o pagamento com trilha de auditoria e recalcula a dívida.
+- Todos os payloads recebidos ficam num log técnico para diagnóstico.
+- Botão "Sincronizar com o gateway" por fatura e geral, para consultar o status caso algum webhook falhe.
 
-## 6. Verificação
-- Testar concretamente vencimento 1–28, valores em centavos, multa única de 2%, juros de 1%/mês, carência, parcial, seleção manual, crédito, estorno, cancelamento, promessa, fechamento e geração sem duplicidade.
-- Testar permissões: somente administradores e Administrador financeiro autorizado têm acesso; profissionais pendentes e demais funções não acessam nem os dados. Administrador financeiro não ganha administração geral.
-- Confirmar na tela um ciclo real controlado de cadastro financeiro, cobrança, pagamento parcial, extrato e estorno, sem deixar dados de teste na ficha de uma residente real.
-- Verificar computador/celular, arquivos exportados e ausência de erros antes de declarar concluído.
+## Etapa 4 — Telas, indicadores e relatórios
+
+- Lista de faturas com filtros por status (Aguardando, Paga, Vencida, Cancelada, Estornada), forma de pagamento e período, com ícones e cores.
+- Caixa do dia e relatórios separam recebimentos por origem: Pix automático, boleto automático e manuais.
+- Relatório de conciliação: pago no gateway × registrado no app, apontando divergências.
+- Tarifas do gateway por cobrança (quando informadas) e total de tarifas no relatório mensal, para conferir o líquido recebido.
+
+## Segurança
+
+- Chave de API do Asaas somente nos segredos do backend; toda chamada ao gateway passa por funções de backend, nunca pelo navegador.
+- Ambiente (teste/produção) configurável em Configurações, com aviso visível em modo teste.
+- Permissões: administradores e Administrador financeiro geram e cancelam faturas; configuração do gateway e alteração de multa/juros só para administradores.
+- Erros do gateway com mensagens claras em português e nova tentativa segura.
+- Tudo auditado: quem gerou, cancelou, reenviou, sincronizou.
+
+## O que você vai precisar cadastrar (ao final da Etapa 1)
+
+1. **Chave de API do Asaas** (começando pela de testes/sandbox) — guardada como segredo do app.
+2. **Token do webhook** — valor gerado pelo app para você colar no painel do Asaas.
+3. **URL do webhook** para configurar no painel do Asaas: `https://gerenciamento-residencial-s-camilo.lovable.app/api/public/asaas-webhook`
+4. **Eventos a ativar no Asaas**: pagamento criado, confirmado/recebido, vencido, estornado/devolvido e cobrança cancelada.
 
 ## Detalhes técnicos
-- Tabelas financeiras próprias ligadas a `residentes`, preservando as regras existentes de cadastro por Outros. Valores monetários em centavos inteiros; percentuais com precisão fixa.
-- Papel financeiro protegido em tabela separada dos perfis, concedido/revogado somente por administrador, RLS e GRANT explícitos. Auditoria gerada no banco com identidade autenticada, protegida contra alteração ou exclusão.
-- Operações de múltiplos registros em rotinas transacionais com validação de permissão, bloqueio de linhas e chaves de idempotência. O banco determina saldos e aplica as regras; prévia no navegador nunca autoriza a escrita.
-- Rotina SQL mensal agendada para geração de mensalidades e fechamento dos extras do mês anterior; alternativa manual chama a mesma lógica. Não criar consulta periódica frequente para persistir estados de atraso.
-- Novas páginas sob a área autenticada, carregamento integrado ao cache existente, metadados próprios e componentes visuais já usados no aplicativo. Utilizar biblioteca compatível para PDF e ferramentas existentes para planilhas.
 
-## O que Maria Clarete deverá configurar
-Valores das mensalidades, vencimentos e responsáveis de cada residente; itens, unidades e preços; pessoas autorizadas ao Financeiro. Conferir multa, juros, carência, modelo de mensagem e vencimento dos extras. Para WhatsApp, disponibilizar a conta da enfermagem; não é necessário informar senhas pessoais aqui.
-
-## Ordem de entrega
-Estrutura e cadastros → cobranças e pagamentos → encargos → alertas → caixa e relatórios → testes e resumo final, indicando claramente qualquer dependência não disponível.
+- Novas tabelas: `financeiro_faturas` (fatura, status, dados do gateway), `financeiro_fatura_cobrancas` (vínculo fatura↔cobranças), `financeiro_gateway_eventos` (log + idempotência). Todas com RLS restrita à permissão financeira e grants mínimos.
+- Campos novos em `financeiro_cadastros`: CPF/CNPJ, e-mail, endereço completo e ID do cliente no gateway.
+- Chamadas ao Asaas em `createServerFn` autenticadas que revalidam `financeiro_tem_acesso()` no servidor; webhook como rota de servidor pública com verificação de token.
+- Pagamentos automáticos reutilizam a mesma rotina atômica de alocação/estorno já existente (`financeiro_operar`), preservando auditoria e regras atuais.
+- Testes automatizados: validação de CPF/CNPJ, idempotência do webhook e rejeição sem token.
