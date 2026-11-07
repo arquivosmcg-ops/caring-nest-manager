@@ -947,28 +947,58 @@ export type Database = {
           atualizado_em: string
           dia_vencimento: number
           forma_preferencial: string
+          gateway_cliente_id: string | null
           mensalidade_centavos: number
           residente_id: string
+          responsavel_bairro: string | null
+          responsavel_cep: string | null
+          responsavel_cidade: string | null
+          responsavel_complemento: string | null
+          responsavel_cpf_cnpj: string | null
+          responsavel_email: string | null
+          responsavel_logradouro: string | null
           responsavel_nome: string
+          responsavel_numero: string | null
           responsavel_telefone: string
+          responsavel_uf: string | null
         }
         Insert: {
           atualizado_em?: string
           dia_vencimento: number
           forma_preferencial?: string
+          gateway_cliente_id?: string | null
           mensalidade_centavos: number
           residente_id: string
+          responsavel_bairro?: string | null
+          responsavel_cep?: string | null
+          responsavel_cidade?: string | null
+          responsavel_complemento?: string | null
+          responsavel_cpf_cnpj?: string | null
+          responsavel_email?: string | null
+          responsavel_logradouro?: string | null
           responsavel_nome: string
+          responsavel_numero?: string | null
           responsavel_telefone?: string
+          responsavel_uf?: string | null
         }
         Update: {
           atualizado_em?: string
           dia_vencimento?: number
           forma_preferencial?: string
+          gateway_cliente_id?: string | null
           mensalidade_centavos?: number
           residente_id?: string
+          responsavel_bairro?: string | null
+          responsavel_cep?: string | null
+          responsavel_cidade?: string | null
+          responsavel_complemento?: string | null
+          responsavel_cpf_cnpj?: string | null
+          responsavel_email?: string | null
+          responsavel_logradouro?: string | null
           responsavel_nome?: string
+          responsavel_numero?: string | null
           responsavel_telefone?: string
+          responsavel_uf?: string | null
         }
         Relationships: [
           {
@@ -1114,10 +1144,13 @@ export type Database = {
           correcao_bp: number
           extras_agrupados: boolean
           extras_dia: number | null
+          gateway_ambiente: string
+          gateway_ativo: boolean
           id: boolean
           inadimplencia_dias: number
           juros_bp: number
           mensagem: string
+          mensagem_fatura: string
           multa_bp: number
         }
         Insert: {
@@ -1128,10 +1161,13 @@ export type Database = {
           correcao_bp?: number
           extras_agrupados?: boolean
           extras_dia?: number | null
+          gateway_ambiente?: string
+          gateway_ativo?: boolean
           id?: boolean
           inadimplencia_dias?: number
           juros_bp?: number
           mensagem?: string
+          mensagem_fatura?: string
           multa_bp?: number
         }
         Update: {
@@ -1142,10 +1178,13 @@ export type Database = {
           correcao_bp?: number
           extras_agrupados?: boolean
           extras_dia?: number | null
+          gateway_ambiente?: string
+          gateway_ativo?: boolean
           id?: boolean
           inadimplencia_dias?: number
           juros_bp?: number
           mensagem?: string
+          mensagem_fatura?: string
           multa_bp?: number
         }
         Relationships: []
@@ -1187,6 +1226,132 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      financeiro_fatura_cobrancas: {
+        Row: {
+          cobranca_id: string
+          fatura_id: string
+        }
+        Insert: {
+          cobranca_id: string
+          fatura_id: string
+        }
+        Update: {
+          cobranca_id?: string
+          fatura_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financeiro_fatura_cobrancas_cobranca_id_fkey"
+            columns: ["cobranca_id"]
+            isOneToOne: false
+            referencedRelation: "financeiro_cobrancas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_fatura_cobrancas_fatura_id_fkey"
+            columns: ["fatura_id"]
+            isOneToOne: false
+            referencedRelation: "financeiro_faturas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financeiro_faturas: {
+        Row: {
+          atualizado_em: string
+          criado_em: string
+          criado_por: string | null
+          data_pagamento: string | null
+          forma: string
+          gateway_cliente_id: string | null
+          gateway_cobranca_id: string | null
+          id: string
+          linha_digitavel: string | null
+          link: string | null
+          observacoes: string
+          pagador_cpf_cnpj: string
+          pagador_nome: string
+          pix_copia_cola: string | null
+          status: string
+          tarifa_centavos: number | null
+          valor_centavos: number
+          valor_recebido_centavos: number | null
+          vencimento: string
+        }
+        Insert: {
+          atualizado_em?: string
+          criado_em?: string
+          criado_por?: string | null
+          data_pagamento?: string | null
+          forma: string
+          gateway_cliente_id?: string | null
+          gateway_cobranca_id?: string | null
+          id?: string
+          linha_digitavel?: string | null
+          link?: string | null
+          observacoes?: string
+          pagador_cpf_cnpj: string
+          pagador_nome: string
+          pix_copia_cola?: string | null
+          status?: string
+          tarifa_centavos?: number | null
+          valor_centavos: number
+          valor_recebido_centavos?: number | null
+          vencimento: string
+        }
+        Update: {
+          atualizado_em?: string
+          criado_em?: string
+          criado_por?: string | null
+          data_pagamento?: string | null
+          forma?: string
+          gateway_cliente_id?: string | null
+          gateway_cobranca_id?: string | null
+          id?: string
+          linha_digitavel?: string | null
+          link?: string | null
+          observacoes?: string
+          pagador_cpf_cnpj?: string
+          pagador_nome?: string
+          pix_copia_cola?: string | null
+          status?: string
+          tarifa_centavos?: number | null
+          valor_centavos?: number
+          valor_recebido_centavos?: number | null
+          vencimento?: string
+        }
+        Relationships: []
+      }
+      financeiro_gateway_eventos: {
+        Row: {
+          criado_em: string
+          erro: string | null
+          evento_id: string
+          id: string
+          payload: Json
+          processado: boolean
+          tipo: string
+        }
+        Insert: {
+          criado_em?: string
+          erro?: string | null
+          evento_id: string
+          id?: string
+          payload: Json
+          processado?: boolean
+          tipo: string
+        }
+        Update: {
+          criado_em?: string
+          erro?: string | null
+          evento_id?: string
+          id?: string
+          payload?: Json
+          processado?: boolean
+          tipo?: string
+        }
+        Relationships: []
       }
       financeiro_itens: {
         Row: {
@@ -1273,6 +1438,7 @@ export type Database = {
           criado_por: string | null
           data: string
           estornado: boolean
+          fatura_id: string | null
           fonte_credito: string | null
           forma: string
           id: string
@@ -1287,6 +1453,7 @@ export type Database = {
           criado_por?: string | null
           data: string
           estornado?: boolean
+          fatura_id?: string | null
           fonte_credito?: string | null
           forma: string
           id?: string
@@ -1301,6 +1468,7 @@ export type Database = {
           criado_por?: string | null
           data?: string
           estornado?: boolean
+          fatura_id?: string | null
           fonte_credito?: string | null
           forma?: string
           id?: string
@@ -1310,6 +1478,13 @@ export type Database = {
           valor_centavos?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "financeiro_pagamentos_fatura_id_fkey"
+            columns: ["fatura_id"]
+            isOneToOne: false
+            referencedRelation: "financeiro_faturas"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "financeiro_pagamentos_fonte_credito_fkey"
             columns: ["fonte_credito"]
@@ -2632,6 +2807,10 @@ export type Database = {
       }
       definir_pin_assinatura: { Args: { _pin: string }; Returns: boolean }
       financeiro_contar_alertas: { Args: never; Returns: number }
+      financeiro_fatura_operar: {
+        Args: { _acao: string; _dados: Json; _operacao: string }
+        Returns: Json
+      }
       financeiro_operar: {
         Args: { _acao: string; _dados: Json; _operacao: string }
         Returns: Json
@@ -2642,6 +2821,10 @@ export type Database = {
       }
       financeiro_resumo: { Args: never; Returns: Json }
       financeiro_tem_acesso: { Args: never; Returns: boolean }
+      financeiro_webhook_processar: {
+        Args: { _evento_id: string; _payload: Json; _tipo: string }
+        Returns: Json
+      }
       listar_profissionais: {
         Args: never
         Returns: {

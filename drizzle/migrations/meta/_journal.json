@@ -78,6 +78,13 @@
       "when": 1793875730643,
       "tag": "0010_financeiro_privilegios_minimos",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1794047269742,
+      "tag": "0011_financeiro_faturas_gateway",
+      "breakpoints": true
     }
   ]
 }
