@@ -41,6 +41,7 @@ import { Route as AuthenticatedSaidasTemporariasRouteImport } from './routes/_au
 import { Route as AuthenticatedSinaisVitaisRouteImport } from './routes/_authenticated/sinais-vitais'
 import { Route as AuthenticatedVisitasRouteImport } from './routes/_authenticated/visitas'
 import { Route as ApiTranscreverRouteImport } from './routes/api/transcrever'
+import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas-webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -216,6 +217,11 @@ const ApiTranscreverRoute = ApiTranscreverRouteImport.update({
   path: '/api/transcrever',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAsaasWebhookRoute = ApiPublicAsaasWebhookRouteImport.update({
+  id: '/api/public/asaas-webhook',
+  path: '/api/public/asaas-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -249,6 +255,7 @@ export interface FileRoutesByFullPath {
   '/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
   '/visitas': typeof AuthenticatedVisitasRoute
   '/api/transcrever': typeof ApiTranscreverRoute
+  '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -282,6 +289,7 @@ export interface FileRoutesByTo {
   '/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
   '/visitas': typeof AuthenticatedVisitasRoute
   '/api/transcrever': typeof ApiTranscreverRoute
+  '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -317,6 +325,7 @@ export interface FileRoutesById {
   '/_authenticated/sinais-vitais': typeof AuthenticatedSinaisVitaisRoute
   '/_authenticated/visitas': typeof AuthenticatedVisitasRoute
   '/api/transcrever': typeof ApiTranscreverRoute
+  '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -352,6 +361,7 @@ export interface FileRouteTypes {
     | '/sinais-vitais'
     | '/visitas'
     | '/api/transcrever'
+    | '/api/public/asaas-webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -385,6 +395,7 @@ export interface FileRouteTypes {
     | '/sinais-vitais'
     | '/visitas'
     | '/api/transcrever'
+    | '/api/public/asaas-webhook'
   id:
     | '__root__'
     | '/'
@@ -419,6 +430,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sinais-vitais'
     | '/_authenticated/visitas'
     | '/api/transcrever'
+    | '/api/public/asaas-webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -428,6 +440,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiTranscreverRoute: typeof ApiTranscreverRoute
+  ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -656,6 +669,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTranscreverRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/asaas-webhook': {
+      id: '/api/public/asaas-webhook'
+      path: '/api/public/asaas-webhook'
+      fullPath: '/api/public/asaas-webhook'
+      preLoaderRoute: typeof ApiPublicAsaasWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -729,6 +749,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ApiTranscreverRoute: ApiTranscreverRoute,
+  ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
